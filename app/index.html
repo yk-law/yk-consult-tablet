@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YK 온라인 바인더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;600&display=swap">
+
+
+<div class="shell">
+  <div class="dbar">
+    <span class="bd">YK ONLINE BINDER <em>상담 태블릿 · 시연용</em></span>
+    <div class="seg">
+      <button class="on" data-v="tab" onclick="view('tab')">고객 태블릿</button>
+      <button data-v="os" onclick="view('os')">상담실장 YK-OS</button>
+      <button data-v="both" onclick="view('both')">나란히</button>
+    </div>
+    <span class="sp"></span>
+    <span class="note">고객명은 전부 가명입니다</span>
+    <button class="rst" onclick="reset()">처음부터</button>
+  </div>
+
+  <div class="stage one" id="stage">
+    <div class="tab" id="tabDev">
+      <div class="tbar"><span>법무법인 YK</span><span class="lk" id="tlk">연결 대기</span></div>
+      <div class="ctx" id="ctxbar">상담실장 화면과 아직 연결되지 않았습니다 · 대기 중</div>
+      <div class="scr" id="scr">
+
+        <section class="pane on" id="s-intro">
+          <div class="intro">
+            <video autoplay muted loop playsinline preload="auto"
+              src="https://www.yklawfirm.co.kr/video/main_video.webm"
+              poster="https://www.yklawfirm.co.kr/image/ykVideoPoster.webp"></video>
+            <div class="ibg"></div>
+            <div class="ic">
+              <div class="mk">
+                <span class="ci"><svg xmlns="http://www.w3.org/2000/svg" width="698" height="136" viewBox="0 0 698 136" fill="none" role="img" aria-label="법무법인 YK"> <g clipPath="url(#clip0_183_972)"> <path d="M46.1697 129.14H3.52295L76.627 19.5889H119.274L46.1633 129.14H46.1697Z" fill="#A6A8AA"/> <path d="M42.6467 -0.0957642H0L39.4248 58.952L60.7482 27.0119L42.6467 -0.0957642Z" fill="#1A2A56"/> <path d="M130.272 102.064L148.341 129.172H190.988L151.563 70.1243L130.24 102.064H130.272Z" fill="#A6A8AA"/> <path d="M114.361 109.456H71.7141L144.857 -0.0957642H187.503L114.361 109.456Z" fill="#1A2A56"/> <path d="M239.361 20.0259V33.8521H230.945V20.0259L220.568 -0.0957642H229.76L235.146 12.0963L240.501 -0.0957642H249.693L239.316 20.0259H239.348H239.361Z" fill="#A6A8AA"/> <path d="M277.562 33.8521L269.645 19.9246L266.75 23.2244V33.8521H258.43V-0.0957642H266.75V11.9317L276.685 -0.0957642H286.991L275.269 13.6291L287.363 33.8521H277.53H277.562Z" fill="#A6A8AA"/> <path d="M314.893 33.8521V-0.0957642H320.113V29.2603H336.652V33.8901H314.931L314.899 33.8585L314.893 33.8521Z" fill="#A6A8AA"/> <path d="M367.096 33.8521L364.739 27.0245H351.198L348.841 33.8521H343.281L355.881 -0.0957642H360.089L372.682 33.8521H367.09H367.096ZM358.065 7.59951L352.71 22.6607H363.253L358.033 7.59951H358.065Z" fill="#A6A8AA"/> <path d="M410.339 33.8521H405.823L398.854 10.0633L391.917 33.8521H387.401L378.44 -0.0957642H383.93L389.893 24.1934L396.798 -0.0957642H401.006L407.911 24.1934L413.875 -0.0957642H419.364L410.403 33.8521H410.339Z" fill="#A6A8AA"/> <path d="M434.352 4.53407V14.8958H448.63V19.5256H434.352V33.8838H429.132V-0.0957642H451.058V4.53407H434.32H434.352Z" fill="#A6A8AA"/> <path d="M462.164 33.8521V-0.0957642H467.385V33.8521H462.164Z" fill="#A6A8AA"/> <path d="M500.09 33.8521L492.846 19.5256H486.344V33.8521H481.124V-0.0957642H494.428C500.929 -0.0957642 505.074 4.07172 505.074 9.83526C505.074 14.6994 502.076 17.7965 498.239 18.8669L506.156 33.8901H500.058L500.09 33.8585V33.8521ZM494.063 4.53407H486.351V15.1618H494.063C497.535 15.1618 499.892 13.1984 499.892 9.86693C499.892 6.53547 497.535 4.53407 494.063 4.53407Z" fill="#A6A8AA"/> <path d="M540.86 33.8521V11.1653L532.943 27.7212H529.068L520.984 11.1653V33.8521H515.764V-0.0957642H520.984L531.022 21.0267L540.854 -0.0957642H546.074V33.8521H540.854H540.86Z" fill="#A6A8AA"/> <path d="M230.067 66.0892H250.679V54.9295H260.178V69.7563H276.48V54.0301H286.248V94.1469H276.48V77.4199H260.178V91.7781H220.574V54.9295H230.073V66.0892H230.067ZM276.506 106.105V97.8773H286.274V128.696H225.519V97.8773H235.287V106.105H276.512H276.506ZM250.673 84.1145V73.6831H230.061V84.1145H250.673ZM276.506 113.604H235.281V121.166H276.506V113.604Z" fill="#1A2A56"/> <path d="M300.397 109.304V101.475H372.534V109.304H341.18V129.191H331.515V109.304H300.397ZM368.326 54.9301V90.816H304.606V54.9301H368.326ZM314.374 83.1145H358.558V62.6571H314.374V83.1145Z" fill="#1A2A56"/> <path d="M393.621 66.0892H414.233V54.9295H423.732V69.7563H440.034V54.0301H449.802V94.1469H440.034V77.4199H423.732V91.7781H384.128V54.9295H393.627V66.0892H393.621ZM440.066 106.105V97.8773H449.834V128.696H389.079V97.8773H398.848V106.105H440.072H440.066ZM414.233 84.1145V73.6831H393.621V84.1145H414.233ZM440.066 113.604H398.841V121.166H440.066V113.604Z" fill="#1A2A56"/> <path d="M464.618 74.8871C464.618 67.3882 467.141 61.593 471.42 58.0272C475.09 55.0948 480.042 53.5304 485.935 53.5304C491.828 53.5304 496.881 55.0948 500.449 58.0272C504.83 61.6247 507.252 67.3882 507.252 74.8871C507.252 82.3861 504.824 88.2446 500.449 91.8484C496.881 94.7808 491.93 96.3452 485.935 96.3452C479.939 96.3452 475.09 94.8125 471.42 91.8484C467.109 88.251 464.618 82.4874 464.618 74.8871ZM532.815 128.298H470.613V103.179H480.381V120.641H532.822V128.304L532.815 128.298ZM474.11 74.8871C474.11 79.8527 475.456 83.5135 477.947 85.8822C479.933 87.6809 482.629 88.65 485.928 88.65C489.227 88.65 491.924 87.6809 494.012 85.8822C496.433 83.5135 497.785 79.8527 497.785 74.8871C497.785 69.9216 496.439 66.2228 494.012 63.9618C491.956 62.163 489.265 61.194 485.928 61.194C482.591 61.194 479.933 62.163 477.947 63.9618C475.423 66.2608 474.11 69.9913 474.11 74.8871ZM531.4 105.776H521.632V53.9991H531.4V105.776Z" fill="#1A2A56"/> <path d="M614.682 53.7073H630.612L604.247 98.9732V128.481H589.15V98.9732L562.786 53.7073H578.613L596.593 86.9901L614.682 53.7073Z" fill="#1A2A56"/> <path d="M673.073 90.1062L700.77 128.475H684.013L660.768 96.0598H652.947V128.475H637.626V53.7073H652.947V84.3237H660.768L680.785 53.7073H697.336L673.073 90.1062Z" fill="#1A2A56"/> </g> <defs> <clipPath id="clip0_183_972"> <rect width="698" height="135.088" fill="white"/> </clipPath> </defs> </svg></span>
+                <div class="mkfb"><span class="yk">YK</span><span class="gl"></span><span class="lf">LAW FIRM</span><span class="kr">법무법인 YK</span></div>
+              </div>
+
+              <div id="intro-wait">
+                <p class="tg1">고객중심 법률파트너</p>
+                <p class="tg2">People. Promise. Performance.</p>
+                <div class="figs">
+                  <div class="fig"><span class="v">318</span><span class="k">변호사</span></div>
+                  <div class="fig"><span class="v">98</span><span class="k">고문·위원</span></div>
+                  <div class="fig"><span class="v">31</span><span class="k">전국 사무소</span></div>
+                </div>
+                <p class="wait">상담실장이 안내해 드릴 때까지 잠시만 기다려 주세요.</p>
+              </div>
+
+              <div id="intro-hi" class="hidden">
+                <div class="hi">
+                  <span class="rl">예약 확인</span>
+                  <div class="nm2">안녕하세요 <b id="hiName">—</b> 님<span class="al">가명</span></div>
+                  <div class="rs" id="hiRes">—</div>
+                </div>
+                <p class="tg2">예약해주신 내용부터 함께 확인해 드리겠습니다.</p>
+                <button class="go" onclick="start()">상담을 시작할게요</button>
+              </div>
+            </div>
+            <div class="srcn">yklawfirm.co.kr/video/main_video.webm · 무음 반복</div>
+          </div>
+        </section>
+
+        <section class="pane" id="s-brief">
+          <span class="lbl">예약 정보 확인</span>
+          <h2 class="h1">예약해주신 정보를 기반으로<br>미리 추천 리스트를 준비했습니다</h2>
+          <p class="sub">전화 상담에서 받아둔 내용입니다. 맞는지만 확인해 주시면<br>상담이 훨씬 빨라집니다.</p>
+          <div class="bcard" id="bcard"></div>
+
+          <div class="blk" id="memoBlk"><h3>전화로 말씀해주신 내용 <em>맞는지 확인해 주세요</em></h3>
+            <div class="memo" id="memo"></div>
+            <p class="bnote" id="bnote"></p>
+          </div>
+
+          <button class="bgo" onclick="confirmBrief()">네, 맞습니다 · 추천 변호사 보기</button>
+          <button class="bskip" onclick="skipBrief()">나중에 확인할게요</button>
+        </section>
+
+        <section class="pane" id="s-browse">
+          <div class="bkto" onclick="nav('brief')">
+            <div><span class="l">예약 정보 확인</span>
+              <span class="t">확인해 주시면 사건에 더 맞는 변호사를 보여드립니다</span></div>
+            <span class="go2">확인하기 →</span>
+          </div>
+          <span class="lbl">둘러보기</span>
+          <h2 class="h1">먼저 편하게<br>둘러보세요</h2>
+          <p class="sub">보고 싶은 것부터 보시면 됩니다.<br>마음에 드는 변호사는 별표로 담아두시면 상담실장에게 전달됩니다.</p>
+          <div class="rule g"></div>
+          <div class="tools" style="margin:0 0 18px"><input id="q2" type="text" placeholder="이름 · 분야로 찾기 — 이혼, 부장판사, 김…" oninput="search2()"></div>
+          <div id="sres2"></div>
+          <div class="jump">
+            <button onclick="nav('case')"><span class="jt">업무사례</span><span class="jd">YK가 실제로 맡았던 사건들</span></button>
+            <button onclick="nav('review')"><span class="jt">의뢰인 후기</span><span class="jd">먼저 다녀가신 분들의 이야기</span></button>
+            <button onclick="nav('adv')"><span class="jt">고문 · 전문위원</span><span class="jd">수사·정부기관 실무 경력 98인</span></button>
+          </div>
+          <div class="blk"><h3>참고 추천 <em>예약 정보 기준</em></h3>
+            <p class="sub" style="margin-bottom:14px">아직 확인 전이라 정확도가 낮을 수 있습니다.</p>
+            <div id="recWrap2"></div></div>
+        </section>
+
+        <section class="pane" id="s-home">
+          <span class="lbl">고객님 사건</span>
+          <h2 class="h1">민사 · 손해배상 사건을<br>다뤄 온 변호사입니다</h2>
+          <p class="sub">서울중앙지방법원 사건 기준으로 정리했습니다.<br>마음에 드는 변호사는 별표로 담아두시면 상담실장에게 전달됩니다.</p>
+          <div class="rule g"></div>
+          <div id="recWrap"></div>
+          <div class="tools"><input id="q" type="text" placeholder="다른 분야·이름으로 찾기 — 이혼, 부장판사, 김…" oninput="search()"></div>
+          <div id="sres"></div>
+        </section>
+
+        <section class="pane" id="s-detail"><button class="back" onclick="back()">← 뒤로</button><div id="dbody"></div></section>
+
+        <section class="pane" id="s-fav">
+          <button class="back" onclick="back()">← 뒤로</button>
+          <span class="lbl">관심 변호사</span>
+          <h2 class="h1">담아두신 변호사</h2>
+          <p class="sub">상담실장이 실시간으로 확인하고 있습니다.</p>
+          <div class="rule"></div>
+          <div id="favList"></div>
+          <div class="blk"><h3>선임하시면 이렇게 진행됩니다</h3>
+            <div class="tls"><span class="d">1</span><div><div class="t">위임계약 체결</div><div class="x">오늘, 이 태블릿에서 계약서를 확인하고 전자서명합니다.</div></div></div>
+            <div class="tls"><span class="d">2</span><div><div class="t">담당 부서 배당</div><div class="x">1~2일 내 사건 유형에 맞는 팀이 배정됩니다.</div></div></div>
+            <div class="tls"><span class="d">3</span><div><div class="t">담당 변호사 배정 · 첫 연락</div><div class="x">배당 후 담당 변호사가 직접 연락드립니다.</div></div></div>
+            <div class="tls"><span class="d">4</span><div><div class="t">사건 수행</div><div class="x">진행 상황은 앱에서 확인하실 수 있습니다.</div></div></div>
+          </div>
+        </section>
+
+        <section class="pane" id="s-adv">
+          <button class="back" onclick="back()">← 뒤로</button>
+          <span class="lbl">전문가 그룹</span>
+          <h2 class="h1">고문 · 전문위원 · 자문위원</h2>
+          <p class="sub">수사기관과 정부기관에서 실무를 맡아 온 분들이 변호사와 함께 사건을 봅니다.</p>
+          <div class="chips" id="ach"></div>
+          <div class="cnt" id="acnt"></div>
+          <div id="alist"></div>
+        </section>
+
+        <section class="pane" id="s-case">
+          <button class="back" onclick="back()">← 뒤로</button>
+          <span class="lbl">업무사례</span><h2 class="h1">YK가 받아온 결과</h2>
+          <p class="sub">yklawfirm.co.kr/case/all 공개 게시물</p>
+          <div class="chips" id="cch"></div><div id="clist"></div>
+        </section>
+
+        <section class="pane" id="s-review">
+          <button class="back" onclick="back()">← 뒤로</button>
+          <span class="lbl">의뢰인 후기</span><h2 class="h1">의뢰인이 남긴 말</h2>
+          <p class="sub">yklawfirm.co.kr/client-review/all 공개 게시물</p>
+          <div class="chips" id="rch"></div><div id="rlist"></div>
+        </section>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="on" data-t="home" onclick="goLawyers()">변호사</button>
+        <button data-t="adv" onclick="nav('adv')">전문가</button>
+        <button data-t="fav" onclick="nav('fav')">관심<span class="badge hidden" id="favBadge">0</span></button>
+        <button data-t="case" onclick="nav('case')">업무사례</button>
+        <button data-t="review" onclick="nav('review')">후기</button>
+      </nav>
+    </div>
+
+    <div class="os hidden" id="osDev">
+      <div class="ostop"><span class="oico">⌂</span><span class="oico">▤</span><span class="oico">▣</span><span class="sp2"></span><button class="mir" id="mirBtn">미러링 <i></i></button><span class="clk">2026.09.04 13:20</span><span class="me"><span class="av">고</span>고재완</span></div>
+      <div class="osw">
+        <nav class="rail">
+          <span class="ri">홈</span><span class="ri">인입</span><span class="ri">콜</span><span class="ri">콜백</span>
+          <span class="ri">상담 예약</span><span class="ri">상담 목록</span><span class="ri on">상담 태블릿</span>
+          <span class="ri">선임 대기</span><span class="ri">선임 목록</span><span class="ri">미선임 목록</span><span class="ri">부서배당 목록</span>
+          <span class="ri">사건배당 요청</span><span class="ri">사건수행 목록</span><span class="ri">나의 사건</span><span class="ri">서면</span>
+          <span class="ri">추심 (약정금)</span><span class="ri">추심 (성공보수)</span><span class="ri">종료</span>
+          <span class="ri sec">검색</span><span class="ri">맨파워 통합검색</span><span class="ri">성공 사례 검색</span>
+          <span class="ri sec">승인</span><span class="ri">약정금변경 승인요청</span><span class="ri">성공보수약정 승인요청</span><span class="ri">사임 승인요청</span>
+          <span class="ri">처분권자 관리</span>
+        </nav>
+        <div class="osm">
+          <div class="split">
+            <!-- 좌 : 상담실장이 보는 화면 -->
+            <section class="lft">
+              <div class="vhd">
+                <h3>방문 예정 목록</h3>
+                <div class="dnav"><button>‹</button><span>오늘</span><button>›</button></div>
+                <div class="seg2"><button class="on">전체</button><button>형사</button><button>민·가사</button></div>
+              </div>
+              <div class="vsearch">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 18 18"/></svg>
+                <input id="vq" type="text" placeholder="고객명, 사건 유형, 연락처로 검색" oninput="renderVisit()">
+              </div>
+              <div id="vbody"></div>
+
+              <div id="osLive" class="hidden">
+                <div class="conn">
+                  <div><span class="l">연결됨</span><span class="t" id="connWho">—</span></div>
+                  <button class="unshare" onclick="unshare()">공유 해제</button>
+                </div>
+                <div><h4>예약 정보 <em id="bkEng">콜 탭</em></h4><div id="osBk"></div></div>
+                <div><h4>고객 교차검증 <em id="xcnt">확인 전</em></h4><div id="osX"></div></div>
+                <div><h4>확장 질문 시나리오 <em id="scCnt">—</em></h4><div id="osSc"></div></div>
+                <div><h4>고객이 담은 변호사 <em id="favCnt">0명</em></h4><div id="osFav"></div></div>
+                <div><h4>추천 순위 · 근거 <em id="rkctx"></em></h4>
+                  <div class="tools" style="margin:0 0 10px"><input id="oq" type="text" placeholder="변호사 검색 — 이름 · 분야 · 출신 · 경력" oninput="osSearch()"></div>
+                  <div id="rank"></div></div>
+                <div id="osd"></div>
+              </div>
+              <p class="sub" id="vhint" style="font-size:10px;margin-top:12px">행의 <b>화면 공유</b>를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.</p>
+            </section>
+
+            <!-- 우 : 고객 태블릿 연결 화면 (미러링) -->
+            <section class="rgt">
+              <div class="rtab"><span class="on">고객화면</span><span class="st" id="rst">미연결</span>
+                <button class="unshare sm hidden" id="rUnshare" onclick="unshare()">공유 해제</button></div>
+              <div id="osEmpty" class="oempty">
+                <div class="lg" id="oemptyLogo"></div>
+                <div class="ttl">상담 태블릿을 연결하세요</div>
+                <p class="d">미러링 시 고객 화면 미리보기가 여기에 표시됩니다.</p>
+                <ol>
+                  <li><i>1</i>상담 태블릿 앱에서 이름을 입력해 입장합니다.</li>
+                  <li><i>2</i>아래 목록에서 연결할 태블릿을 선택합니다.</li>
+                  <li><i>3</i>방문 예정 목록에서 고객을 선택합니다.</li>
+                </ol>
+                <p class="w">연결 가능한 태블릿이 없습니다. 상담 태블릿 앱에서 먼저 입장해 주세요.</p>
+              </div>
+              <div id="osMirror" class="mirror hidden">
+                <div class="mfr"><div class="mscale"><div class="mclone" id="mclone"></div></div></div>
+                <div class="mfoot"><span id="mnow">—</span><span class="ml">실시간 미러링 · 보기 전용</span></div>
+              </div>
+
+            </section>
+          </div>
+          <!-- 상담 내용 작성 — YK-OS 「[고객명(역할) - 사건종류] 상담 정보」 모달 -->
+          <div class="wov hidden" id="wov" onclick="if(event.target===this)closeWrite()">
+            <div class="wdlg" role="dialog" aria-label="상담 정보">
+              <div class="wtop">
+                <div><h3 id="wTitle">상담 정보</h3><span class="eng" id="wEng">eng_id —</span></div>
+                <button class="wai">AI 리포트</button>
+                <button class="wx" onclick="closeWrite()" aria-label="닫기">✕</button>
+              </div>
+              <div class="wtabs" id="wtabs"></div>
+              <div class="wbody" id="wbody"></div>
+              <div class="wfoot">
+                <button class="wb">미방문 처리</button>
+                <button class="wb">승인 요청</button>
+                <span style="flex:1"></span>
+                <button class="wb">정보 저장</button>
+                <button class="wb pri">상담 완료</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="data/portraits.js"></script>
+<script src="data/lawyers.js"></script>
+<script src="data/details.js"></script>
+<script src="data/fee.js"></script>
+<script src="data/advisors.js"></script>
+<script src="data/bookings.js"></script>
+<script src="data/scenarios.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

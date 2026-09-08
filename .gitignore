@@ -1,0 +1,17 @@
+.DS_Store
+node_modules/
+package-lock.json
+
+# 빌드 결과물 — app/ 에서 생성된다. 직접 고치지 말 것.
+dist/
+mockups/yk-binder-app.html
+
+# 점검 산출물
+.check/
+
+# 작업 중 임시 파일
+_to_delete/
+*.tgz
+
+# 원본 자료 (용량이 크고 개인정보 포함 가능)
+*.pdf
