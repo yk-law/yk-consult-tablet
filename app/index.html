@@ -6,7 +6,7 @@
 <title>YK 온라인 바인더</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=9">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;500;600&display=swap">
 
 
@@ -153,6 +153,10 @@
           <p class="sub">yklawfirm.co.kr/client-review/all 공개 게시물</p>
           <div class="chips" id="rch"></div><div id="rlist"></div>
         </section>
+
+        <section class="pane" id="s-sign">
+          <div id="signBody"></div>
+        </section>
       </div>
       <nav class="nav" id="nav">
         <button class="on" data-t="home" onclick="goLawyers()">변호사</button>
@@ -182,7 +186,12 @@
             <section class="lft">
               <div class="vhd">
                 <h3>방문 예정 목록</h3>
-                <div class="dnav"><button>‹</button><span>오늘</span><button>›</button></div>
+                <div class="seg2" id="vrange">
+                  <button class="on" data-range="today" onclick="setVisitRange('today')">오늘</button>
+                  <button data-range="tomorrow" onclick="setVisitRange('tomorrow')">내일</button>
+                  <button data-range="week" onclick="setVisitRange('week')">이번주</button>
+                  <button data-range="next" onclick="setVisitRange('next')">다음주</button>
+                </div>
                 <div class="seg2"><button class="on">전체</button><button>형사</button><button>민·가사</button></div>
               </div>
               <div class="vsearch">
@@ -249,6 +258,25 @@
               </div>
             </div>
           </div>
+          <!-- 선임 계약 — YK-OS `/#/app/visit/sign?engId=` -->
+          <div class="wov hidden" id="sov" onclick="if(event.target===this)closeSign()">
+            <div class="wdlg signlg" role="dialog" aria-label="선임 계약">
+              <div class="wtop">
+                <div><h3 id="sTitle">선임 계약</h3><span class="eng" id="sEng">eng_id —</span></div>
+                <button class="wx" onclick="closeSign()" aria-label="닫기">✕</button>
+              </div>
+              <div class="sgrid">
+                <div class="sform" id="sform"></div>
+                <div class="sprev" id="sprev"></div>
+              </div>
+              <div class="wfoot">
+                <button class="wb" onclick="closeSign()">닫기</button>
+                <span style="flex:1"></span>
+                <button class="wb" onclick="saveSignDraft()">저장하기</button>
+                <button class="wb pri" onclick="sendContract()">태블릿으로 보내기</button>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -263,8 +291,9 @@
 <script src="data/details.js"></script>
 <script src="data/fee.js"></script>
 <script src="data/advisors.js"></script>
-<script src="data/bookings.js"></script>
+<script src="data/bookings.js?v=4"></script>
 <script src="data/scenarios.js"></script>
-<script src="app.js"></script>
+<script src="data/contracts.js?v=2"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

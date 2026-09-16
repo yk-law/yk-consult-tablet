@@ -9,10 +9,11 @@ const APP = 'app', OUT = 'dist/yk-binder-app.html';
 let html = await readFile(join(APP, 'index.html'), 'utf8');
 
 const css = await readFile(join(APP, 'styles.css'), 'utf8');
-html = html.replace('<link rel="stylesheet" href="styles.css">', `<style>\n${css}</style>`);
+html = html.replace(/<link rel="stylesheet" href="styles\.css[^"]*">/, `<style>\n${css}</style>`);
 
 for (const m of [...html.matchAll(/<script src="([^"]+)"><\/script>/g)]) {
-  const code = await readFile(join(APP, m[1]), 'utf8');
+  const file = m[1].split('?')[0];
+  const code = await readFile(join(APP, file), 'utf8');
   html = html.replace(m[0], `<script>\n${code}</script>`);
 }
 

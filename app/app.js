@@ -20,6 +20,7 @@ let CTX={field:"K",court:"서울중앙지방법원",label:"민사 손해배상",
 
 let BK=BOOKINGS[0];          // 현재 화면 공유 중인 예약
 let CONNECTED=false;         // 상담실장이 화면 공유를 지정했는가
+let SIGNED={};               // 예약별 전자서명 완료(시연)
 const ROLE_HINT={"사건 당사자":"본인 사건으로 오셨습니다","사건 위임인":"당사자를 대신해 위임하러 오셨습니다",
   "추천인":"다른 분을 소개하러 오셨습니다","기타":"그 밖의 사유로 오셨습니다"};
 
@@ -81,10 +82,10 @@ function nav(s,push=true){
   cur=s;
   document.querySelectorAll(".pane").forEach(p=>p.classList.remove("on"));
   document.getElementById("s-"+s).classList.add("on");
-  document.getElementById("nav").classList.toggle("hide",s==="intro"||s==="brief");
+  document.getElementById("nav").classList.toggle("hide",s==="intro"||s==="brief"||s==="sign");
   document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===s||(b.dataset.t==="home"&&s==="browse")));
   document.getElementById("scr").scrollTop=0;
-  if(s==="fav") renderFav(); if(s==="adv") renderAdv();
+  if(s==="fav") renderFav(); if(s==="adv") renderAdv(); if(s==="sign") renderSignTab();
   watch();}
 function back(){nav(stack.pop()||"home",false);}
 function start(){ if(!CONNECTED) return; nav("brief"); }
@@ -97,9 +98,9 @@ let CONFIRMED=false;
 function confirmBrief(){CONFIRMED=true;nav("home");watch();}
 function skipBrief(){CONFIRMED=false;renderRec();search2();nav("browse");watch();}
 function goLawyers(){nav(CONFIRMED?"home":"browse");}
-function reset(){favs=[];stack=[];CONFIRMED=false;document.getElementById("q").value="";document.getElementById("q2").value="";search2();
+function reset(){favs=[];stack=[];CONFIRMED=false;SIGNED={};closeSign();closeWrite();document.getElementById("q").value="";document.getElementById("q2").value="";search2();
   CONNECTED=false;MV=BK.memo.map(()=>null);
-  applyBooking(BOOKINGS[0],false);renderVisit();nav("intro",false);badge();osFav();}
+  applyBooking(BOOKINGS[0],false);setVisitRange("today");nav("intro",false);badge();osFav();}
 
 /* 상담실장이 목록에서 「화면 공유」를 누르면 그 예약이 태블릿에 연결된다 */
 function share(id){
@@ -124,6 +125,7 @@ function applyBooking(b,connected){
     ? `상담실장이 연결한 상담 · <b>${esc(b.name)}</b> <span class="alias">가명</span> · ${esc(b.cat1)} ${esc(b.cat2)} · ${esc(b.court)}`
     : `상담실장 화면과 아직 연결되지 않았습니다 · 대기 중`;
   document.getElementById("tlk").textContent = connected? "상담실장 화면과 연결됨" : "연결 대기";
+  document.getElementById("tlk").classList.toggle("on", !!connected);
   document.getElementById("rst").textContent = connected? `${b.branch} · ${b.name}(가명) 님` : "미연결";
   document.getElementById("mirBtn").classList.toggle("on",connected);
   document.getElementById("connWho").textContent = connected? `${b.name}(가명) · ${b.branch}` : "—";
@@ -139,24 +141,48 @@ function applyBooking(b,connected){
     osDetail(sorted(L.filter(l=>l.f.includes(CTX.field)))[0]||L[0],false);}
   watch();}
 
-/* 방문 예정 목록 — 고객명 · 사건 유형 · 연락처 검색 (YK-OS 현행 화면과 동일한 카드형) */
+/* 방문 예정 목록 — 고객명 · 사건 유형 · 연락처 검색 (YK-OS 현행 화면과 동일한 카드형)
+   기간 기준일은 시연 시계(2026-09-04)와 맞춘다. 주는 월요일 시작. */
 const ST_CLS={"상담 중":"now","곧 시작":"soon"};
+const YOIL=["일","월","화","수","목","금","토"];
+const DEMO_TODAY="2026-09-04";
+let VRANGE="today";
+function parseYMD(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function fmtYMD(dt){return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;}
+function addDays(s,n){const d=parseYMD(s);d.setDate(d.getDate()+n);return fmtYMD(d);}
+function weekMon(s){const d=parseYMD(s),day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day));return fmtYMD(d);}
+function inVisitRange(date){
+  if(VRANGE==="today") return date===DEMO_TODAY;
+  if(VRANGE==="tomorrow") return date===addDays(DEMO_TODAY,1);
+  const mon=weekMon(DEMO_TODAY);
+  if(VRANGE==="week"){const sun=addDays(mon,6);return date>=mon&&date<=sun;}
+  if(VRANGE==="next"){const nmon=addDays(mon,7),nsun=addDays(nmon,6);return date>=nmon&&date<=nsun;}
+  return true;}
+function visitWhen(b){
+  const dt=parseYMD(b.date), yy=String(dt.getFullYear()).slice(2);
+  const md=`${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  return `<span class="ymd">${yy}-${md}</span><span class="dow">${YOIL[dt.getDay()]}</span><span class="tm">${b.time}</span>`;}
+function setVisitRange(r){
+  VRANGE=r;
+  document.querySelectorAll("#vrange button").forEach(b=>b.classList.toggle("on",b.dataset.range===r));
+  renderVisit();}
 function renderVisit(){
   const q=(document.getElementById("vq").value||"").trim().toLowerCase();
-  const rows=BOOKINGS.filter(b=>!q||[b.name,b.tel,b.cat1,b.cat2].join(" ").toLowerCase().includes(q))
-    .slice().sort((x,y)=>x.time.localeCompare(y.time));
+  const rows=BOOKINGS.filter(b=>inVisitRange(b.date)&&(!q||[b.name,b.tel,b.cat1,b.cat2].join(" ").toLowerCase().includes(q)))
+    .slice().sort((x,y)=>x.date.localeCompare(y.date)||x.time.localeCompare(y.time));
   document.getElementById("vbody").innerHTML = rows.length? rows.map(b=>{
     const on=CONNECTED&&BK.id===b.id;
     return `<div class="vcard ${on?"cur":""}">
-      <span class="vwhen"><span class="dt">26-09-04 ${b.time}</span><span class="st ${ST_CLS[b.st]||""}">${esc(b.st)}</span></span>
+      <span class="vwhen"><span class="dt">${visitWhen(b)}</span><span class="st ${ST_CLS[b.st]||""}">${esc(b.st)}</span></span>
       <span class="vn">${esc(b.name)}</span><span class="alias">가명</span>
       <span class="vt">${esc(b.tel)}</span>
       <span class="vg">${esc(b.cat1)}&gt;${esc(b.cat2)}</span>
-      <button class="vb wr" onclick="openWrite('${b.id}')">상담 내용 작성</button><span class="vb off">선임 계약</span>
+      <button class="vb wr" onclick="openWrite('${b.id}')">상담 내용 작성</button>
+      <button class="vb wr" onclick="openSign('${b.id}')">${SIGNED[b.id]?"서명 완료":"선임 계약"}</button>
       <button class="vb share ${on?"on":""}" onclick="${on?"unshare()":`share('${b.id}')`}"
         title="${on?"누르면 공유를 해제합니다":"이 고객의 태블릿에 연결합니다"}">${on?"공유 중 · 해제":"화면 공유"}</button>
     </div>`;}).join("")
-    : `<p class="sub" style="font-size:11px;padding:20px 2px">검색 결과가 없습니다.</p>`;}
+    : `<p class="sub vempty">${q?"검색 결과가 없습니다.":"이 기간에 방문 예정인 고객이 없습니다."}</p>`;}
 
 /* ── 예약 확인 화면 ─────────────────────────────── */
 let MV=BK.memo.map(()=>null);   // 문장별 확인 결과: true 맞아요 / false 달라요 / null 미확인
@@ -351,7 +377,7 @@ function syncMirror(){
   c.querySelectorAll("video").forEach(n=>n.remove());
   box.innerHTML=""; box.appendChild(c);
   const m={intro:"대기 화면",brief:"예약 정보 확인",home:"추천 변호사",detail:(window.__cd||"")+" 프로필",
-    fav:"관심 변호사",adv:"고문·전문위원·자문위원",case:"업무사례",review:"의뢰인 후기"};
+    fav:"관심 변호사",adv:"고문·전문위원·자문위원",case:"업무사례",review:"의뢰인 후기",sign:"소송위임계약서"};
   document.getElementById("mnow").textContent=m[cur]||"—";}
 
 function watch(){const m={intro:["대기 화면",`${BK.name}(가명) 님 예약 인사 노출 중`],
@@ -359,7 +385,8 @@ function watch(){const m={intro:["대기 화면",`${BK.name}(가명) 님 예약 
   home:["추천 변호사","예약 정보 확인함 · 상위 3명"],
   browse:["둘러보기","예약 정보 확인을 미룸 · 추천은 참고로만"],
   detail:[(window.__cd||"")+" 프로필","고객이 상세를 보는 중"],fav:["관심 변호사",favs.length+"명 담김"],
-  adv:["고문·전문위원·자문위원",""],case:["업무사례",""],review:["의뢰인 후기",""]};
+  adv:["고문·전문위원·자문위원",""],case:["업무사례",""],review:["의뢰인 후기",""],
+  sign:["소송위임계약서","YK-OS에서 보낸 기본서식 · 전자서명"]};
   const [t,d]=m[cur]||["—",""];
   const w=document.getElementById("watch"); if(w)w.innerHTML=`<div><div class="l">지금 이 화면</div><div class="t">${esc(t)}</div><div class="d">${esc(d)}</div></div>`;
   syncMirror();}
@@ -417,7 +444,7 @@ renderCases();renderRev();renderAdv();renderVisit();applyBooking(BOOKINGS[0],fal
 
 /* ── 딥링크 ─────────────────────────────────────────────
    ?c=<예약id|이름>   그 예약으로 화면 공유된 상태로 시작
-   &s=<화면>          intro|brief|home|detail|adv|fav|case|review
+   &s=<화면>          intro|brief|home|detail|adv|fav|case|review|sign
    &d=<변호사이름>    그 변호사 상세를 연 상태
    &v=tab|os|both     좌/우 보기
    예)  ?c=이도현&s=brief&v=both
@@ -450,7 +477,206 @@ function openWrite(id){
   renderWrite();}
 function closeWrite(){document.getElementById("wov").classList.add("hidden");}
 function wgo(i){wtab=i;renderWrite();}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeWrite();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeWrite();closeSign();}});
+
+/* ── 선임 계약 · 소송위임계약서 (YK-OS /#/app/visit/sign) ── */
+let SB=null, CT=null, SIGN_ERR="";
+const SIGN_OPEN={case:true, agr:true, fee:true, org:true};
+function wonPlain(v){return v? Number(v).toLocaleString("ko-KR") : "　　　　";}
+function hasTerm(id){
+  if(!CT) return false;
+  if(id==="delegation"||id==="special") return CT.agreement.includes(id);
+  return CT.fee.includes(id);}
+function togAgr(id){
+  const i=CT.agreement.indexOf(id);
+  if(i>=0) CT.agreement.splice(i,1); else CT.agreement.push(id);
+  renderSignOS();}
+function togFee(id){
+  if(id==="retainer") return;
+  const i=CT.fee.indexOf(id);
+  if(i>=0) CT.fee.splice(i,1); else CT.fee.push(id);
+  renderSignOS();}
+function togAcc(k){SIGN_OPEN[k]=!SIGN_OPEN[k]; renderSignOS();}
+function setTpl(v){CT.template=v; CT.civil=v==="civil"; renderSignOS();}
+function livePaper(){const el=document.getElementById("sprev"); if(el&&CT) el.innerHTML=paperHTML(CT,false);}
+function orgSel(key,cur){
+  return `<select onchange="CT.${key}=this.value;livePaper()">${["",...SIGN_ORGS].map(o=>
+    `<option value="${esc(o)}" ${o===cur?"selected":""}>${o||"선택"}</option>`).join("")}</select>`;}
+function openSign(id){
+  SB=BOOKINGS.find(x=>x.id===id)||BK;
+  CT=contractFor(SB);
+  SIGN_ERR="";
+  if(CONNECTED&&BK.id===SB.id&&favs.length)
+    CT.opinion=`${CT.opinion} 고객 관심 변호사: ${favs.join(" · ")}.`;
+  document.getElementById("sTitle").textContent=`선임 계약`;
+  document.getElementById("sEng").textContent=`eng_id ${SB.id} · ${SB.name}(가명)`;
+  document.getElementById("sov").classList.remove("hidden");
+  renderSignOS();}
+function closeSign(){const el=document.getElementById("sov"); if(el) el.classList.add("hidden");}
+function saveSignDraft(){
+  SIGN_ERR="저장했습니다. 서식 원문은 그대로이고, 왼쪽 값만 반영됩니다.";
+  const n=document.getElementById("sErr"); if(n){n.textContent=SIGN_ERR; n.className="serr ok";}}
+function sendContract(){
+  if(!SB||!CT) return;
+  SIGN_ERR="";
+  if(!CT.org1){SIGN_ERR="최소 1개의 희망 배당 부서를 선택해주세요."; SIGN_OPEN.org=true; renderSignOS(); return;}
+  if(!String(CT.opinion||"").trim()){SIGN_ERR="부서 배당 의견을 입력해주세요."; SIGN_OPEN.org=true; renderSignOS(); return;}
+  closeSign();
+  share(SB.id);
+  nav("sign",false);}
+function ssec(k,label,body){
+  return `<section class="ssec ${SIGN_OPEN[k]?"":"fold"}">
+    <button type="button" class="shd" onclick="togAcc('${k}')">${esc(label)}<i>${SIGN_OPEN[k]?"▾":"▸"}</i></button>
+    <div class="sbd">${body}</div></section>`;}
+function renderSignOS(){
+  if(!CT||!SB) return;
+  const r=CT.retainer, suc=CT.success, tr=CT.travel;
+  const chk=(on,fn,id,label,lock)=>
+    `<button type="button" class="sch ${on?"on":""} ${lock?"lock":""}" onclick="${lock?"":`${fn}('${id}')`}">${esc(label)}</button>`;
+  document.getElementById("sform").innerHTML=`
+    <div class="stpl" role="group" aria-label="사용할 템플릿">
+      <button type="button" class="${CT.template==="criminal"?"on":""}" onclick="setTpl('criminal')">형사</button>
+      <button type="button" class="${CT.template==="civil"?"on":""}" onclick="setTpl('civil')">민·가사</button>
+    </div>
+    ${ssec("case","사건",`
+      <div class="wgrid c2">
+        <div class="wf2"><label>사건번호</label><input value="${esc(CT.caseNo)}" oninput="CT.caseNo=this.value;livePaper()"></div>
+        <div class="wf2"><label>사건명</label><input value="${esc(CT.caseName)}" oninput="CT.caseName=this.value;livePaper()"></div>
+        <div class="wf2"><label>위임인</label><div class="bx fill">${esc(CT.client)} (가명)</div></div>
+        <div class="wf2"><label>상대방</label><input value="${esc(CT.opponent)}" oninput="CT.opponent=this.value;livePaper()"></div>
+        <div class="wf2"><label>관할</label><input value="${esc(CT.jurisdiction)}" oninput="CT.jurisdiction=this.value;livePaper()"></div>
+        <div class="wf2"><label>소송물가액</label><input placeholder="미입력이면 서식에서 비움" value="${esc(CT.litigationAmount)}" oninput="CT.litigationAmount=this.value;livePaper()"></div>
+      </div>`)}
+    ${ssec("agr","약정 조건",`
+      <p class="snote">위임사무·특약사항. 체크한 항목만 서식에 들어갑니다.</p>
+      <div class="schips">${SIGN_AGR.map(t=>chk(hasTerm(t.id),"togAgr",t.id,t.label,false)).join("")}</div>
+      <div class="wf2 full" style="margin-top:10px"><label>위임사무</label>
+        <textarea rows="3" ${hasTerm("delegation")?"":"disabled"} oninput="CT.delegation=this.value;livePaper()">${esc(CT.delegation)}</textarea></div>
+      <div class="wf2 full" style="margin-top:10px"><label>특약사항</label>
+        <textarea rows="3" ${hasTerm("special")?"":"disabled"} oninput="CT.special=this.value;livePaper()">${esc(CT.special)}</textarea></div>`)}
+    ${ssec("fee","보수 조건",`
+      <p class="snote">착수금은 기본 포함. 성공보수·출장비는 필요할 때만 켭니다. 착수금 ${man(r.amount)}은 ${esc(r.feeKey)} 약정금 중앙값(${r.feeN}건) 시연값입니다.</p>
+      <div class="schips">${SIGN_FEE.map(t=>chk(hasTerm(t.id),"togFee",t.id,t.label,t.id==="retainer")).join("")}</div>
+      <div class="wgrid c2" style="margin-top:10px">
+        <div class="wf2"><label>착수금 금액 (원)</label><input inputmode="numeric" value="${r.amount||""}" oninput="CT.retainer.amount=Number(String(this.value).replace(/\\D/g,''))||0;livePaper()"></div>
+        <div class="wf2"><label>착수금 지급시기</label><input value="${esc(r.timing)}" oninput="CT.retainer.timing=this.value;livePaper()"></div>
+        <div class="wf2"><label>분할납부</label><input placeholder="없으면 비움" value="${esc(r.installments)}" oninput="CT.retainer.installments=this.value;livePaper()"></div>
+        <div class="wf2"><label>착수금 부가세</label>
+          <select onchange="CT.retainer.vat=this.value;livePaper()"><option ${r.vat==="별도"?"selected":""}>별도</option><option ${r.vat==="포함"?"selected":""}>포함</option></select></div>
+        <div class="wf2"><label>결제수단</label>
+          <select onchange="CT.retainer.method=this.value;livePaper()">${SIGN_PAY.map(p=>`<option ${p.label===r.method?"selected":""}>${p.label}</option>`).join("")}</select></div>
+      </div>
+      ${hasTerm("success")?`<div class="wgrid c2" style="margin-top:10px">
+        <div class="wf2"><label>성공보수 정액 (원)</label><input placeholder="비율만 쓸 거면 비움" value="${esc(suc.fixed)}" oninput="CT.success.fixed=this.value;livePaper()"></div>
+        <div class="wf2"><label>경제적 이익 비율 (%)</label><input value="${esc(suc.pct)}" oninput="CT.success.pct=this.value;livePaper()"></div>
+        <div class="wf2 full"><label>성공보수 지급시기</label><textarea rows="3" oninput="CT.success.timing=this.value;livePaper()">${esc(suc.timing)}</textarea></div>
+      </div>`:""}
+      ${hasTerm("travel")?`<div class="wgrid c2" style="margin-top:10px">
+        <div class="wf2"><label>출장비 일당 (원)</label><input value="${esc(tr.daily)}" oninput="CT.travel.daily=this.value;livePaper()"></div>
+        <div class="wf2"><label>출장비 예치금 (원)</label><input value="${esc(tr.deposit)}" oninput="CT.travel.deposit=this.value;livePaper()"></div>
+      </div>`:""}`)}
+    ${ssec("org","부서 배당",`
+      <p class="snote">태블릿으로 보내려면 희망 배당 부서 1과 의견이 필요합니다.</p>
+      <div class="wgrid c2">
+        <div class="wf2"><label>희망 배당 부서/지사 1. *</label>${orgSel("org1",CT.org1)}</div>
+        <div class="wf2"><label>희망 배당 부서/지사 2.</label>${orgSel("org2",CT.org2)}</div>
+        <div class="wf2"><label>희망 배당 부서/지사 3.</label>${orgSel("org3",CT.org3)}</div>
+      </div>
+      <div class="wf2 full" style="margin-top:10px"><label>부서 배당 의견 *</label>
+        <textarea rows="3" oninput="CT.opinion=this.value">${esc(CT.opinion)}</textarea></div>`)}
+    <p class="serr ${/저장/.test(SIGN_ERR)?"ok":""}" id="sErr">${esc(SIGN_ERR)}</p>`;
+  livePaper();}
+function renderSignTab(){
+  const ct=CT&&SB&&SB.id===BK.id?CT:contractFor(BK);
+  CT=ct; SB=BK;
+  document.getElementById("signBody").innerHTML=SIGNED[BK.id]
+    ? `<div class="signdone"><span class="lbl">전자서명</span><h2 class="h1">서명이 완료되었습니다</h2>
+        <p class="sub">상담실장이 모두싸인 문서를 확인합니다. 이 화면의 이름은 가명입니다.</p>
+        <button class="bgo" onclick="nav('fav')">관심 변호사로 돌아가기</button></div>`
+    : paperHTML(ct,true);}
+function signNow(){SIGNED[BK.id]=true; renderVisit(); renderSignTab(); watch();}
+function paperHTML(ct,tab){
+  const F=FIRM, ret=hasTerm("retainer"), suc=hasTerm("success"), trv=hasTerm("travel");
+  const del=hasTerm("delegation"), sp=hasTerm("special");
+  const amt=ret?wonPlain(ct.retainer.amount):"　　　　";
+  const vat=ret?esc(ct.retainer.vat):"　　";
+  const inst=ret&&ct.retainer.installments?`<div class="cl">분할납부: ${esc(ct.retainer.installments)}</div>`:"";
+  const sucAmt=suc&&ct.success.fixed?wonPlain(ct.success.fixed):"　　　　";
+  const pct=suc?esc(ct.success.pct):"　";
+  const daily=trv&&ct.travel.daily?wonPlain(ct.travel.daily):"　　　";
+  const dep=trv&&ct.travel.deposit?wonPlain(ct.travel.deposit):"　　　";
+  const payRows=[
+    ret?`<tr><th>착수금</th><td>${esc(ct.retainer.timing)}</td><td>금 ${amt} 원 (부가세 ${vat})<br>결제 ${esc(ct.retainer.method)}</td></tr>`:"",
+    suc?`<tr><th>성공보수</th><td>${esc(ct.success.timing).replace(/\n/g,"<br>")}</td><td>경제적 이익의 ${pct}%</td></tr>`:"",
+    trv?`<tr><th>출장비</th><td>출장시</td><td>일당 ${daily} 원 · 예치 ${dep} 원</td></tr>`:"",
+    del?`<tr><th>위임사무</th><td colspan="2" class="left">${esc(ct.delegation)}</td></tr>`:"",
+    sp&&ct.special?`<tr><th>특약사항</th><td colspan="2" class="left">${esc(ct.special)}</td></tr>`:""
+  ].filter(Boolean).join("");
+  const auth=SIGN_AUTH.map(a=>`<tr><th>${esc(a.label)}</th><td class="left">${esc(a.d)}</td><td>O</td></tr>`).join("");
+  const ranks=SIGN_RANK.map(x=>`<tr><td>${x.r}</td><td>${esc(x.t)}</td><td>${x.f}</td></tr>`).join("");
+  return `${tab?`<span class="lbl">위임계약</span><h2 class="h1">소송위임계약서</h2>
+    <p class="sub">상담실장이 보낸 기본서식입니다. 내용 확인 후 아래에 서명해 주세요.<br>표시된 이름은 가명입니다. 주민번호·실주소는 비워 두었습니다.</p>`:""}
+  <article class="paper">
+    <header class="phd"><div class="fn">${esc(F.spaced)}</div>
+      <div class="meta"><span>전화 ${esc(F.tel)}</span><span>${esc(F.addr)}</span><span>팩스 ${esc(F.fax)}</span></div>
+      <h1>소송위임계약서</h1></header>
+    <p class="party">위임인(갑) <b>${esc(ct.client)}</b> <i>가명</i><br>수임인(을) <b>${esc(F.name)}</b></p>
+    <p>위 당사자들은 아래 소송사건의 처리에 관한 위임계약을 다음과 같이 체결한다.</p>
+    <h3>사　　건</h3>
+    <table class="pt"><tr><th>사건번호</th><td>${esc(ct.caseNo)}</td><th>사건명</th><td>${esc(ct.caseName)}</td></tr>
+      <tr><th>의뢰인</th><td>${esc(ct.client)}</td><th>상대방</th><td>${esc(ct.opponent)}</td></tr>
+      <tr><th>관할</th><td>${esc(ct.jurisdiction)}</td><th>소송물가액</th><td>${esc(ct.litigationAmount)}</td></tr></table>
+    ${payRows?`<table class="pt"><tr><th>구분</th><th>지급시기</th><th>금액</th></tr>${payRows}</table>`:""}
+    <p class="center">기타 계약의 내용은 별첨과 같다.</p>
+    <p class="date">2026.  9.  4.</p>
+    <div class="signers"><div>
+      <div class="who">(갑) 위임인</div>
+      <div>성명 : ${esc(ct.client)} (인)${SIGNED[ct.engId]?` <em class="ok">서명완료</em>`:""}</div>
+      <div>주민번호 : </div>
+      <div>연락처 : ${esc(ct.phone)}</div>
+      <div>이메일 : </div>
+      <div>주소 : </div>
+    </div><div>
+      <div class="who">(을) 수임인</div>
+      <div>${esc(F.addr2)}</div>
+      <div><b>${esc(F.name)}</b></div>
+      <div>${esc(F.reps)}</div>
+      <div>${esc(F.svc)}</div>
+    </div></div>
+    <p class="pg">- 1 -</p>
+  </article>
+  <article class="paper">
+    <h3>아　　래</h3>
+    <p><b>제1조 【목적】</b> 갑은 을에게 위 표시 사건의 처리(이하 “위임사무”라 한다)를 위임하고, 을은 이를 수임한다.</p>
+    <p><b>제2조 【위임한계】</b> 갑이 을에게 위임하는 위임사무는 당해 심급에 한하고, 파기 환송된 사건이나 상소의 제기, 강제집행, 강제집행정지, 보전처분, 반소절차 등 부수적 절차에 관한 사항은 따로 정한다. 보전처분사건의 경우 이의사건 또는 취소사건은 별개의 위임사무로 한다.</p>
+    <p><b>제3조 【수권범위】</b> ① 갑은 을에게 위 위임장 또는 선임서에 기재된 아래 특별수권사항에 대하여 특별수권을 부여하기로 한다.</p>
+    <table class="pt sm">${auth}</table>
+    <p><b>제4조 【수임인의 의무】</b> 을은 변호사로서 법령에 정한 권리와 의무에 입각하여, 위임의 내용에 따라 선량한 관리자의 주의를 다하여 위임사무를 처리한다.</p>
+    <p><b>제5조 【자료제공 등】</b> 을이 위임사무를 처리하는데 필요하다고 인정하여 요구한 자료 또는 조회한 사항에 대하여 갑은 지체 없이 이에 응하여야 한다.</p>
+    <p><b>제6조 【착수보수】</b> 갑은 을에게 위임계약의 성립과 동시에 착수보수로 금 <u>${amt}</u> 원(부가가치세 ${vat})을 지급한다 [입금계좌: ${esc(F.bank)}].</p>
+    ${inst}
+    <p><b>제7조 【성과보수】</b> ① 성과보수: 위임사무가 판결, 재판상 내지 재판외 화해(화해권고결정 포함), 조정(조정에 갈음한 결정 포함) 등으로 성공한 때에는 아래 구분에 의하여 성과보수를 지급하기로 한다.</p>
+    <p class="ind">가. 전부 승소한 경우: 금 <u>${sucAmt}</u> 원(부가가치세 ${suc?esc(ct.success.vat):"　　"})<br>
+    일부 승소한 경우: 위 금액을 승소비율로 계산한 금액<br>
+    나. 승소로 얻은 경제적 이익가액의 <u>${pct}</u> %에 해당하는 금액<br>
+    다. 상소심의 경우 달리 정함이 없는 한 상소심의 심판의 대상 전부를 기준으로 하여 승소 비율을 정한다.<br>
+    라. ‘승소로 얻은 경제적 이익’이 금액일 경우 판결원리금을 기준으로 성공보수를 산정한다.</p>
+    <p class="pg">- 2 -</p>
+  </article>
+  <article class="paper">
+    <p>② 승소로 보는 경우: 아래의 경우는 승소로 보고 전항에 정한 성과보수를 지급하여야 한다.</p>
+    <p class="ind">가. 을이 위임사무 처리를 위하여 상당한 노력을 투입한 후 갑이 임의로 청구 포기 또는 인낙, 소의 취하, 상소의 취하를 한 경우<br>
+    나. 을의 소송수행 결과로 인하여 상대방이 청구 포기 또는 인낙, 소의 취하, 상소의 취하를 한 경우</p>
+    <p><b>제8조 【비용부담】</b> ① 을이 위임사무를 처리하는데 필요한 인지대, 송달료, 감정료, 예납금, 보증금, 등사료, 국제전화료, 여비, 출장비, 보증보험료, 담보공탁금, 기타 필요한 실비는 보수와는 별도로 그 전액을 갑이 부담한다.</p>
+    <p>② 출장 일당으로 1일 금 <u>${daily}</u> 원을 출장으로 인한 여비와 별도로 출장시 지급한다.</p>
+    <p>③ 갑은 비용에 충당하기 위하여 금 <u>${dep}</u> 원을 예치한다. ④ 제3항의 예치금에서 비용과 출장 일당을 충당할 수 있다.</p>
+    <p><b>제9조 【계약해지】</b> ① 을은 갑이 정당한 사유 없이 채무를 이행하지 않거나, 위임 관련 진술이 허위이거나, 정당한 사유 없이 비협조하여 위임업무가 불가능한 경우 계약을 해지할 수 있다. 해지 시 수행비용은 제10조에 따른다.</p>
+    <p><b>제10조 【수행비용】</b> ① 착수금 반환 시 공제를 위한 수행비용은 아래와 같이 산정한다. 가. 변호사 보수: 직급별 변호사 보수(실제로 참여한 인원별). 나. 시간은 30분 단위 올림. 다. 법률문서는 1장당 30분.</p>
+    <table class="pt sm nar"><tr><th>순번</th><th>직급</th><th>변호사보수(단위: 만원)</th></tr>${ranks}</table>
+    <p class="fine">② 을의 수행비용은 약정 착수금을 한도로 산정한다.</p>
+    <p class="pg">- 3 -</p>
+  </article>
+  ${tab?`<button class="bgo" onclick="signNow()">내용 확인 · 전자서명</button>`:""}`;}
 
 const wf=(label,val,cls="",hint="")=>
   `<div class="wf2 ${cls.includes("full")?"full":""}"><label>${esc(label)}</label>
