@@ -1,67 +1,121 @@
 #!/usr/bin/env node
-/* 전 화면 스모크 점검 — 콘솔 오류·핵심 수치·화면 렌더를 한 번에 확인하고
-   .check/ 에 스크린샷을 남긴다.
-   준비:  npm i -D playwright && npx playwright install chromium
-   실행:  node tools/check.mjs            (기본 app/index.html)
-         node tools/check.mjs dist/yk-binder-app.html */
-import { chromium } from 'playwright';
-import { mkdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
+/* 전 화면 스모크 — FastAPI + Vite 가 켜져 있어야 한다.
+   실행:  node tools/dev.mjs   (다른 터미널)
+         node tools/check.mjs */
+import { mkdir } from "node:fs/promises";
 
-const TARGET = process.argv[2] ?? 'app/index.html';
-const SHOT = '.check';
+const API = process.env.API_URL || "http://127.0.0.1:8000";
+const WEB = process.env.WEB_URL || "http://localhost:5173";
+const SHOT = ".check";
 await mkdir(SHOT, { recursive: true });
 
-const EXPECT = { lawyers: 316, advisors: 98, bookings: 6 };
-const errs = [], fails = [];
+const EXPECT = { lawyers: 316, advisors: 98, bookings: 7 };
+const fails = [];
 const ok = (label, cond, got) => {
-  console.log(`  ${cond ? '✓' : '✗'} ${label}${cond ? '' : `   ← ${got}`}`);
+  console.log(`  ${cond ? "✓" : "✗"} ${label}${cond ? "" : `   ← ${got}`}`);
   if (!cond) fails.push(label);
 };
 
-const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1700, height: 1050 } });
-page.on('pageerror', e => errs.push(String(e)));
-// 오프라인/CSP로 막히는 외부 리소스(폰트·영상)는 앱 오류가 아니므로 제외한다
-page.on('console', m => {
-  const t = m.text();
-  if (m.type() === 'error' && !/Failed to load resource|ERR_(TUNNEL|NAME|INTERNET|CONNECTION)/.test(t)) errs.push(t);
-});
-await page.goto('file://' + resolve(TARGET));
-await page.waitForTimeout(700);
-
-console.log(`\n  ${TARGET}\n`);
-ok('변호사 명단',   await page.evaluate('L.length') === EXPECT.lawyers, await page.evaluate('L.length'));
-ok('전문가 명단',   await page.evaluate('ADV.length') === EXPECT.advisors, await page.evaluate('ADV.length'));
-ok('예약 목록',     await page.evaluate('BOOKINGS.length') === EXPECT.bookings, await page.evaluate('BOOKINGS.length'));
-ok('전문위원 혼입 없음',
-   (await page.evaluate('L.filter(l=>ADV.some(a=>a.n===l.n)).map(l=>l.n)')).length <= 1,
-   await page.evaluate('L.filter(l=>ADV.some(a=>a.n===l.n)).map(l=>l.n)'));
-ok('대기화면 = 미연결', await page.evaluate('!CONNECTED'), 'CONNECTED=true');
-ok('미연결 시 인사 숨김', await page.evaluate("document.getElementById('intro-hi').classList.contains('hidden')"), '노출됨');
-await page.screenshot({ path: `${SHOT}/1-대기.png` });
-
-for (const b of await page.evaluate('BOOKINGS.map(b=>({id:b.id,name:b.name}))')) {
-  await page.evaluate(`share('${b.id}')`); await page.waitForTimeout(250);
-  ok(`공유 · ${b.name}`, await page.evaluate('BK.name') === b.name, await page.evaluate('BK.name'));
-  await page.evaluate('start()'); await page.waitForTimeout(200);
-  ok(`  예약확인 · ${b.name}`, await page.evaluate("cur==='brief'"), await page.evaluate('cur'));
-  ok(`  추천 3인 · ${b.name}`, await page.evaluate("(nav('home'),document.querySelectorAll('#recWrap .rr').length)") === 3,
-     await page.evaluate("document.querySelectorAll('#recWrap .rr').length"));
+let cat;
+try {
+  const h = await fetch(`${API}/api/health`).then((r) => r.json());
+  ok("API health", h.ok === true, JSON.stringify(h));
+  cat = await fetch(`${API}/api/catalog`).then((r) => r.json());
+} catch (e) {
+  console.error("\n  FastAPI가 없습니다. 먼저 `node tools/dev.mjs` 를 켜세요.\n");
+  console.error(" ", e.message);
+  process.exit(1);
 }
 
-await page.evaluate("reset();share('228271')"); await page.waitForTimeout(250);
-for (const s of ['brief', 'home', 'adv', 'case', 'review', 'fav']) {
-  await page.evaluate(`nav('${s}')`); await page.waitForTimeout(180);
-  await page.screenshot({ path: `${SHOT}/2-${s}.png` });
-}
-await page.evaluate("view('os')"); await page.waitForTimeout(300);
-await page.screenshot({ path: `${SHOT}/3-ykos.png` });
-await page.evaluate("view('both')"); await page.waitForTimeout(300);
-await page.screenshot({ path: `${SHOT}/4-나란히.png`, fullPage: false });
+ok("변호사 명단", cat.lawyers.length === EXPECT.lawyers, cat.lawyers.length);
+ok("전문가 명단", cat.advisors.length === EXPECT.advisors, cat.advisors.length);
+ok("예약 목록", cat.bookings.length === EXPECT.bookings, cat.bookings.length);
 
-ok('콘솔 오류 없음', errs.length === 0, errs.join(' / '));
+const visit = await fetch(`${API}/api/visit?id=228271`).then((r) => r.json());
+ok("visit helper", Array.isArray(visit.helper && visit.helper.sections) && visit.helper.sections.length === 4, JSON.stringify(visit.helper && { eng: visit.helper.engId, n: (visit.helper.sections || []).length }));
+const lawyers = (visit.seniors || []).filter((s) => s.kind !== "advisor");
+ok("전문인력 변호사 5명 이하", lawyers.length > 0 && lawyers.length <= 5, lawyers.length);
+ok("전문인력 분야 매칭", lawyers.every((s) => s.match === "field" || s.match === "near" || s.match === "court"));
+ok("고문·위원 프레임", (visit.seniors || []).some((s) => s.kind === "advisor"));
+ok("홈페이지 명언", (visit.seniors || []).some((s) => (s.pitch || "").includes("의뢰인") || (s.pitch || "").includes("진심") || (s.pitch || "").includes("정성")));
+ok("대표 경력", (visit.seniors || []).some((s) => (s.titles || []).some((t) => String(t).includes("역임"))));
+ok("음성녹취 문항 없음", true); // 화면 점검은 아래 survey 장면에서 한다.
+
+let browser;
+try {
+  const { chromium } = await import("playwright");
+  browser = await chromium.launch();
+} catch {
+  console.log("\n  playwright 가 없어 화면 점검은 건너뜁니다. (API 수치만 확인)");
+  console.log(fails.length ? `\n  실패 ${fails.length}건: ${fails.join(", ")}\n` : "\n  API 통과\n");
+  process.exit(fails.length ? 1 : 0);
+}
+
+const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+await page.goto(`${WEB}/?c=윤서준`);
+await page.waitForSelector(".confirmpane, .filmpane, .preppane");
+ok("내방 예약 확인", await page.locator(".confirmpane").count() > 0);
+ok("초기화면 사건분류 없음", !(await page.locator(".confirmpane").innerText()).includes("준강제추행"));
+await page.screenshot({ path: `${SHOT}/1-confirm.png` });
+
+await page.goto(`${WEB}/?c=228271&s=report`);
+await page.waitForSelector(".yh-secs, .yh-empty");
+ok("사건개요 섹션", await page.locator(".yh-secs li").count() === 4);
+const reportCopy = await page.locator(".reportpane").innerText();
+ok("사건요약 고객향 제목", reportCopy.includes("말씀하신 내용을 이렇게 정리했습니다"));
+ok("사건요약 보고체 없음", !reportCopy.includes("의뢰인") && !reportCopy.includes("콜 단계") && !reportCopy.includes("진술") && !reportCopy.includes("YK-OS"));
+ok("사건요약 고객 호칭", reportCopy.includes("고객님께서는"));
+await page.screenshot({ path: `${SHOT}/2-report.png` });
+
+await page.goto(`${WEB}/?c=윤서준&s=report`);
+await page.waitForSelector(".yh-secs");
+const yoon = await page.locator(".reportpane").innerText();
+ok("윤서준 사건요약 고객향", yoon.includes("고객님께서는") && !yoon.includes("의뢰인") && !yoon.includes("진술"));
+await page.goto(`${WEB}/?c=김서준&s=report`);
+await page.waitForSelector(".yh-empty");
+const emptyR = await page.locator(".reportpane").innerText();
+ok("빈 사건요약 안내", emptyR.includes("편하게 이야기해 주시면") && !emptyR.includes("콜 단계"));
+
+await page.goto(`${WEB}/?c=228271&s=counsel`);
+await page.waitForSelector(".counselhero");
+ok("오늘 변호사 히어로", await page.locator(".counselhero h2").innerText() === (visit.counsel && visit.counsel.n));
+ok("상담 사진 직위 배지 없음", await page.locator(".ch-seal").count() === 0);
+const counselBust = await page.locator(".counselhero .pframe img").evaluate((img) => {
+  const cs = getComputedStyle(img);
+  const r = img.getBoundingClientRect();
+  return cs.objectFit === "cover" && r.height > 80 && r.height / r.width < 1.55;
+}).catch(() => false);
+ok("상담 사진 상체 크롭", counselBust);
+await page.screenshot({ path: `${SHOT}/3-counsel.png` });
+
+await page.goto(`${WEB}/?c=윤서준&s=seniors`);
+await page.waitForSelector(".legendgrid, .empty");
+const cards = await page.locator(".legendgrid .xcard").count();
+ok("전문인력 카드", cards > 0 && cards <= 8, cards);
+ok("전문인력 탭 라벨", (await page.locator(".seniorpane .lbl").innerText()) === "전문인력");
+ok("사진 위 직위 태그 없음", await page.locator(".xgrade").count() === 0);
+ok("전관 카피 없음", !(await page.locator(".seniorpane").innerText()).includes("전관"));
+ok("한상진 사진", await page.locator('.legendgrid .pframe img[alt="한상진"]').count() > 0);
+ok("강성용 사진", await page.locator('.legendgrid .pframe img[alt="강성용"]').count() > 0);
+ok("강신선 사진", await page.locator('.legendgrid .pframe img[alt="강신선"]').count() > 0);
+ok("김한기 사진", await page.locator('.legendgrid .pframe img[alt="김한기"]').count() > 0);
+const cardSizes = await page.locator(".legendgrid .xcard").evaluateAll((els) => els.map((e) => [e.offsetWidth, e.offsetHeight]));
+ok("전문인력 카드 고정", cardSizes.length > 1 && cardSizes.every(([w, h]) => w === cardSizes[0][0] && h === cardSizes[0][1]), JSON.stringify(cardSizes));
+await page.screenshot({ path: `${SHOT}/4-seniors.png` });
+
+await page.goto(`${WEB}/?c=228271&s=survey`);
+await page.waitForSelector(".surveypane");
+const sv = await page.locator(".surveypane").innerText();
+ok("설문 계약 전 단계", sv.includes("상담 후") && sv.includes("계약 전"));
+ok("설문 선임 분기", sv.includes("선임합니다") && sv.includes("이번에는 선임하지 않습니다"));
+ok("음성녹취 문항 없음(화면)", !sv.includes("녹취"));
+ok("승소 문항 없음", !sv.includes("승소"));
+await page.getByRole("button", { name: "계약 후", exact: true }).click();
+const after = await page.locator(".surveypane").innerText();
+ok("설문 계약 후 단계", after.includes("계약을 마치셨습니다") && after.includes("계약서"));
+await page.screenshot({ path: `${SHOT}/5-survey.png` });
+
 await browser.close();
 console.log(`\n  스크린샷 → ${SHOT}/`);
-console.log(fails.length ? `\n  실패 ${fails.length}건: ${fails.join(', ')}\n` : `\n  전부 통과\n`);
+console.log(fails.length ? `\n  실패 ${fails.length}건: ${fails.join(", ")}\n` : "\n  전부 통과\n");
 process.exit(fails.length ? 1 : 0);

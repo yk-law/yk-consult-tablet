@@ -1,54 +1,33 @@
 #!/usr/bin/env node
-/* 라이브 리로드 개발 서버 — 외부 의존성 0.
-   실행:  node tools/dev.mjs        →  http://localhost:5173
-   app/ 아래 파일을 저장하면 브라우저가 스스로 새로고침한다. */
-import http from 'node:http';
-import { readFile, watch, stat } from 'node:fs/promises';
-import { join, extname, resolve } from 'node:path';
+/* FastAPI(8000) + Vite(5173). 실행: node tools/dev.mjs */
+import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(process.argv[2] ?? 'app');
-const PORT = Number(process.env.PORT ?? 5173);
-const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
-  '.css':'text/css; charset=utf-8', '.json':'application/json; charset=utf-8',
-  '.svg':'image/svg+xml', '.png':'image/png', '.jpg':'image/jpeg', '.webp':'image/webp' };
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const NODE = "/tmp/node-v22.14.0-darwin-arm64/bin";
+const env = { ...process.env };
+if (existsSync(NODE)) env.PATH = `${NODE}:${env.PATH || ""}`;
 
-const clients = new Set();
-const RELOAD = `<script>
-(()=>{const s=new EventSource('/__reload');
- s.onmessage=e=>{if(e.data==='reload')location.reload();};
- s.onerror=()=>setTimeout(()=>location.reload(),1200);})();
-</script>`;
+const kids = [];
+function run(cmd, args, cwd) {
+  const p = spawn(cmd, args, { cwd, env, stdio: "inherit" });
+  kids.push(p);
+  return p;
+}
+function stop() {
+  for (const p of kids) p.kill();
+  process.exit(0);
+}
+process.on("SIGINT", stop);
+process.on("SIGTERM", stop);
 
-http.createServer(async (req, res) => {
-  const url = req.url.split('?')[0];
-  if (url === '/__reload') {
-    res.writeHead(200, {'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'});
-    res.write('retry: 500\n\n'); clients.add(res); req.on('close',()=>clients.delete(res)); return;
-  }
-  const file = join(ROOT, url === '/' ? 'index.html' : decodeURIComponent(url));
-  if (!file.startsWith(ROOT)) { res.writeHead(403).end('forbidden'); return; }
-  try {
-    await stat(file);
-    let body = await readFile(file);
-    const ext = extname(file);
-    if (ext === '.html') body = Buffer.from(body.toString('utf8').replace('</body>', RELOAD + '\n</body>'));
-    res.writeHead(200, {'Content-Type': MIME[ext] ?? 'application/octet-stream', 'Cache-Control':'no-store'});
-    res.end(body);
-  } catch { res.writeHead(404).end('not found'); }
-}).listen(PORT, () => {
-  console.log(`\n  YK 온라인 바인더 — 개발 서버`);
-  console.log(`  http://localhost:${PORT}`);
-  console.log(`  ${ROOT} 를 지켜보는 중. 저장하면 브라우저가 새로고침됩니다.\n`);
-});
+console.log("\n  YK 온라인 바인더 — React + FastAPI");
+console.log("  API  http://127.0.0.1:8000");
+console.log("  WEB  http://localhost:5173\n");
 
-let t;
-(async () => {
-  for await (const ev of watch(ROOT, { recursive: true })) {
-    if (!/\.(html|css|js)$/.test(ev.filename ?? '')) continue;
-    clearTimeout(t);
-    t = setTimeout(() => {
-      console.log(`  ↻ ${ev.filename}`);
-      for (const c of clients) c.write('data: reload\n\n');
-    }, 60);
-  }
-})();
+const api = run("python3", ["-m", "uvicorn", "server.main:app", "--reload", "--port", "8000"], ROOT);
+const web = run("npm", ["run", "dev"], resolve(ROOT, "app"));
+api.on("exit", (c) => { web.kill(); process.exit(c ?? 0); });
+web.on("exit", (c) => { api.kill(); process.exit(c ?? 0); });

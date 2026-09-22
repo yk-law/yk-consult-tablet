@@ -1,4 +1,4 @@
-# 로컬 개발 — 저장하면 바로 반영
+# 로컬 개발 — React + FastAPI
 
 수정 → 확인 사이클에서 게시·다운로드·새로고침을 없애기 위한 구조입니다.
 
@@ -21,40 +21,32 @@ Finder에서 **`개발서버 시작.command`** 더블클릭.
 ### 3. 터미널 앱
 ```bash
 cd ~/Downloads/YK_상담태블릿
+python3 -m pip install -r server/requirements.txt   # 최초 1회
+cd app && npm install && cd ..                      # 최초 1회
 node tools/dev.mjs
 ```
 
-어느 쪽이든 켜두면, `app/` 아래 파일을 저장할 때마다 **브라우저가 스스로 새로고침**합니다.
-게시도, 다운로드도 없습니다. (의존성 0, Node 18 이상)
+- API: http://127.0.0.1:8000
+- 화면: http://localhost:5173  (`/api` 는 Vite가 FastAPI로 프록시)
 
-## Node.js가 없다면
-
-터미널에서 `node --version` 을 쳤을 때 버전이 안 나오면 설치가 필요합니다.
-https://nodejs.org 에서 **LTS** 버전을 받아 설치하면 됩니다.
-
-**설치 없이 당장 보고 싶다면** `app/index.html` 을 더블클릭하세요.
-자동 새로고침만 안 되고 나머지는 전부 똑같습니다. 수정한 뒤 브라우저에서 **Cmd + R** 을 누르면 됩니다.
-딥링크도 그대로 동작합니다.
+`app/src/` 를 저장하면 Vite가 즉시 반영합니다. `server/` 를 저장하면 uvicorn이 다시 뜹니다.
 
 ## 어디를 고치면 되나
 
-| 고치고 싶은 것 | 파일 | 크기 |
-|---|---|---|
-| **예약자·사건·콜 메모** (시연 내용 대부분) | `app/data/bookings.js` | 3 KB |
-| 화면 구조·문구 | `app/index.html` | 17 KB |
-| 디자인 | `app/styles.css` | 27 KB |
-| 동작·추천 로직 | `app/app.js` | 28 KB |
-| 변호사 명단 | `app/data/lawyers.js` | 5 KB |
-| 고문·전문위원·자문위원 | `app/data/advisors.js` | 5 KB |
-| 상세 프로필 14인 | `app/data/details.js` | 12 KB |
-| 약정금 분포 | `app/data/fee.js` | 1 KB |
-| 인물 사진 13장 | `app/data/portraits.js` | 189 KB — **건드릴 일 없음** |
+| 고치고 싶은 것 | 파일 |
+|---|---|
+| **예약자·사건·콜 메모** | `server/data/bookings.json` |
+| 고객 태블릿 | `app/src/Tablet.jsx` |
+| 상담실장 YK-OS | `app/src/YKOS.jsx` |
+| 디자인 | `app/src/styles.css` |
+| 추천 점수 · 계약 초안 | `server/catalog.py` |
+| 세션 API | `server/main.py` |
+| 확장 질문 | `server/data/scenarios.json` |
+| 약정금 분포 | `server/data/fee.json` |
 
-이전에는 이 전부가 283KB 한 파일이었습니다. 사진이 67%를 차지하는데 매번 같이 다시 쓰였습니다.
+예전 vanilla HTML/JS는 `vanilla/` 에 비교용으로만 남아 있습니다. `목업 열기.command` 는 그 파일을 엽니다.
 
 ## 딥링크 — 고칠 화면으로 바로 들어가기
-
-매번 처음부터 클릭하지 않아도 됩니다.
 
 ```
 ?c=<예약id 또는 이름>   그 예약으로 화면 공유된 상태
@@ -71,32 +63,24 @@ http://localhost:5173/?v=os                  ← 미연결 상태 YK-OS
 
 ## 점검
 
+서버가 켜진 상태에서:
+
 ```bash
-npm i -D playwright && npx playwright install chromium   # 최초 1회
 node tools/check.mjs
 ```
 
-전 화면을 돌면서 **변호사 316 / 전문가 98 / 예약 4건**, 전문위원 혼입 여부, 미연결 기본값,
-예약별 추천 3인, 콘솔 오류를 확인하고 `.check/` 에 스크린샷을 남깁니다.
+카탈로그 수치(변호사 316 / 전문가 98 / 예약 6건), 미연결 기본값, 공유 후 추천 3인, 콘솔 오류를 확인하고 `.check/` 에 스크린샷을 남깁니다.
 
-## 공유용 단일 파일 만들기
-
-```bash
-node tools/build.mjs      # → dist/yk-binder-app.html
-```
-
-`app/` 을 한 파일로 합칩니다. 아티팩트 게시, 팀 공유, 태블릿 반입은 이 파일로 합니다.
-`mockups/yk-binder-app.html` 도 같은 내용입니다.
-
-## 다시 쪼개야 할 때
-
-단일 파일만 있고 `app/` 을 다시 만들어야 하면:
+## 프론트 빌드
 
 ```bash
-python3 tools/split.py mockups/yk-binder-app.html app
+cd app && npm run build      # → app/dist
 ```
+
+FastAPI는 `app/dist` 가 있으면 8000 포트에서 SPA도 같이 서빙합니다. 개발 중에는 Vite(5173)를 쓰는 편이 낫습니다.
 
 ## 주의
 
-- **`app/` 이 원본입니다.** `dist/` 와 `mockups/` 는 빌드 결과물이라 직접 고치면 다음 빌드에 덮어써집니다.
-- 브랜드 영상은 `yklawfirm.co.kr` 을 직접 참조합니다. 로컬·태블릿에서는 재생되지만 **아티팩트에서는 CSP로 차단**됩니다. 로고는 SVG를 파일에 넣어 어디서나 나옵니다.
+- **원본은 `app/src/` 와 `server/` 입니다.** `app/dist/` · `dist/` · `mockups/` 는 빌드 결과물입니다.
+- 세션은 서버 메모리 한 건입니다. uvicorn을 재시작하면 공유 상태가 풀립니다.
+- 브랜드 영상은 `yklawfirm.co.kr` 을 직접 참조합니다. 로컬·태블릿에서는 재생되지만 망분리 환경에서는 영상만 빠집니다.

@@ -9,8 +9,14 @@ mockups/yk-binder-app.html
 # 점검 산출물
 .check/
 
+# React 빌드
+app/dist/
+app/node_modules/
+app/public/snapshot/
+
 # 작업 중 임시 파일
 _to_delete/
+.tmp-portraits/
 *.tgz
 
 # 원본 자료 (용량이 크고 개인정보 포함 가능)

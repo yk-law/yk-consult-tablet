@@ -11,8 +11,8 @@
 ## 절대 어기면 안 되는 전제
 1. **기기는 두 대다.** 상담 태블릿(고객용) ≠ YK-OS(상담실장 데스크탑). 한 화면의 모드 전환이 아니다.
 2. **태블릿에는 로그인이 없다.** 상담실장이 YK-OS 방문 예정 목록에서 「화면 공유」를 눌러야 그 상담실 태블릿에 세션이 붙는다. 누르기 전 태블릿은 브랜드 영상만 재생한다.
-3. **태블릿은 고객향 전용.** 상담 스케줄 관리·상담 기록 작성은 태블릿에 두지 않는다. 전자서명은 태블릿에 남는다.
-4. **EMPLOYEE SIDE = YK-OS 좌측 메뉴의 「상담 태블릿」 메뉴.** 별도 시스템이 아니다. 화면은 **좌/우 분할**이며 **좌 = 상담실장, 우 = 고객 태블릿 미러링**이다.
+3. **태블릿은 고객향 View.** 담당 변호사 선택·사실 맞아요/달라요·상담 기록 작성·스케줄 관리를 태블릿에 두지 않는다. 전자서명은 실서비스 범위이나 이번 시연 장면에는 넣지 않는다.
+4. **시연 목업은 고객 태블릿 View만 그린다 (2026-09-17).** YK-OS 좌/우 미러링·화면 공유 조작 UI를 이 앱에 두지 않는다. 상담실장이 태블릿을 컨트롤하는 전제를 다시 쓰지 말 것.
 5. **승패소율을 만들지 말 것.** YK-OS 종결 유형이 형사 중심 코드체계라 민사·가사 결과를 표현하지 못한다.
 6. **실제 의뢰인 개인정보(이름·전화번호)를 목업·문서·커밋에 넣지 말 것.** 목업의 이름은 전부 가명.
 7. **처분권자 접점은 YK-OS에서만 보인다.** 고객 화면에는 "○○법원 근무 이력" 같은 사실 서술만.
@@ -20,36 +20,38 @@
 
 ## 저장소 구조
 ```
-app/            ← 원본. 여기만 고친다
-  index.html      마크업
-  styles.css      디자인
-  app.js          동작·추천 로직
-  data/           bookings · lawyers · advisors · details · fee · scenarios · portraits
-tools/          dev(라이브리로드) · build(단일파일) · check(스모크) · split(재분해)
+app/            ← React 프론트 원본
+  src/            Tablet · YKOS · Paper · SignModal · WriteModal
+  index.html      Vite 진입
+server/         ← FastAPI 원본
+  main.py         세션 API
+  catalog.py      추천 점수 · 계약 초안
+  data/*.json     예약 · 변호사 · 약정금 · 서식
+vanilla/        예전 단일 HTML/JS (비교용, 직접 고치지 않음)
+tools/          dev · check · export-json
 docs/           01 배경 · 02 결정사항 · 03 미결논점 · 04 데이터소스 · 05 화면정의 · 06 다음작업
 data/           파싱 원본 (csv · txt · json)
 assets/         바인더에서 추출한 인물 사진 13장
-dist/           빌드 결과물 (git 미추적)
 ```
 
 ## 작업 규칙
-- **`app/` 이 원본이다.** `dist/`, `mockups/` 는 `node tools/build.mjs` 결과물이라 직접 고치면 덮어써진다.
+- **원본은 `app/src/` 와 `server/` 이다.** `app/dist/`, `dist/`, `mockups/` 는 빌드 결과물이라 직접 고치면 덮어써진다.
 - **화면 장표가 아니라 실제로 조작되는 앱으로 만든다.** 탭 전환, 뒤로가기, 검색, 별표, 화면 공유, 공유 해제가 전부 동작해야 한다.
 - 디자인 톤은 **프리미엄·정숙**: 아이보리 지면 + 1px 헤어라인 + 딥 버건디 + 골드 라벨, 세리프 제목. 박스·그림자·둥근 모서리로 위계를 만들지 않는다. 토큰은 `docs/05-화면정의.md`.
 - **YK-OS 화면은 실제 화면을 따른다.** 임의로 구조를 바꾸지 말 것. 캡처와 다르면 캡처가 맞다.
-- 추천 로직을 건드릴 때는 `docs/02-결정사항.md`의 가중치 표를 함께 갱신.
+- 추천 로직을 건드릴 때는 `docs/02-결정사항.md`의 가중치 표와 `server/catalog.py`를 함께 갱신.
 - 새 결정이 생기면 `docs/02-결정사항.md`에 날짜와 함께 append. **이전 결정을 지우지 말고** "변경됨"으로 표시.
 - 데이터를 새로 파싱했으면 `docs/04-데이터소스.md`에 출처·방법·검증 여부를 남긴다. **근거 없는 수치를 화면에 띄우지 않는다.**
 
 ## 자주 쓰는 명령
 ```bash
-node tools/dev.mjs      # http://localhost:5173, 저장하면 자동 새로고침
-node tools/check.mjs    # 전 화면 스모크 점검 + .check/ 스크린샷
-node tools/build.mjs    # dist/yk-binder-app.html 단일 파일
+node tools/dev.mjs      # FastAPI :8000 + Vite :5173
+node tools/check.mjs    # API·화면 스모크 (서버가 켜져 있어야 함)
+cd app && npm run build # 프론트 빌드 → app/dist (FastAPI가 있으면 같이 서빙)
 ```
 
 ## 딥링크 (고칠 화면으로 바로 진입)
 ```
-?c=<예약id|이름>  &s=<intro|brief|home|browse|adv|fav|case|review>  &d=<변호사이름>  &v=<tab|os|both>
-예) localhost:5173/?c=이도현&s=brief&v=both
+?c=<예약id|이름>  &s=<wait|report|counsel|seniors|survey>
+예) localhost:5173/?c=이도현&s=report
 ```
