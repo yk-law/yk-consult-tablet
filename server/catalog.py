@@ -35,6 +35,7 @@ def catalog() -> dict:
         "reviews": load("reviews.json"),
         "portraits": load("portraits.json"),
         "videos": load("videos.json"),
+        "profileExtra": load("profile_extra.json"),
         "FIELD": fields["FIELD"],
         "NEAR": fields["NEAR"],
         "roleHint": ROLE_HINT,
@@ -226,6 +227,30 @@ def frame_of(l: dict, role: str | None = None) -> str:
     return "assoc"
 
 
+def profile_bits(name: str) -> dict:
+    """홈페이지 수상·업무사례·논문. 이메일·전화·결과는 넣지 않는다."""
+    extra = (catalog().get("profileExtra") or {}).get(name) or {}
+    awards = [a for a in (extra.get("awards") or []) if a]
+    papers = []
+    for a in extra.get("papers") or []:
+        t = " ".join(str(a).split())
+        if t:
+            papers.append(t)
+    areas = []
+    for a in extra.get("areas") or []:
+        group = " ".join((a.get("group") or "").split())
+        area_name = " ".join((a.get("name") or "").split())
+        if group and area_name:
+            areas.append({"group": group, "name": area_name})
+    works = []
+    for w in extra.get("works") or []:
+        title = " ".join((w.get("title") or "").split())
+        href = w.get("href") or ""
+        if title and href.startswith("https://www.yklawfirm.co.kr/case/"):
+            works.append({"title": title, "href": href})
+    return {"awards": awards, "works": works, "areas": areas, "papers": papers}
+
+
 # 프레임 색 우열 (대표 > 고문변호사 > 파트너 > …). 시각 등급용 — 바꾸지 않음.
 FRAME_RANK = {
     "rep": 0,
@@ -238,7 +263,7 @@ FRAME_RANK = {
 }
 
 # 전문인력 그리드 나열 순서 (2026-09-22). 프레임 색 우열과 별개.
-# 대표 > 파트너 > 고문변호사 > 고문 > 전문위원 > 자문위원
+# 대표 > 파트너 > 고문변호사 > 고문 > 전문위원. 자문위원은 목록에서 빼 둠 (2026-09-22).
 LIST_RANK = {
     "rep": 0,
     "partner": 1,
@@ -249,7 +274,47 @@ LIST_RANK = {
     "consultant": 6,
 }
 
-ADVISOR_ROLE_ORDER = ("고문", "전문위원", "자문위원")
+ADVISOR_ROLE_ORDER = ("고문", "전문위원")
+
+
+# 같은 직군이면 가장 높은 직위만. 긴 직함부터 맞춰 부장검사가 검사로 깎이지 않게 한다.
+_TITLE_FAMILIES = (
+    ("court", ("대법관", "헌법재판관", "법원행정처장", "고등법원장", "법원장", "수석부장판사", "부장판사", "판사")),
+    ("pros", ("검찰총장", "고검장", "지검장", "검사장", "차장검사", "부장검사", "검사")),
+    ("police", ("경찰청장", "치안정감", "치안감", "경무관", "총경", "경정", "경감", "경위", "경사", "경장", "순경")),
+)
+
+
+def _title_rank(title: str):
+    stem = (title or "").replace("역임", "").strip()
+    found = None
+    for fam, ranks in _TITLE_FAMILIES:
+        for i, rank in enumerate(ranks):
+            if stem == rank or stem.endswith(rank):
+                if found is None or len(rank) > found[0]:
+                    found = (len(rank), fam, i)
+    if not found:
+        return None
+    return found[1], found[2]
+
+
+def prominent_titles(titles) -> list:
+    """동일 직군(법원·검찰·경찰)은 최고 직위 하나만. 다른 직군끼리는 모두 남긴다."""
+    best = {}
+    order = []
+    rest = []
+    for t in titles or []:
+        hit = _title_rank(t)
+        if not hit:
+            rest.append(t)
+            continue
+        fam, idx = hit
+        if fam not in best:
+            order.append(fam)
+            best[fam] = (idx, t)
+        elif idx < best[fam][0]:
+            best[fam] = (idx, t)
+    return [best[fam][1] for fam in order] + rest
 
 
 def public_profile(l: dict) -> dict:
@@ -257,6 +322,7 @@ def public_profile(l: dict) -> dict:
     d = l.get("d") or {}
     clips = {c["name"]: c for c in catalog()["videos"]["clips"]}
     clip = clips.get(l["n"])
+    bits = profile_bits(l["n"])
     return {
         "n": l["n"],
         "pos": l["pos"],
@@ -267,8 +333,12 @@ def public_profile(l: dict) -> dict:
         "tr": d.get("tr") or "",
         "career": d.get("career") or [],
         "cases": d.get("cases") or [],
+        "awards": bits["awards"],
+        "works": bits["works"],
+        "areas": bits["areas"],
+        "papers": bits["papers"],
         "quote": (d.get("quote") or "").strip(),
-        "titles": d.get("titles") or [],
+        "titles": prominent_titles(d.get("titles") or []),
         "photo": bool(l.get("photo")),
         "videoId": clip["id"] if clip else None,
         "videoTitle": clip["title"] if clip else None,
@@ -307,7 +377,7 @@ def helper_view(b: dict) -> dict:
 
 
 def advisor_cards() -> list[dict]:
-    """고문·전문위원·자문위원 각 1인. 나열은 ADVISOR_ROLE_ORDER."""
+    """예시로 고문·전문위원 각 1인. 자문위원은 빼 둔다."""
     portraits = catalog()["portraits"]
     by_role = {}
     for a in catalog()["advisors"]:
@@ -315,17 +385,22 @@ def advisor_cards() -> list[dict]:
         if r not in ADVISOR_ROLE_ORDER or r in by_role:
             continue
         label = (a.get("c") or "").strip()
-        titles = [t for t in (a.get("titles") or ([label] if label else [])) if t]
+        titles = prominent_titles([t for t in (a.get("titles") or ([label] if label else [])) if t])
         career = list(a.get("career") or [])
         quote = " ".join((a.get("quote") or "").split())
-        if quote and quote != label:
+        highlight = next((line for line in career if line and line != label), "")
+        # 기업자문·경찰 경력 같은 분류 라벨 자리에는 경력 하이를 올린다.
+        if highlight and (not titles or set(titles) <= {label}):
+            titles = [highlight]
+        if quote and quote != label and quote not in titles:
             pitch = quote
-        elif career:
-            pitch = career[0]
         else:
-            pitch = label or "해당 분야의 경험으로 자문합니다."
+            rest = [line for line in career if line not in titles and line != label]
+            pitch = rest[0] if rest else ""
         if not career and label:
             career = [label]
+        tags = [label] if label and label not in titles else []
+        bits = profile_bits(a["n"])
         by_role[r] = {
             "n": a["n"],
             "pos": r,
@@ -336,8 +411,13 @@ def advisor_cards() -> list[dict]:
             "tr": "",
             "career": career,
             "cases": [],
+            "awards": bits["awards"],
+            "works": [],
+            "areas": [],
+            "papers": bits["papers"],
             "quote": pitch,
             "titles": titles,
+            "tags": tags,
             "photo": a["n"] in portraits,
             "videoId": None,
             "videoTitle": None,
@@ -396,7 +476,7 @@ def seniors_for(field: str, court: str, limit: int = 5, counsel_name: str | None
         x.pop("_s", None)
         x.pop("_court", None)
         x.pop("_list", None)
-    # 변호사 직위 뒤 → 고문 → 전문위원 → 자문위원
+    # 변호사 뒤에 예시 고문·전문위원
     out = out + advisor_cards()
     return out, "법무법인 YK의 전문인력입니다"
 

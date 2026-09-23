@@ -52,6 +52,7 @@ cd app && npm run build # 프론트 빌드 → app/dist (FastAPI가 있으면 �
 
 ## 딥링크 (고칠 화면으로 바로 진입)
 ```
-?c=<예약id|이름>  &s=<wait|report|counsel|seniors|survey>
+?c=<예약id|이름>  &s=<wait|report|counsel-video|counsel|seniors|survey>
 예) localhost:5173/?c=이도현&s=report
+예) localhost:5173/?c=배수아&s=counsel-video  (인터뷰 있는 상담변호사)
 ```

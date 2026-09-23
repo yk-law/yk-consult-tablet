@@ -9,12 +9,14 @@ const SCREENS = [
   ["seniors", "전문인력"],
   ["survey", "설문"],
 ];
+/** 장면 딥링크용. 상단 세그에는 안 넣고 URL·흐름에서만 쓴다. */
+const DEEP = new Set(["film", "counsel-video", ...SCREENS.map(([id]) => id)]);
 
 export default function App() {
   const q = new URLSearchParams(location.search);
   const [data, setData] = useState(null);
   const [screen, setScreen] = useState(
-    SCREENS.some(([id]) => id === q.get("s")) ? q.get("s") : "wait",
+    DEEP.has(q.get("s")) ? q.get("s") : "wait",
   );
   const [cid, setCid] = useState(q.get("c") || "");
 
@@ -46,7 +48,7 @@ export default function App() {
           ))}
         </select>
         <span className="sp" />
-        <span className="note">가로 태블릿 시연 · 내방 → 영상 → 사건요약 → 변호사 확인 · 고객명은 가명</span>
+        <span className="note">가로 태블릿 시연 · 내방 → 영상 → 사건요약 → (인터뷰) → 변호사 확인 · 고객명은 가명</span>
       </div>
       <div className="stage one">
         <Tablet data={data} screen={screen} onScreen={setScreen} />

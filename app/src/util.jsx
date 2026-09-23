@@ -12,6 +12,11 @@ export const won = (v) => "₩" + Number(v).toLocaleString("ko-KR");
 export const man = (v) => (v / 10000).toLocaleString("ko-KR") + "만원";
 export const wonPlain = (v) => (v ? Number(v).toLocaleString("ko-KR") : "　　　　");
 
+/** 고객 화면 표기: 「아동청소년보호법위반(아청법위반)」→ 괄호 이하 생략 */
+export function areaLabel(name) {
+  return String(name || "").replace(/\s*\([^)]*\)\s*/g, "").trim();
+}
+
 export function parseYMD(s) {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -73,19 +78,44 @@ export function frameGrade(l = {}) {
   return "assoc";
 }
 
+/** 희귀 카드 등급. 표식 수: 대표·고문 3, 고문변호사·파트너·전문위원 2, 변호사·자문위원 1. */
+const FRAME_LUX = {
+  rep: "lux3",
+  counsel: "lux-mid",
+  partner: "lux2",
+  advisor: "lux3",
+  expert: "lux2",
+  consultant: "lux1",
+};
+const FRAME_PIPS = { lux3: 3, "lux-mid": 2, lux2: 2, lux1: 1 };
+
+export function rankPips(grade) {
+  const lux = FRAME_LUX[grade] || "lux1";
+  return FRAME_PIPS[lux] || 1;
+}
+
+export function RankMarks({ n }) {
+  return (
+    <span className="prank" aria-hidden="true">
+      {Array.from({ length: n }, (_, i) => (
+        <svg key={i} viewBox="0 0 12 12">
+          <path d="M6 .7 7.45 4.15 11.2 4.5 8.4 7.05 9.25 10.75 6 8.85 2.75 10.75 3.6 7.05.8 4.5 4.55 4.15Z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
 export function Portrait({ l, portraits, grade, size = "card" }) {
   const g = grade || l?.grade || frameGrade(l);
+  const lux = FRAME_LUX[g] || "lux1";
   const src = portraits?.[l.n];
   return (
-    <figure className={`pframe ${g} ${size} bust`}>
-      <span className="pouter" aria-hidden="true" />
+    <figure className={`pframe fut ${g} ${lux} ${size} bust`}>
+      <span className="pfoil" aria-hidden="true" />
       <span className="pmat">
         {src ? <img src={src} alt={l.n} /> : <span className="mono">{l.n[0]}</span>}
       </span>
-      <span className="pcorner tl" aria-hidden="true" />
-      <span className="pcorner tr" aria-hidden="true" />
-      <span className="pcorner bl" aria-hidden="true" />
-      <span className="pcorner br" aria-hidden="true" />
     </figure>
   );
 }
