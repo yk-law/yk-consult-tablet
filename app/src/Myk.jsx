@@ -45,12 +45,12 @@ export default function Myk({ hero = false }) {
     <aside className={hero ? "myk myk-hero" : "myk"}>
       <a className="myk-qr" href={MYK_URL} target="_blank" rel="noreferrer" aria-label="myk.legal/home">
         <svg viewBox={`0 0 ${size} ${size}`} role="img" aria-hidden="true">
-          <rect width={size} height={size} fill="#fff" />
-          <g fill="#171C24">{cells}</g>
+          <rect width={size} height={size} fill="#F4EFE6" />
+          <g fill="#12100C">{cells}</g>
         </svg>
       </a>
       <div className="myk-copy">
-        <p className="myk-h">법률 과정을 더 쉽게,<br />의뢰인의 곁에 더 가까이</p>
+        <p className="myk-h">법률 과정을 더 쉽게, 의뢰인의 곁에 더 가까이</p>
         <p className="myk-p">법무법인 YK의 상담과 사건 진행을 편리하게 확인하고 이어갈 수 있습니다.</p>
       </div>
     </aside>

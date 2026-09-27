@@ -2,14 +2,23 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import Logo from "./Logo.jsx";
 import Myk from "./Myk.jsx";
 import Survey from "./Survey.jsx";
-import { Portrait, RankMarks, rankPips, areaLabel } from "./util.jsx";
+import { Portrait, RankMarks, rankPips, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
 
 const FILM = "https://ykos.yklawfirm.co.kr/assets/yk-brand-film.mp4";
 const PREP_MS = 2200;
 
+/** 고객이 태블릿 안에서 자유 이동하는 퍼널 장면. */
+const JOURNEY = [
+  ["report", "사건요약"],
+  ["counsel", "상담 변호사"],
+  ["seniors", "전문인력"],
+  ["survey", "설문"],
+];
+
 export default function Tablet({ data, screen, onScreen }) {
   const b = data.booking;
   const FIELD = data.FIELD || {};
+  const NEAR = data.NEAR || {};
   const counsel = data.counsel;
   const [waitStep, setWaitStep] = useState("confirm");
   const goCounsel = useCallback(() => {
@@ -35,6 +44,8 @@ export default function Tablet({ data, screen, onScreen }) {
     screen === "counsel-video" && counsel?.videoId
       ? counsel
       : null;
+  const journeyOn = JOURNEY.some(([id]) => id === screen);
+  const journeyActive = screen === "counsel-video" ? "counsel" : screen;
 
   return (
     <div className={`tab viewtab ${filmOn ? "filmon" : ""}`} id="tabDev">
@@ -60,7 +71,14 @@ export default function Tablet({ data, screen, onScreen }) {
           <CounselVideo l={counselVideo} onDone={() => onScreen("counsel")} />
         )}
         {(screen === "counsel" || (screen === "counsel-video" && !counsel?.videoId)) && (
-          <Counsel l={counsel} portraits={data.portraits} FIELD={FIELD} b={b} />
+          <Counsel
+            l={counsel}
+            portraits={data.portraits}
+            FIELD={FIELD}
+            NEAR={NEAR}
+            b={b}
+            onNext={() => onScreen("seniors")}
+          />
         )}
         {screen === "seniors" && (
           <Seniors
@@ -68,11 +86,27 @@ export default function Tablet({ data, screen, onScreen }) {
             headline={data.seniorHeadline}
             portraits={data.portraits}
             FIELD={FIELD}
+            NEAR={NEAR}
             b={b}
+            onNext={() => onScreen("survey")}
           />
         )}
         {screen === "survey" && <Survey key={b.id} signed={!!b.modusign} />}
       </div>
+      {journeyOn && (
+        <nav className="jnav" aria-label="상담 안내">
+          {JOURNEY.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={journeyActive === id ? "on" : ""}
+              onClick={() => onScreen(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
@@ -130,7 +164,7 @@ function WaitFlow({ b, step, onStep, onDone }) {
           </div>
         )}
       </div>
-      <Myk />
+      <Myk hero />
     </section>
   );
 }
@@ -169,10 +203,20 @@ function Film({ onDone }) {
   );
 }
 
-/** 오늘의 상담변호사 인터뷰 — 브랜드 필름과 같이 전면 재생, 끝나면/건너뛰면 프로필. */
+/** 끝 3초 전 전환 — YouTube 엔드스크린(관련영상) 노출 전에 프로필로. */
+const COUNSEL_VIDEO_EARLY_CUT_S = 3;
+
+/** 상담 변호사 인터뷰 — 브랜드 필름과 같이 전면 재생, 끝나면/건너뛰면 프로필. */
 function CounselVideo({ l, onDone }) {
   const frame = useRef(null);
+  const doneRef = useRef(false);
   const [showSkip, setShowSkip] = useState(false);
+
+  const finish = useCallback(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  }, [onDone]);
 
   useEffect(() => {
     const t = setTimeout(() => setShowSkip(true), 2000);
@@ -180,11 +224,30 @@ function CounselVideo({ l, onDone }) {
   }, []);
 
   useEffect(() => {
+    let duration = 0;
     const onMsg = (e) => {
       if (typeof e.data !== "string") return;
       try {
         const data = JSON.parse(e.data);
-        if (data.event === "onStateChange" && data.info === 0) onDone();
+        if (data.event === "onStateChange" && data.info === 0) {
+          finish();
+          return;
+        }
+        if (data.event === "infoDelivery" && data.info && typeof data.info === "object") {
+          const info = data.info;
+          const d =
+            (typeof info.duration === "number" && info.duration) ||
+            (typeof info.progressState?.duration === "number" && info.progressState.duration) ||
+            0;
+          if (d > 0) duration = d;
+          const t =
+            (typeof info.currentTime === "number" && info.currentTime) ||
+            (typeof info.progressState?.current === "number" && info.progressState.current);
+          if (typeof t === "number" && duration > 0) {
+            const cutAt = Math.max(0, duration - COUNSEL_VIDEO_EARLY_CUT_S);
+            if (t >= cutAt) finish();
+          }
+        }
       } catch {
         /* ignore non-YT messages */
       }
@@ -203,37 +266,55 @@ function CounselVideo({ l, onDone }) {
         "*",
       );
     }, 800);
+    /* playing 중 duration·currentTime 폴링 → 끝 3초 전 finish */
+    const poll = setInterval(() => {
+      const win = frame.current?.contentWindow;
+      if (!win || doneRef.current) return;
+      win.postMessage(
+        JSON.stringify({ event: "command", func: "getDuration", args: [] }),
+        "*",
+      );
+      win.postMessage(
+        JSON.stringify({ event: "command", func: "getCurrentTime", args: [] }),
+        "*",
+      );
+    }, 400);
     return () => {
       window.removeEventListener("message", onMsg);
       clearInterval(ping);
+      clearInterval(poll);
     };
-  }, [onDone]);
+  }, [finish]);
 
+  const origin =
+    typeof window !== "undefined" ? encodeURIComponent(window.location.origin) : "";
   const src =
     `https://www.youtube.com/embed/${l.videoId}` +
-    `?rel=0&autoplay=1&mute=1&playsinline=1&enablejsapi=1&modestbranding=1`;
+    `?rel=0&autoplay=1&mute=1&playsinline=1&enablejsapi=1&modestbranding=1` +
+    (origin ? `&origin=${origin}` : "");
 
   return (
     <section className="pane on filmpane counsel-videopane">
-      <iframe
-        ref={frame}
-        title={l.videoTitle || `${l.n} 인터뷰`}
-        src={src}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
-      <div className="film-vignette" />
+      <div className="counsel-video-stage">
+        <iframe
+          ref={frame}
+          title={`${l.n} 인터뷰`}
+          src={src}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+      <div className="counsel-video-chrome-mask" aria-hidden="true" />
       <div className="counsel-video-meta">
-        <p className="lbl">오늘의 상담변호사</p>
+        <p className="lbl">상담 변호사</p>
         <strong>{l.n}</strong>
-        {l.videoTitle ? <em>{l.videoTitle}</em> : null}
       </div>
       <button
         type="button"
         className={`film-skip${showSkip ? " on" : ""}`}
-        onClick={onDone}
+        onClick={finish}
       >
-        건너뛰기 · 프로필 보기
+        프로필 바로 보기
       </button>
     </section>
   );
@@ -263,7 +344,7 @@ function Report({ helper, onReady }) {
               {sections.map((s, i) => (
                 <li key={s.title}>
                   <div className="yh-sec-h">
-                    <span className="n">{i + 1}</span>
+                    <span className="n">{String(i + 1).padStart(2, "0")}</span>
                     <h4>{s.title}</h4>
                   </div>
                   {(s.body || "").split("\n").map((p, j) => (
@@ -276,7 +357,7 @@ function Report({ helper, onReady }) {
           <p className="yh-src">예약 상담 때 말씀하신 내용을 바탕으로 정리했습니다. 글에 나오는 이름은 가명입니다.</p>
         </div>
       </div>
-      <button type="button" className="go counsel-go" onClick={onReady}>오늘 상담변호사 확인하기</button>
+      <button type="button" className="go counsel-go" onClick={onReady}>상담 변호사 확인하기</button>
     </section>
   );
 }
@@ -311,44 +392,46 @@ function TitleBlock({ titles, soft }) {
   );
 }
 
-function ProfileBody({ l, portraits, FIELD, b }) {
+function ProfileBody({ l, portraits, FIELD, NEAR, b }) {
   const edu = [l.edu, l.exam, l.tr].filter(Boolean).join(" · ");
   const pos = [l.pos, l.o ? `${l.o} 출신` : ""].filter(Boolean).join(" · ");
   const hasFields = !!(l.areas?.length || l.f?.length || l.tags?.length);
   return (
     <div className="profile">
       <div className="xlead">
-        <div className="xlead-id">
-          <Portrait l={l} portraits={portraits} grade={l.grade} size="hero" />
-          <div className="xident xmeta">
-            <TitleBlock titles={l.titles} />
-            <div className="xwho">
-              <strong>{l.n}</strong>
-              {pos ? <em>{pos}</em> : null}
-            </div>
-            {l.pitch ? <p className="xquote">{l.pitch}</p> : null}
-            {edu ? <p className="xedu">{edu}</p> : null}
+        <Portrait l={l} portraits={portraits} grade={l.grade} size="hero" />
+        <div className="xident xmeta">
+          <TitleBlock titles={l.titles} />
+          <div className="xwho">
+            <strong>{l.n}</strong>
+            {pos ? <em>{pos}</em> : null}
           </div>
+          {l.pitch ? <p className="xquote">{l.pitch}</p> : null}
+          {edu ? <p className="xedu">{edu}</p> : null}
         </div>
+      </div>
+      {l.career?.length ? (
         <section className="xsec xcareer">
           <h3>경력</h3>
-          {l.career?.length ? (
-            <ul className="clist">{l.career.map((t) => <li key={t}>{t}</li>)}</ul>
-          ) : (
-            <p className="empty">상세 경력은 상담에서 안내합니다.</p>
-          )}
+          <ul className="clist">{l.career.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
-      </div>
+      ) : null}
       {hasFields ? (
         <section className="xsec">
           <h3>업무분야</h3>
-          <FieldTags l={l} FIELD={FIELD} b={b} full />
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} full />
         </section>
       ) : null}
       {l.awards?.length ? (
         <section className="xsec">
           <h3>수상실적</h3>
           <ul className="clist">{l.awards.map((t) => <li key={t}>{t}</li>)}</ul>
+        </section>
+      ) : null}
+      {l.kind === "lawyer" && l.cases?.length ? (
+        <section className="xsec">
+          <h3>주요 업무 실적</h3>
+          <ul className="clist">{l.cases.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
       ) : null}
       {l.papers?.length ? (
@@ -369,21 +452,11 @@ function ProfileBody({ l, portraits, FIELD, b }) {
           </ul>
         </section>
       ) : null}
-      {l.videoId ? (
-        <div className="vwrap">
-          <iframe
-            title={l.videoTitle || l.n}
-            src={`https://www.youtube.com/embed/${l.videoId}?rel=0`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      ) : null}
     </div>
   );
 }
 
-function Counsel({ l, portraits, FIELD, b }) {
+function Counsel({ l, portraits, FIELD, NEAR, b, onNext }) {
   if (!l) {
     return (
       <section className="pane on">
@@ -393,22 +466,17 @@ function Counsel({ l, portraits, FIELD, b }) {
   }
   return (
     <section className="pane on counselpane">
-      <ProfileBody l={l} portraits={portraits} FIELD={FIELD} b={b} />
+      <ProfileBody l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} />
+      {onNext ? (
+        <div className="journey-foot">
+          <button type="button" className="go counsel-go" onClick={onNext}>전문인력 살펴보기</button>
+        </div>
+      ) : null}
     </section>
   );
 }
 
-function areaMark(area, b, FIELD) {
-  const fieldName = FIELD?.[b?.field]?.[0] || "";
-  if (!fieldName || area.group !== fieldName) return "";
-  const cat2 = (b?.cat2 || "").replace(/\s/g, "");
-  const stem = cat2.replace(/^준/, "").replace("유사", "");
-  const name = area.name || "";
-  if (name && (cat2.includes(name) || name.includes(stem) || (stem && stem.includes(name)))) return "hit";
-  return "rel";
-}
-
-function FieldTags({ l, FIELD, b, full }) {
+function FieldTags({ l, FIELD, NEAR, b, full }) {
   const areas = l.areas || [];
   if (areas.length) {
     if (full) {
@@ -421,7 +489,8 @@ function FieldTags({ l, FIELD, b, full }) {
         }
         by.get(a.group).push(a);
       }
-      const rank = (g) => (g === (FIELD?.[b?.field]?.[0] || "") ? 0 : 1);
+      const primary = fieldLabelsOf(FIELD, b?.field);
+      const rank = (g) => (groupMatchesFieldLabels(g, primary) ? 0 : 1);
       order.sort((a, c) => rank(a) - rank(c));
       return (
         <div className="xareas">
@@ -430,7 +499,7 @@ function FieldTags({ l, FIELD, b, full }) {
               <b>{g}</b>
               <div className="fl xtags">
                 {by.get(g).map((a) => {
-                  const m = areaMark(a, b, FIELD);
+                  const m = areaCaseMark(a, b, FIELD, NEAR);
                   return <span className={m ? `f ${m}` : "f"} key={a.name}><i>{areaLabel(a.name)}</i></span>;
                 })}
               </div>
@@ -441,14 +510,14 @@ function FieldTags({ l, FIELD, b, full }) {
     }
     const hits = [];
     for (const a of areas) {
-      const m = areaMark(a, b, FIELD);
+      const m = areaCaseMark(a, b, FIELD, NEAR);
       if (m) hits.push({ ...a, m });
     }
     hits.sort((a, c) => (a.m === c.m ? 0 : a.m === "hit" ? -1 : 1));
     if (!hits.length) return null;
     return (
       <div className="fl xtags">
-        {hits.map((a) => <span className={`f ${a.m}`} key={`${a.group}-${a.name}`}><i>{areaLabel(a.name)}</i></span>)}
+        {hits.slice(0, 6).map((a) => <span className={`f ${a.m}`} key={`${a.group}-${a.name}`}><i>{areaLabel(a.name)}</i></span>)}
       </div>
     );
   }
@@ -464,7 +533,7 @@ function FieldTags({ l, FIELD, b, full }) {
   );
 }
 
-function Seniors({ list, headline, portraits, FIELD, b }) {
+function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
   const [open, setOpen] = useState(null);
   const shown = open ? list.find((x) => x.n === open) : null;
   return (
@@ -476,7 +545,7 @@ function Seniors({ list, headline, portraits, FIELD, b }) {
       <div className="legendgrid">
         {list.map((l) => (
           <button type="button" className={`xcard ${l.grade}`} key={`${l.pos}-${l.n}`} onClick={() => setOpen(l.n)}>
-            <RankMarks n={rankPips(l.grade)} />
+            <RankMarks n={rankPips(l)} />
             <Portrait l={l} portraits={portraits} grade={l.grade} size="card" />
             <div className="xmeta">
               <div className="xmeta-body">
@@ -485,7 +554,7 @@ function Seniors({ list, headline, portraits, FIELD, b }) {
                   <strong>{l.n}</strong>
                   <em>{l.pos}</em>
                 </div>
-                <FieldTags l={l} FIELD={FIELD} b={b} />
+                <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} />
               </div>
               <p className={`xaward${l.awards?.length ? "" : " blank"}`}>
                 {l.awards?.length ? l.awards[0] : ""}
@@ -495,11 +564,16 @@ function Seniors({ list, headline, portraits, FIELD, b }) {
         ))}
       </div>
       {!list.length ? <p className="empty">아직 연결된 전문인력 프로필이 없습니다.</p> : null}
+      {onNext ? (
+        <div className="journey-foot">
+          <button type="button" className="go counsel-go" onClick={onNext}>설문 참여하기</button>
+        </div>
+      ) : null}
       {shown ? (
         <div className="xmodal" onClick={() => setOpen(null)} role="presentation">
           <article className={`xcard ${shown.grade} open`} onClick={(e) => e.stopPropagation()}>
             <button type="button" className="xclose" onClick={() => setOpen(null)}>닫기</button>
-            <ProfileBody l={shown} portraits={portraits} FIELD={FIELD} b={b} />
+            <ProfileBody l={shown} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} />
           </article>
         </div>
       ) : null}

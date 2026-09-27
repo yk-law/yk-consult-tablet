@@ -146,7 +146,7 @@ export default function Survey({ signed = false }) {
               ? "소중한 의견 잘 전달됐습니다.\n앞으로 담당자가 안내드리겠습니다."
               : gate === LATER
                 ? "오늘 방문해 주셔서 감사합니다.\n필요하실 때 다시 찾아 주세요."
-                : "의견 잘 받았습니다.\n이어서 서명을 진행해 주세요."}
+                : "고객님의 사건을 위해 최선을 다하겠습니다."}
           </p>
           <Myk hero />
         </div>
@@ -176,29 +176,26 @@ export default function Survey({ signed = false }) {
 
   return (
     <section className={`pane on surveypane ${signed ? "signed" : "open"}`}>
-      {signed ? (
-        <div className="svband">
-          <span className="lbl">전자서명 완료</span>
-          <h2 className="h1">{form.title}</h2>
-          <p className="sub">{form.sub}</p>
-        </div>
-      ) : (
-        <>
+      <div className="svform">
+        <header className={`svhead${signed ? " svband" : ""}`}>
+          {signed ? <span className="lbl">전자서명 완료</span> : null}
           <h2 className="h1">{form.title}</h2>
           {form.sub ? <p className="sub">{form.sub}</p> : null}
-        </>
-      )}
-      <div className="svsheet">
-        {form.notice ? <p className="svnote">{form.notice}</p> : null}
-        <div className="svlist">
-          {shown.map((q) => (
-            <Question key={q.id} q={q} value={answers[q.id]} onChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))} />
-          ))}
+        </header>
+        <div className="svsheet">
+          {form.notice ? <p className="svnote">{form.notice}</p> : null}
+          <div className="svlist">
+            {shown.map((q) => (
+              <Question key={q.id} q={q} value={answers[q.id]} onChange={(v) => setAnswers((prev) => ({ ...prev, [q.id]: v }))} />
+            ))}
+          </div>
+          {!signed ? (
+            <button type="button" className="svback" onClick={() => choose(null)}>이전으로</button>
+          ) : null}
         </div>
-        {!signed ? (
-          <button type="button" className="svback" onClick={() => choose(null)}>이전으로</button>
-        ) : null}
-        <button type="button" className="bgo" disabled={!complete} onClick={() => setDone(true)}>제출하기</button>
+        <div className="svfoot">
+          <button type="button" className="bgo" disabled={!complete} onClick={() => setDone(true)}>제출하기</button>
+        </div>
       </div>
       {signed ? <Myk /> : null}
     </section>

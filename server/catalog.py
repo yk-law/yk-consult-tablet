@@ -191,7 +191,7 @@ def contract_for(b: dict, favs: list[str] | None = None) -> dict:
 
 
 SENIOR_POS = {"대표변호사", "파트너변호사"}
-SENIOR_MARK = ("부장판사", "부장검사", "대법관", "검사장", "고검장", "지검장")
+SENIOR_MARK = ("부장판사", "부장검사", "대법관", "검사장", "고검장", "지검장", "차장검사")
 
 
 def is_senior(l: dict) -> bool:
@@ -317,12 +317,56 @@ def prominent_titles(titles) -> list:
     return [best[fam][1] for fam in order] + rest
 
 
+# 미니 카드 별(4~5, 0.5 단위). 사내 직위가 아니라 약력 최고 직위.
+# 법원·검찰은 대법관/판사/검사 출신 축, 고문·전문위원은 경찰·정무 등 사회 지위.
+_STAR_BY_FAMILY_IDX = {
+    "court": {0: 5.0, 1: 5.0, 2: 4.5, 3: 4.5, 4: 4.5, 5: 4.5, 6: 4.0, 7: 4.0},  # 대법관…판사
+    "pros": {0: 5.0, 1: 4.5, 2: 4.5, 3: 4.5, 4: 4.0, 5: 4.0, 6: 4.0},  # 검찰총장…검사
+    "police": {0: 4.5, 1: 4.5, 2: 4.5, 3: 4.0, 4: 4.0, 5: 4.0, 6: 4.0, 7: 4.0, 8: 4.0, 9: 4.0, 10: 4.0},
+}
+
+
+def _social_stars(line: str) -> float:
+    """법원·검찰·경찰 직함이 아닐 때 정무·행정 약력. 훈장·표창만으로는 올리지 않는다."""
+    s = (line or "").strip()
+    if not s:
+        return 0.0
+    if any(x in s for x in ("훈장", "표창", "포상")):
+        return 0.0
+    if "국무총리" in s or "대통령비서" in s:
+        return 4.5
+    if "국회의장" in s or "장관" in s:
+        return 4.0
+    if "국회의원" in s and ("보좌" in s or "비서" in s):
+        return 4.0
+    return 0.0
+
+
+def career_stars(titles=None, career=None) -> float:
+    """약력(titles+career)에서 가장 높은 사회 지위 → 별 4.0 / 4.5 / 5.0."""
+    best = 4.0
+    for line in list(titles or []) + list(career or []):
+        hit = _title_rank(line)
+        if hit:
+            fam, idx = hit
+            n = _STAR_BY_FAMILY_IDX.get(fam, {}).get(idx)
+            if n and n > best:
+                best = n
+            continue
+        n = _social_stars(line)
+        if n > best:
+            best = n
+    return min(5.0, max(4.0, best))
+
+
 def public_profile(l: dict) -> dict:
     """고객 화면용. 처분권자 접점(links)은 빼 둔다."""
     d = l.get("d") or {}
     clips = {c["name"]: c for c in catalog()["videos"]["clips"]}
     clip = clips.get(l["n"])
     bits = profile_bits(l["n"])
+    titles = prominent_titles(d.get("titles") or [])
+    career = d.get("career") or []
     return {
         "n": l["n"],
         "pos": l["pos"],
@@ -331,18 +375,19 @@ def public_profile(l: dict) -> dict:
         "edu": d.get("edu") or "",
         "exam": d.get("exam") or "",
         "tr": d.get("tr") or "",
-        "career": d.get("career") or [],
+        "career": career,
         "cases": d.get("cases") or [],
         "awards": bits["awards"],
         "works": bits["works"],
         "areas": bits["areas"],
         "papers": bits["papers"],
         "quote": (d.get("quote") or "").strip(),
-        "titles": prominent_titles(d.get("titles") or []),
+        "titles": titles,
         "photo": bool(l.get("photo")),
         "videoId": clip["id"] if clip else None,
         "videoTitle": clip["title"] if clip else None,
         "grade": frame_of(l),
+        "stars": career_stars(titles, career),
         "kind": "lawyer",
         "pitch": pitch_of(l),
     }
@@ -422,6 +467,7 @@ def advisor_cards() -> list[dict]:
             "videoId": None,
             "videoTitle": None,
             "grade": frame_of({}, r),
+            "stars": career_stars(titles, career),
             "kind": "advisor",
             "pitch": pitch,
             "reasons": [],
@@ -432,9 +478,33 @@ def advisor_cards() -> list[dict]:
     return [by_role[r] for r in ADVISOR_ROLE_ORDER if r in by_role]
 
 
-def seniors_for(field: str, court: str, limit: int = 5, counsel_name: str | None = None) -> tuple[list[dict], str]:
-    """전문인력. 내부적으로는 전관 변호사 + 고문변호사 + 고문·위원."""
+def seniors_for(
+    field: str,
+    court: str,
+    limit: int = 5,
+    counsel_name: str | None = None,
+    roster: list | None = None,
+) -> tuple[list[dict], str]:
+    """전문인력. 내부적으로는 전관 변호사 + 고문변호사 + 고문·위원.
+    roster가 있으면 시연용 임의 배치(홈페이지 구성원)를 그 순서로 쓴다."""
     cat = catalog()
+    by_name = {l["n"]: l for l in cat["lawyers"]}
+
+    if roster:
+        out = []
+        for name in roster:
+            l = by_name.get(name)
+            if not l:
+                continue
+            p = public_profile(l)
+            p["reasons"] = reasons(l, field, court) if field else []
+            p["match"] = "roster"
+            out.append(p)
+            if len(out) >= limit:
+                break
+        out = out + advisor_cards()
+        return out, "법무법인 YK의 전문인력입니다"
+
     scored = []
     for l in cat["lawyers"]:
         if not is_specialist_lawyer(l):
@@ -463,7 +533,6 @@ def seniors_for(field: str, court: str, limit: int = 5, counsel_name: str | None
         pinned = next((x for x in scored if x["n"] == counsel_name), None)
         if pinned and all(x["n"] != counsel_name for x in out):
             out = out[: max(limit - 1, 0)] + [pinned]
-        # 포함만 보장하고 나열 순서(LIST_RANK)는 유지
         out.sort(key=lambda x: (
             x["_list"],
             0 if x["match"] == "field" else 1 if x["match"] == "court" else 2,
@@ -476,7 +545,6 @@ def seniors_for(field: str, court: str, limit: int = 5, counsel_name: str | None
         x.pop("_s", None)
         x.pop("_court", None)
         x.pop("_list", None)
-    # 변호사 뒤에 예시 고문·전문위원
     out = out + advisor_cards()
     return out, "법무법인 YK의 전문인력입니다"
 
@@ -491,7 +559,12 @@ def visit_for(bid: str | None = None) -> dict:
     if not b:
         return {}
     counsel = lawyer(b.get("counsel") or "")
-    senior_rows, senior_headline = seniors_for(b.get("field") or "K", b.get("court") or "", counsel_name=b.get("counsel"))
+    senior_rows, senior_headline = seniors_for(
+        b.get("field") or "K",
+        b.get("court") or "",
+        counsel_name=b.get("counsel"),
+        roster=b.get("seniors"),
+    )
     portraits = c["portraits"]
     names = {b.get("counsel")} | {s["n"] for s in senior_rows}
     return {
@@ -502,6 +575,7 @@ def visit_for(bid: str | None = None) -> dict:
         "seniorHeadline": senior_headline,
         "videos": c["videos"],
         "FIELD": c["FIELD"],
+        "NEAR": c["NEAR"],
         "counts": c["counts"],
         "portraits": {n: portraits[n] for n in names if n and n in portraits},
         "bookings": [{"id": x["id"], "name": x["name"], "at": x["at"], "cat2": x["cat2"]} for x in c["bookings"]],

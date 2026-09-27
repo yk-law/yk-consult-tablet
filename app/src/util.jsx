@@ -17,6 +17,79 @@ export function areaLabel(name) {
   return String(name || "").replace(/\s*\([^)]*\)\s*/g, "").trim();
 }
 
+/** 분야 대분류 표기 정규화 — 「가사·상속」↔「가사상속」 */
+export function normFieldLabel(s) {
+  return String(s || "").replace(/[·・\s\-_/]/g, "");
+}
+
+export function fieldLabelsOf(FIELD, key) {
+  return FIELD?.[key] || [];
+}
+
+export function groupMatchesFieldLabels(group, labels) {
+  const g = normFieldLabel(group);
+  if (!g || !labels?.length) return false;
+  return labels.some((lab) => {
+    const n = normFieldLabel(lab);
+    return n && (g === n || g.includes(n) || n.includes(g));
+  });
+}
+
+/** 예약 사건명·분야 라벨과 세부 업무명 겹침 (골드 플레이트 hit용). */
+export function areaNameMatchesCase(area, b, fieldLabels = []) {
+  const cat2 = String(b?.cat2 || "").replace(/\s/g, "");
+  const cat1 = String(b?.cat1 || "").replace(/\s/g, "");
+  const stem = cat2.replace(/^준/, "").replace(/유사/g, "");
+  const name = area?.name || "";
+  const bare = areaLabel(name).replace(/\s/g, "");
+  if (!name) return false;
+
+  if (cat2.includes(name) || name.includes(stem) || (stem && stem.includes(name))) return true;
+  if (bare && (cat2.includes(bare) || (stem && bare.includes(stem)))) return true;
+  if (stem.length >= 4 && bare.includes(stem.slice(0, 4))) return true;
+  if (bare.length >= 4 && stem.includes(bare.slice(0, 4))) return true;
+
+  // 대분류 한 글자짜리(민사·형사·이혼…)는 제외. 세부 라벨·사건명 토큰만.
+  const BROAD = new Set(["민사", "형사", "이혼", "행정", "가사", "가사상속", "기업법무", "노동", "의료", "조세", "마약"]);
+  const tokens = new Set();
+  for (const lab of fieldLabels) {
+    for (const part of String(lab).split(/[·・/,\s]+/)) {
+      const t = part.replace(/\s/g, "");
+      if (t.length >= 2 && !BROAD.has(t)) tokens.add(t);
+    }
+  }
+  for (const raw of [cat1, cat2, stem]) {
+    if (!raw) continue;
+    if (raw.length >= 2 && !BROAD.has(raw)) tokens.add(raw);
+    if (/고소$|고발$/.test(raw) && raw.length > 2) {
+      const base = raw.replace(/고소$|고발$/, "");
+      if (base.length >= 2 && !BROAD.has(base)) tokens.add(base);
+    }
+  }
+  for (const t of tokens) {
+    if (t.length >= 2 && (bare.includes(t) || name.includes(t) || normFieldLabel(bare).includes(normFieldLabel(t)))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * 미니/상세 업무태그 등급.
+ * hit = 이번 사건과 직결(골드 플레이트). rel = 같은·인접 대분류(골드 테두리).
+ * 대분류 표기가 홈페이지와 달라도(예: FIELD 금융·증권 ↔ areas 형사) 사건명이 맞으면 hit.
+ */
+export function areaCaseMark(area, b, FIELD, NEAR) {
+  const key = b?.field || "";
+  const labels = fieldLabelsOf(FIELD, key);
+  const nearLabels = (NEAR?.[key] || []).flatMap((k) => fieldLabelsOf(FIELD, k));
+  const direct = groupMatchesFieldLabels(area.group, labels);
+  const near = !direct && groupMatchesFieldLabels(area.group, nearLabels);
+  if (!direct && !near) return "";
+  if (areaNameMatchesCase(area, b, labels)) return "hit";
+  return "rel";
+}
+
 export function parseYMD(s) {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -78,7 +151,7 @@ export function frameGrade(l = {}) {
   return "assoc";
 }
 
-/** 희귀 카드 등급. 표식 수: 대표·고문 3, 고문변호사·파트너·전문위원 2, 변호사·자문위원 1. */
+/** 희귀 카드 프레임 장식 두께. 별 개수와는 별개. */
 const FRAME_LUX = {
   rep: "lux3",
   counsel: "lux-mid",
@@ -87,19 +160,83 @@ const FRAME_LUX = {
   expert: "lux2",
   consultant: "lux1",
 };
-const FRAME_PIPS = { lux3: 3, "lux-mid": 2, lux2: 2, lux1: 1 };
 
-export function rankPips(grade) {
-  const lux = FRAME_LUX[grade] || "lux1";
-  return FRAME_PIPS[lux] || 1;
+/** 약력 직함 → 별(4~5, 0.5 단위). 서버 `career_stars`와 동일. 사내 직위는 쓰지 않는다. */
+const TITLE_FAMILIES = [
+  ["court", ["대법관", "헌법재판관", "법원행정처장", "고등법원장", "법원장", "수석부장판사", "부장판사", "판사"]],
+  ["pros", ["검찰총장", "고검장", "지검장", "검사장", "차장검사", "부장검사", "검사"]],
+  ["police", ["경찰청장", "치안정감", "치안감", "경무관", "총경", "경정", "경감", "경위", "경사", "경장", "순경"]],
+];
+const STAR_BY_FAMILY_IDX = {
+  court: { 0: 5, 1: 5, 2: 4.5, 3: 4.5, 4: 4.5, 5: 4.5, 6: 4, 7: 4 },
+  pros: { 0: 5, 1: 4.5, 2: 4.5, 3: 4.5, 4: 4, 5: 4, 6: 4 },
+  police: { 0: 4.5, 1: 4.5, 2: 4.5, 3: 4, 4: 4, 5: 4, 6: 4, 7: 4, 8: 4, 9: 4, 10: 4 },
+};
+
+function titleRank(line) {
+  const stem = String(line || "").replace(/역임/g, "").trim();
+  let found = null;
+  for (const [fam, ranks] of TITLE_FAMILIES) {
+    for (let i = 0; i < ranks.length; i++) {
+      const rank = ranks[i];
+      if (stem === rank || stem.endsWith(rank)) {
+        if (!found || rank.length > found.len) found = { len: rank.length, fam, idx: i };
+      }
+    }
+  }
+  return found ? [found.fam, found.idx] : null;
 }
 
+function socialStars(line) {
+  const s = String(line || "").trim();
+  if (!s || /훈장|표창|포상/.test(s)) return 0;
+  if (s.includes("국무총리") || s.includes("대통령비서")) return 4.5;
+  if (s.includes("국회의장") || s.includes("장관")) return 4;
+  if (s.includes("국회의원") && /보좌|비서/.test(s)) return 4;
+  return 0;
+}
+
+function snapStars(n) {
+  const x = Math.round(Number(n) * 2) / 2;
+  return Math.min(5, Math.max(4, x));
+}
+
+/** 약력(titles+career) 최고 지위 → 별 4 / 4.5 / 5. API `stars` 없을 때 폴백. */
+export function careerStars(l = {}) {
+  let best = 4;
+  for (const line of [...(l.titles || []), ...(l.career || [])]) {
+    const hit = titleRank(line);
+    if (hit) {
+      const n = STAR_BY_FAMILY_IDX[hit[0]]?.[hit[1]];
+      if (n > best) best = n;
+      continue;
+    }
+    const n = socialStars(line);
+    if (n > best) best = n;
+  }
+  return snapStars(best);
+}
+
+/** 미니 카드 별. 인물 객체면 약력 기준. 숫자만 오면 그대로(4~5, 0.5). */
+export function rankPips(l) {
+  if (typeof l === "number") return snapStars(l);
+  if (typeof l?.stars === "number") return snapStars(l.stars);
+  return careerStars(l || {});
+}
+
+const STAR_PATH = "M6 .7 7.45 4.15 11.2 4.5 8.4 7.05 9.25 10.75 6 8.85 2.75 10.75 3.6 7.05.8 4.5 4.55 4.15Z";
+
 export function RankMarks({ n }) {
+  const stars = snapStars(n);
+  const full = Math.floor(stars);
+  const half = stars - full >= 0.5;
+  const glyphs = Array.from({ length: full }, () => "full");
+  if (half) glyphs.push("half");
   return (
     <span className="prank" aria-hidden="true">
-      {Array.from({ length: n }, (_, i) => (
-        <svg key={i} viewBox="0 0 12 12">
-          <path d="M6 .7 7.45 4.15 11.2 4.5 8.4 7.05 9.25 10.75 6 8.85 2.75 10.75 3.6 7.05.8 4.5 4.55 4.15Z" />
+      {glyphs.map((kind, i) => (
+        <svg key={i} className={kind === "half" ? "half" : undefined} viewBox="0 0 12 12">
+          <path d={STAR_PATH} />
         </svg>
       ))}
     </span>

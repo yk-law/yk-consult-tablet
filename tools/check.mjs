@@ -35,12 +35,133 @@ const visit = await fetch(`${API}/api/visit?id=228271`).then((r) => r.json());
 ok("visit helper", Array.isArray(visit.helper && visit.helper.sections) && visit.helper.sections.length === 4, JSON.stringify(visit.helper && { eng: visit.helper.engId, n: (visit.helper.sections || []).length }));
 const lawyers = (visit.seniors || []).filter((s) => s.kind !== "advisor");
 ok("전문인력 변호사 5명 이하", lawyers.length > 0 && lawyers.length <= 5, lawyers.length);
-ok("전문인력 분야 매칭", lawyers.every((s) => s.match === "field" || s.match === "near" || s.match === "court"));
-ok("홈페이지 명언", (visit.seniors || []).some((s) => (s.pitch || "").includes("의뢰인") || (s.pitch || "").includes("진심") || (s.pitch || "").includes("정성")));
+ok("전문인력 분야 매칭", lawyers.every((s) => s.match === "field" || s.match === "near" || s.match === "court" || s.match === "roster"));
+ok("홈페이지 명언", (visit.seniors || []).some((s) => /의뢰인|진심|정성|약속|파트너|전심|해결/.test(s.pitch || "")));
 ok("미니 수상실적 정책", (visit.seniors || []).every((s) => Array.isArray(s.awards)));
 ok("대표 경력", (visit.seniors || []).some((s) => (s.titles || []).some((t) => String(t).includes("역임"))));
 const unsigned = await fetch(`${API}/api/visit?id=228340`).then((r) => r.json());
 ok("한상진 수상 노출", (unsigned.seniors || []).some((s) => s.n === "한상진" && (s.awards || []).some((a) => String(a).includes("검찰총장"))));
+const counselCases = await Promise.all(
+  ["228340", "228271", "228304", "228288", "228291", "228310", "228318"].map((id) =>
+    fetch(`${API}/api/visit?id=${id}`).then((r) => r.json()),
+  ),
+);
+ok(
+  "시연 counsel 경력",
+  counselCases.every((v) => (v.counsel?.career || []).length > 0),
+  counselCases.map((v) => `${v.booking?.name}:${(v.counsel?.career || []).length}`).join(", "),
+);
+ok(
+  "천기홍 학력·경력",
+  (counselCases.find((v) => v.counsel?.n === "천기홍")?.counsel?.edu || "").includes("고려대")
+    && (counselCases.find((v) => v.counsel?.n === "천기홍")?.counsel?.career || []).length >= 4,
+);
+ok(
+  "천기홍 주요업무실적",
+  (counselCases.find((v) => v.counsel?.n === "천기홍")?.counsel?.cases || []).length >= 10,
+);
+
+const normLab = (s) => String(s || "").replace(/[·・\s\-_/]/g, "");
+const labelsOf = (FIELD, key) => FIELD?.[key] || [];
+const groupOk = (group, labels) => {
+  const g = normLab(group);
+  return !!g && labels.some((lab) => {
+    const n = normLab(lab);
+    return n && (g === n || g.includes(n) || n.includes(g));
+  });
+};
+const miniTagCount = (v) => {
+  const FIELD = v.FIELD || {};
+  const NEAR = v.NEAR || {};
+  const key = v.booking?.field || "";
+  const labels = labelsOf(FIELD, key);
+  const nearLabels = (NEAR[key] || []).flatMap((k) => labelsOf(FIELD, k));
+  const lawyers = (v.seniors || []).filter((s) => s.kind !== "advisor" && (s.areas || []).length);
+  if (!lawyers.length) return { ok: true, detail: "no-area-lawyers" };
+  const empty = [];
+  for (const s of lawyers) {
+    const n = (s.areas || []).filter(
+      (a) => groupOk(a.group, labels) || groupOk(a.group, nearLabels),
+    ).length;
+    if (!n) empty.push(s.n);
+  }
+  return { ok: empty.length === 0, detail: empty.join(",") || "all" };
+};
+const miniTagReports = counselCases.map((v) => {
+  const r = miniTagCount(v);
+  return `${v.booking?.name}:${r.ok ? "ok" : r.detail}`;
+});
+ok(
+  "전 예약 미니 업무태그",
+  counselCases.every((v) => miniTagCount(v).ok),
+  miniTagReports.join(" · "),
+);
+// 골드 플레이트(hit): 사건명·FIELD 토큰과 세부 업무가 겹치면, 대분류가 NEAR(형사 등)여도 hit
+const areaLabelChk = (name) => String(name || "").replace(/\s*\([^)]*\)\s*/g, "").trim();
+const nameHitChk = (area, b, labels) => {
+  const cat2 = String(b?.cat2 || "").replace(/\s/g, "");
+  const cat1 = String(b?.cat1 || "").replace(/\s/g, "");
+  const stem = cat2.replace(/^준/, "").replace(/유사/g, "");
+  const name = area?.name || "";
+  const bare = areaLabelChk(name).replace(/\s/g, "");
+  if (!name) return false;
+  if (cat2.includes(name) || name.includes(stem) || (stem && stem.includes(name))) return true;
+  if (bare && (cat2.includes(bare) || (stem && bare.includes(stem)))) return true;
+  if (stem.length >= 4 && bare.includes(stem.slice(0, 4))) return true;
+  if (bare.length >= 4 && stem.includes(bare.slice(0, 4))) return true;
+  const BROAD = new Set(["민사", "형사", "이혼", "행정", "가사", "가사상속", "기업법무", "노동", "의료", "조세", "마약"]);
+  const tokens = new Set();
+  for (const lab of labels || []) {
+    for (const part of String(lab).split(/[·・/,\s]+/)) {
+      const t = part.replace(/\s/g, "");
+      if (t.length >= 2 && !BROAD.has(t)) tokens.add(t);
+    }
+  }
+  for (const raw of [cat1, cat2, stem]) {
+    if (!raw) continue;
+    if (raw.length >= 2 && !BROAD.has(raw)) tokens.add(raw);
+    if (/고소$|고발$/.test(raw) && raw.length > 2) {
+      const base = raw.replace(/고소$|고발$/, "");
+      if (base.length >= 2 && !BROAD.has(base)) tokens.add(base);
+    }
+  }
+  for (const t of tokens) {
+    if (t.length >= 2 && (bare.includes(t) || name.includes(t) || normLab(bare).includes(normLab(t)))) return true;
+  }
+  return false;
+};
+const miniHitCount = (v) => {
+  const FIELD = v.FIELD || {};
+  const NEAR = v.NEAR || {};
+  const b = v.booking || {};
+  const key = b.field || "";
+  const labels = labelsOf(FIELD, key);
+  const nearLabels = (NEAR[key] || []).flatMap((k) => labelsOf(FIELD, k));
+  let hits = 0;
+  for (const s of (v.seniors || []).filter((x) => x.kind !== "advisor")) {
+    for (const a of s.areas || []) {
+      const direct = groupOk(a.group, labels);
+      const near = !direct && groupOk(a.group, nearLabels);
+      if ((direct || near) && nameHitChk(a, b, labels)) hits += 1;
+    }
+  }
+  return hits;
+};
+const hitReports = counselCases.map((v) => `${v.booking?.name}:${miniHitCount(v)}`);
+ok(
+  "전 예약 미니 hit 태그",
+  counselCases.every((v) => miniHitCount(v) > 0),
+  hitReports.join(" · "),
+);
+ok(
+  "이도현 경제범죄 hit",
+  miniHitCount(counselCases.find((v) => v.booking?.name === "이도현") || {}) >= 1,
+);
+ok(
+  "visit에 NEAR 포함",
+  counselCases.every((v) => v.NEAR && Array.isArray(v.NEAR.S)),
+);
+
 const dup = (rows) => (rows || []).some((s) => {
   const t = s.titles || [];
   const both = (a, b) => t.includes(a) && t.includes(b);
@@ -49,10 +170,36 @@ const dup = (rows) => (rows || []).some((s) => {
 ok("동일 직군 최고 직위", !dup(unsigned.seniors) && !dup(visit.seniors));
 ok("자문위원 목록 없음", !(unsigned.seniors || []).some((s) => s.pos === "자문위원"));
 ok("예시 고문·전문위원", (unsigned.seniors || []).some((s) => s.n === "강성용") && (unsigned.seniors || []).some((s) => s.n === "강신선"));
+ok(
+  "강신선 형사기동대",
+  (unsigned.seniors || []).some((s) => s.n === "강신선" && (s.titles || []).includes("형사기동대")),
+);
+ok(
+  "약력 별 4~5 · 0.5",
+  (unsigned.seniors || []).every((s) => {
+    const n = s.stars;
+    return typeof n === "number" && n >= 4 && n <= 5 && Math.abs(n * 2 - Math.round(n * 2)) < 1e-9;
+  }),
+);
+ok(
+  "별=약력(부장검사·부장판사 4)",
+  counselCases.some((v) => (v.seniors || []).some((s) => s.n === "한상진" && s.stars === 4))
+    && counselCases.some((v) => (v.seniors || []).some((s) => s.n === "김동진" && s.stars === 4)),
+);
+ok(
+  "별=사회지위(고문 4.5·전문위원 4)",
+  (unsigned.seniors || []).some((s) => s.n === "강성용" && s.stars === 4.5)
+    && (unsigned.seniors || []).some((s) => s.n === "강신선" && s.stars === 4),
+);
+// 사내 직위(대표)와 별이 같을 필요 없음 — 한상진은 대표이나 부장검사→4
+ok(
+  "별≠사내직위",
+  counselCases.some((v) => (v.seniors || []).some((s) => s.n === "한상진" && s.grade === "rep" && s.stars === 4)),
+);
 ok("한상진 수상·업무사례", (unsigned.seniors || []).some((s) => s.n === "한상진" && (s.awards || []).length && (s.works || []).some((w) => String(w.href).includes("/case/"))));
 ok("한상진 논문·저서", (unsigned.seniors || []).some((s) => s.n === "한상진" && (s.papers || []).some((p) => String(p).includes("검찰"))));
-ok("김동진 업무분야 세부", (unsigned.seniors || []).some((s) => s.n === "김동진" && (s.areas || []).length >= 20));
-ok("김동진 논문·저서", (unsigned.seniors || []).some((s) => s.n === "김동진" && (s.papers || []).length >= 4));
+ok("김동진 업무분야 세부", counselCases.some((v) => (v.seniors || []).some((s) => s.n === "김동진" && (s.areas || []).length >= 20)));
+ok("김동진 논문·저서", counselCases.some((v) => (v.seniors || []).some((s) => s.n === "김동진" && (s.papers || []).length >= 4)));
 ok("논문 없으면 공란", (unsigned.seniors || []).every((s) => !("papers" in s) || Array.isArray(s.papers)));
 ok("윤서준 전자서명 없음", !unsigned.booking?.modusign);
 ok("정하윤 전자서명", visit.booking?.modusign === true);
@@ -74,8 +221,9 @@ await page.waitForSelector(".confirmpane, .filmpane, .preppane");
 ok("내방 예약 확인", await page.locator(".confirmpane").count() > 0);
 ok("초기화면 사건분류 없음", !(await page.locator(".confirmpane").innerText()).includes("준강제추행"));
 const confirmCopy = await page.locator(".confirmpane").innerText();
-ok("초기화면 MYK", confirmCopy.includes("법률 과정을 더 쉽게") && confirmCopy.includes("의뢰인의 곁에 더 가까이") && confirmCopy.includes("편리하게 확인하고 이어갈 수 있습니다"));
+ok("초기화면 MYK", confirmCopy.includes("법률 과정을 더 쉽게, 의뢰인의 곁에 더 가까이") && confirmCopy.includes("편리하게 확인하고 이어갈 수 있습니다"));
 ok("초기화면 MYK 링크", await page.locator('.confirmpane .myk-qr[href="https://myk.legal/home"]').count() === 1);
+ok("초기화면 MYK hero", await page.locator(".confirmpane .myk-hero .myk-qr").evaluate((el) => el.getBoundingClientRect().width) === 128);
 await page.screenshot({ path: `${SHOT}/1-confirm.png` });
 
 await page.goto(`${WEB}/?c=228271&s=report`);
@@ -114,11 +262,18 @@ await page.waitForSelector(".counsel-go");
 await page.click(".counsel-go");
 await page.waitForSelector(".counsel-videopane");
 ok("인터뷰 영상 뎁스", await page.locator(".counsel-videopane iframe").count() === 1);
+const counselYt = await page.locator(".counsel-videopane iframe").getAttribute("src");
+ok("인터뷰 enablejsapi·rel·modestbranding",
+  !!counselYt && counselYt.includes("enablejsapi=1") && counselYt.includes("rel=0") && counselYt.includes("modestbranding=1"));
 ok("인터뷰 변호사명", (await page.locator(".counsel-video-meta strong").innerText()) === "천기홍");
+ok("유튜브 제목 meta 없음", await page.locator(".counsel-video-meta em").count() === 0);
+ok("유튜브 chrome 마스크", await page.locator(".counsel-video-chrome-mask").count() === 1);
+ok("인터뷰 스킵 문구", (await page.locator(".counsel-videopane .film-skip").innerText()).includes("프로필 바로 보기"));
 await page.waitForSelector(".counsel-videopane .film-skip.on");
 await page.click(".counsel-videopane .film-skip");
 await page.waitForSelector(".counselpane .profile");
 ok("영상 후 프로필", await page.locator(".counselpane .xwho strong").innerText() === "천기홍");
+ok("프로필 하단 유튜브 없음", await page.locator(".counselpane .vwrap").count() === 0);
 await page.goto(`${WEB}/?c=배수아&s=counsel-video`);
 await page.waitForSelector(".counsel-videopane, .counselpane");
 ok("김윤정 영상 딥링크", await page.locator(".counsel-videopane").count() === 1);
@@ -147,7 +302,8 @@ await page.goto(`${WEB}/?c=228340&s=survey`);
 await page.waitForSelector(".surveypane.open");
 const sv = await page.locator(".surveypane").innerText();
 ok("설문 1뎁스", sv.includes("선임했어요") && sv.includes("조금 더 생각해볼게요") && !sv.includes("전자서명을 마쳤습니다") && !sv.includes("만족하시나요"));
-ok("설문 MYK", sv.includes("법률 과정을 더 쉽게") && await page.locator('.surveypane .myk-qr[href="https://myk.legal/home"]').count() === 1);
+ok("설문 MYK", sv.includes("법률 과정을 더 쉽게, 의뢰인의 곁에 더 가까이") && await page.locator('.surveypane .myk-qr[href="https://myk.legal/home"]').count() === 1);
+ok("설문 MYK hero", await page.locator(".svfocus-main .myk-hero .myk-qr").evaluate((el) => el.getBoundingClientRect().width) === 128);
 ok("음성녹취 문항 없음(화면)", !sv.includes("녹취"));
 ok("승소 문항 없음", !sv.includes("승소"));
 await page.locator(".svgate button", { hasText: "선임했어요" }).click();
