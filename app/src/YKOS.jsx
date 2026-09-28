@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Logo from "./Logo.jsx";
 import Tablet from "./Tablet.jsx";
+import SignForm from "./SignForm.jsx";
 import { DEMO_TODAY, ST_CLS, addDays, visitWhen } from "./util.jsx";
 
 /** 고객 태블릿이 지금 어느 장면에 있는지. 실장이 한눈에 보는 문구. */
@@ -13,22 +14,24 @@ const WATCH = {
   seniors: ["전문인력", "고문·전문위원 둘러보는 중"],
 };
 
-/** 방문 예정일 퀵버튼. 실제 YK-OS 최상단 날짜 이동을 따른다. */
-const DAYS = [["prev", "어제", -1], ["today", "오늘", 0], ["next", "내일", 1]];
+/** 방문 예정일 이동. 실제 YK-OS는 화살표 하나에 라벨 하나다. */
+const DAY_LABEL = { "-1": "어제", 0: "오늘", 1: "내일" };
 
 export default function YKOS({ cat, data, booking, connected, screen, act }) {
   const [vq, setVq] = useState("");
-  const [day, setDay] = useState("today");
+  const [off, setOff] = useState(0);
+  const [signId, setSignId] = useState(null);
 
+  const want = addDays(DEMO_TODAY, off);
   const rows = useMemo(() => {
     const q = vq.trim().toLowerCase();
-    const want = addDays(DEMO_TODAY, DAYS.find(([k]) => k === day)[2]);
     return (cat?.bookings || [])
       .filter((x) => x.date === want)
       .filter((x) => !q || [x.name, x.tel, x.cat1, x.cat2].join(" ").toLowerCase().includes(q))
       .sort((a, z) => a.time.localeCompare(z.time));
-  }, [cat, vq, day]);
+  }, [cat, vq, want]);
 
+  const sign = signId ? (cat?.bookings || []).find((b) => b.id === signId) : null;
   const watch = WATCH[screen] || ["—", ""];
   const rst = connected ? `${booking?.branch} · ${booking?.name}(가명) 님` : "미연결";
 
@@ -55,12 +58,13 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
           <div className="split">
             {/* 좌 — 상담실장이 보는 화면 */}
             <section className="lft">
+              {sign ? <SignForm booking={sign} onBack={() => setSignId(null)} /> : <>
               <div className="vhd">
                 <h3>방문 예정 목록</h3>
                 <div className="dnav">
-                  {DAYS.map(([k, label]) => (
-                    <button key={k} className={day === k ? "on" : ""} onClick={() => setDay(k)}>{label}</button>
-                  ))}
+                  <button onClick={() => setOff(off - 1)} aria-label="이전 날짜">‹</button>
+                  <span className="lb">{DAY_LABEL[off] || want.slice(5)}</span>
+                  <button onClick={() => setOff(off + 1)} aria-label="다음 날짜">›</button>
                 </div>
                 <div className="seg2"><button className="on">전체</button><button>형사</button><button>민·가사</button></div>
               </div>
@@ -81,8 +85,11 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                       <span className="vn">{x.name}</span><span className="alias">가명</span>
                       <span className="vt">{x.tel}</span>
                       <span className="vg">{x.cat1}&gt;{x.cat2}</span>
-                      <span className="vb">상담 내용 작성</span>
-                      <span className="vb off">선임 계약</span>
+                      {/* 실제 YK-OS 규칙. 상담 내용을 작성해야 선임 계약이 열린다. */}
+                      <span className="vb">{x.wrote ? "상담 내용 보기" : "상담 내용 작성"}</span>
+                      {x.wrote
+                        ? <button className="vb sign" onClick={() => setSignId(x.id)}>선임 계약</button>
+                        : <span className="vb off">선임 계약</span>}
                       <button
                         className={`vb share${on ? " on" : ""}`}
                         onClick={() => (on ? act.unshare() : act.share(x.id))}
@@ -135,6 +142,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                   행의 <b>화면 공유</b>를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
                 </p>
               )}
+              </>}
             </section>
 
             {/* 우 — 고객 태블릿 연결 화면 (보기 전용) */}

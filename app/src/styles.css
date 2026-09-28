@@ -351,17 +351,24 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .split>.lft{padding:18px 18px 22px; background:var(--ivory2); min-width:0;
   border-right:1px solid var(--hair); display:flex; flex-direction:column;}
 .split>.rgt{padding:0; background:var(--sf); min-width:0; display:flex; flex-direction:column;}
-.split>.lft{overflow-y:auto;}
+/* 좌측만 스크롤한다. 선임 계약처럼 긴 화면이 들어와도 우측 미러링은 제자리를 지킨다. */
+.split{max-height:calc(100vh - 192px); grid-template-rows:minmax(0,1fr);}
+.stage.one .split{max-height:calc(100vh - 162px);}
+.stage.two .split{max-height:none;}
+.split>.lft{overflow-y:auto; min-height:0;}
+.split>.rgt{min-height:0; overflow:hidden;}
 .stage.two .split{grid-template-columns:1fr; min-height:0;}
 .stage.two .split>.lft{border-right:0; border-bottom:1px solid var(--hair);}
 
 .vhd{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
 .vhd h3{flex:1; margin:0; font-family:var(--font-serif); font-size:22px; font-weight:600; letter-spacing:-.02em; color:var(--ink);}
 /* 방문 예정일 퀵버튼 — 실제 YK-OS 최상단 날짜 이동 자리를 그대로 쓴다. */
-.dnav{display:flex; background:var(--sf); border:1px solid var(--hair2); border-radius:7px; padding:2px;}
-.dnav button{border:0; background:none; font-size:11px; font-weight:500; color:var(--mut);
-  padding:5px 12px; border-radius:5px; cursor:pointer; white-space:nowrap;}
-.dnav button.on{background:var(--nv); color:#fff; font-weight:700;}
+/* 날짜 이동. 실제 YK-OS 처럼 화살표 둘에 라벨 하나. */
+.dnav{display:flex; align-items:center; background:var(--sf); border:1px solid var(--hair2); border-radius:7px; padding:2px;}
+.dnav button{border:0; background:none; font-size:15px; line-height:1; color:var(--mut);
+  padding:4px 9px; border-radius:5px; cursor:pointer;}
+.dnav button:hover{background:var(--ivory2); color:var(--ink);}
+.dnav .lb{font-size:11px; font-weight:700; color:var(--ink); min-width:46px; text-align:center; white-space:nowrap;}
 .seg2{display:flex; background:var(--ivory2); border:1px solid var(--hair2); border-radius:7px; padding:2px;}
 .seg2 button{border:0; background:none; font-size:13px; font-weight:500; color:var(--ink2); padding:6px 14px; border-radius:5px; cursor:default;}
 .seg2 button.on{background:var(--sf); color:var(--ink); font-weight:700;}
@@ -394,6 +401,7 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .vcard .vb.off{color:var(--mut); background:var(--ivory2); border-color:transparent;}
 .vcard .vb.wr{cursor:pointer;}
 .vcard .vb.wr:hover{border-color:var(--nv); color:var(--nv); background:var(--nv-s);}
+.vcard .vb.sign{border-color:var(--ink); color:var(--ink); font-weight:700;}
 .vcard .vb.share{cursor:pointer; border-color:var(--acc); color:var(--acc); font-weight:700;}
 .vcard .vb.share:hover{background:var(--acc-s);}
 .vcard .vb.share.on{background:var(--acc); border-color:var(--acc); color:#fff;}
@@ -1036,3 +1044,82 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .svdone .sub{color:#C9C4B8;}
 .svdone .myk-hero{margin-top:0; padding-top:0; border-top:0;}
 .svdone .check{width:48px; height:48px; margin:0 auto; border:1px solid rgba(228,197,106,.55); color:#E8D5A3; display:flex; align-items:center; justify-content:center; font-size:20px;}
+
+/* ---------- 선임 계약 (실제 YK-OS /app/visit/sign 구성을 따른다) ---------- */
+.sgn{display:flex; flex-direction:column; gap:12px; padding-bottom:8px;}
+.sgtop{display:flex; align-items:center; gap:10px;}
+.sgtop h3{margin:0; font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--ink);}
+.sgback{border:1px solid var(--hair2); background:var(--sf); border-radius:7px; width:28px; height:28px;
+  font-size:14px; color:var(--ink2); cursor:pointer; flex:none;}
+.sgback:hover{border-color:var(--nv); color:var(--nv);}
+.sgtab{margin-left:auto;}
+
+.sgp{border:1px solid var(--hair); border-radius:10px; background:var(--sf); overflow:hidden;}
+.sgph{width:100%; display:flex; align-items:center; gap:8px; text-align:left; cursor:pointer;
+  border:0; background:var(--ivory2); padding:11px 14px; font-size:13px; font-weight:700; color:var(--ink);}
+.sgph b{font-size:15px; font-weight:800;}
+.sgph .sgwhen{margin-left:8px; font-size:11px; font-weight:500; font-style:normal; color:var(--mut);
+  border:1px solid var(--hair2); border-radius:20px; padding:2px 9px; background:var(--sf);}
+.sgph i{margin-left:auto; width:8px; height:8px; border-right:1.5px solid var(--mut); border-bottom:1.5px solid var(--mut);
+  transform:rotate(45deg) translate(-2px,-2px); flex:none;}
+.sgp.open .sgph i{transform:rotate(225deg) translate(-2px,-2px);}
+.sgpb{padding:14px; display:flex; flex-direction:column; gap:10px;}
+
+.sgg{display:grid; grid-template-columns:1fr 1fr; gap:10px 12px;}
+.sgg.three{grid-template-columns:1fr 1fr 1fr;}
+.sgg.sep{border-top:1px dashed var(--hair2); padding-top:12px;}
+.sgg.addr{grid-template-columns:140px 1fr auto; align-items:end;}
+.sgf{display:flex; flex-direction:column; gap:4px; min-width:0;}
+.sgf.w{grid-column:1 / -1;}
+.sgl{font-size:10.5px; font-weight:600; color:var(--mut); letter-spacing:.01em;}
+.sgl2{font-size:12px; font-weight:700; color:var(--ink); margin-top:2px;}
+.sgl2.n{margin:0;}
+
+.sgn input,.sgn select,.sgn textarea{width:100%; font:inherit; font-size:13px; color:var(--ink);
+  background:var(--sf); border:1px solid var(--hair2); border-radius:7px; padding:8px 10px; min-width:0;}
+.sgn textarea{resize:vertical; line-height:1.55;}
+.sgn input::placeholder,.sgn textarea::placeholder{color:var(--mut);}
+.sgn input:focus,.sgn select:focus,.sgn textarea:focus{outline:0; border-color:var(--nv); background:#fff;}
+.sgn input[readonly]{background:var(--ivory2); color:var(--mut);}
+.sgb2{border:1px solid var(--hair2); background:var(--sf); border-radius:7px; padding:8px 14px;
+  font-size:12px; font-weight:700; color:var(--ink); cursor:pointer; white-space:nowrap;}
+.sgb2:hover{border-color:var(--nv); color:var(--nv);}
+.sghint{margin:0; font-size:10.5px; color:var(--mut); line-height:1.6;}
+.sghint.in{margin:-2px 0 2px 30px;}
+.sghint.end{text-align:right;}
+
+.sgck{display:flex; align-items:center; gap:8px;}
+.sgck .bx{width:15px; height:15px; border-radius:4px; border:1.5px solid var(--hair2); background:var(--sf); flex:none;}
+.sgck .bx.on{background:var(--nv); border-color:var(--nv); position:relative;}
+.sgck .bx.on::after{content:""; position:absolute; left:4px; top:1px; width:4px; height:8px;
+  border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(40deg);}
+.sgck .t{font-size:12px; font-weight:700; color:var(--ink);}
+.sgd{height:1px; background:var(--hair2); margin:2px 0;}
+.sgrow{display:flex; align-items:center; gap:10px;}
+.sgadd{border:1px solid var(--nv); background:var(--nv-s); color:var(--nv); border-radius:6px;
+  padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;}
+
+.sgbox{border:1px solid var(--hair); border-radius:9px; padding:12px; display:flex; flex-direction:column; gap:10px;}
+.sgi{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.sgi.top{align-items:flex-start;}
+.sgi .ik{width:20px; height:20px; border-radius:5px; background:var(--ivory2); color:var(--mut);
+  font-size:10px; display:flex; align-items:center; justify-content:center; flex:none;}
+.sgi .it{font-size:12px; font-weight:600; color:var(--ink2); min-width:96px;}
+.sgi .grow{flex:1; min-width:140px;}
+.sgi .num{width:66px; flex:none; text-align:center;}
+.sgi .iu{font-size:11px; color:var(--mut);}
+.sgi .sp{flex:1;}
+.sgi .sgf{flex:1; min-width:110px;}
+.sgi .stp{width:28px; height:28px; border:1px solid var(--hair2); background:var(--sf); border-radius:6px;
+  font-size:13px; color:var(--ink2); cursor:pointer; flex:none;}
+.sgi .stp:hover{border-color:var(--nv); color:var(--nv);}
+.tg{width:30px; height:17px; border-radius:20px; background:var(--hair2); position:relative; flex:none;}
+.tg.on{background:var(--nv);}
+.tg::after{content:""; position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%; background:#fff;}
+.tg.on::after{left:15px;}
+.tv{font-size:11px; font-weight:700; color:var(--nv);}
+
+.sgfoot{display:flex; gap:8px; justify-content:center; padding-top:2px;}
+.sgfoot button{border-radius:7px; padding:9px 26px; font-size:13px; font-weight:700; cursor:pointer;}
+.sgfoot .pri{background:var(--nv); border:1px solid var(--nv); color:#fff;}
+.sgfoot .sec{background:var(--sf); border:1px solid var(--nv); color:var(--nv);}
