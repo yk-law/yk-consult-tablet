@@ -483,6 +483,24 @@ def advisor_cards() -> list[dict]:
     return [by_role[r] for r in ADVISOR_ROLE_ORDER if r in by_role]
 
 
+def bar_seniority(p: dict) -> tuple[int, str]:
+    """기수를 정렬용 숫자로 바꾼다. 작을수록 오래된 기수다.
+
+    사법연수원 기수를 기준으로 삼는다. 로스쿨 출신은 연수원 기수가 없으므로
+    변호사시험 회차로 대신한다. 변시 1회와 연수원 41기가 같은 해에 배출되어,
+    회차에 40을 더하면 같은 자 위에 놓인다.
+    기수를 알 수 없는 사람은 맨 뒤로 보낸다. 임의로 끼워 넣지 않는다.
+    """
+    src = f"{p.get('tr') or ''} {p.get('exam') or ''} {p.get('edu') or ''}"
+    m = re.search(r"제?\s*(\d+)\s*기\s*사법연수원|사법연수원\s*제?\s*(\d+)\s*기", src)
+    if m:
+        return (int(m.group(1) or m.group(2)), p.get("n", ""))
+    m = re.search(r"제?\s*(\d+)\s*회\s*변호사시험|변호사시험\s*제?\s*(\d+)\s*회", src)
+    if m:
+        return (40 + int(m.group(1) or m.group(2)), p.get("n", ""))
+    return (10_000, p.get("n", ""))
+
+
 def seniors_for(
     field: str,
     court: str,
@@ -507,6 +525,8 @@ def seniors_for(
             out.append(p)
             if len(out) >= limit:
                 break
+        # 좌측부터 기수가 오래된 순. 고문·전문위원은 기수가 없어 뒤에 붙는다.
+        out.sort(key=bar_seniority)
         out = out + advisor_cards()
         return out, "법무법인 YK의 전문인력입니다"
 
@@ -550,6 +570,8 @@ def seniors_for(
         x.pop("_s", None)
         x.pop("_court", None)
         x.pop("_list", None)
+    # 누구를 보여줄지는 위에서 정했고, 늘어놓는 순서는 기수를 따른다.
+    out.sort(key=bar_seniority)
     out = out + advisor_cards()
     return out, "법무법인 YK의 전문인력입니다"
 
