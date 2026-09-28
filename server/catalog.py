@@ -388,7 +388,6 @@ def public_profile(l: dict) -> dict:
         "videoId": clip["id"] if clip else None,
         "videoTitle": clip["title"] if clip else None,
         "grade": frame_of(l),
-        "stars": career_stars(titles, career),
         "kind": "lawyer",
         "pitch": pitch_of(l),
     }
@@ -474,8 +473,7 @@ def advisor_cards() -> list[dict]:
             "videoId": None,
             "videoTitle": None,
             "grade": frame_of({}, r),
-            "stars": career_stars(titles, career),
-            "kind": "advisor",
+                "kind": "advisor",
             "pitch": pitch,
             "reasons": [],
             "match": "advisor",

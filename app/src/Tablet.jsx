@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
 import Myk from "./Myk.jsx";
-import Survey from "./Survey.jsx";
-import { Portrait, RankMarks, rankPips, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
+import { Portrait, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
 
 // 브랜드 영상은 앱에 동봉한다. 외부(YK-OS) 참조는 상담실 회선이 느리거나
 // 그 서버가 점검 중이면 대기 화면이 비어 버리고, 태블릿 오프라인에서도 못 쓴다.
@@ -14,7 +13,6 @@ const JOURNEY = [
   ["report", "사건요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문인력"],
-  ["survey", "설문"],
 ];
 
 export default function Tablet({ data, screen, onScreen }) {
@@ -90,10 +88,8 @@ export default function Tablet({ data, screen, onScreen }) {
             FIELD={FIELD}
             NEAR={NEAR}
             b={b}
-            onNext={() => onScreen("survey")}
           />
         )}
-        {screen === "survey" && <Survey key={b.id} signed={!!b.modusign} />}
       </div>
       {journeyOn && (
         <nav className="jnav" aria-label="상담 안내">
@@ -451,7 +447,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b }) {
   return (
     <div className="profile">
       <div className="xlead">
-        <Portrait l={l} portraits={portraits} grade={l.grade} size="hero" />
+        <Portrait l={l} portraits={portraits} size="hero" />
         <div className="xident xmeta">
           <TitleBlock titles={l.titles} />
           <div className="xwho">
@@ -593,12 +589,10 @@ function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
       <span className="lbl">전문인력</span>
       <h2 className="h1">{headline || "법무법인 YK의 전문인력입니다"}</h2>
       <p className="sub">고객님의 사건을 성심껏 맡아드리기 위한 전담인력을 소개합니다</p>
-      <p className="subhint">직위가 높을수록 프레임 장식을 더합니다.</p>
       <div className="legendgrid">
         {list.map((l) => (
           <button type="button" className={`xcard ${l.grade}`} key={`${l.pos}-${l.n}`} onClick={() => setOpen(l.n)}>
-            <RankMarks n={rankPips(l)} />
-            <Portrait l={l} portraits={portraits} grade={l.grade} size="card" />
+            <Portrait l={l} portraits={portraits} size="card" />
             <div className="xmeta">
               <div className="xmeta-body">
                 <TitleBlock titles={l.titles} soft />

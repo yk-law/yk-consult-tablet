@@ -7,7 +7,6 @@ const SCREENS = [
   ["report", "사건요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문인력"],
-  ["survey", "설문"],
 ];
 /** 장면 딥링크용. 상단 세그에는 안 넣고 URL·흐름에서만 쓴다. */
 const DEEP = new Set(["film", "counsel-video", ...SCREENS.map(([id]) => id)]);
@@ -56,7 +55,7 @@ export default function App() {
           ))}
         </select>
         <span className="sp" />
-        <span className="note">내방 → 영상 → 사건요약 → 상담 변호사 → 전문인력 → 설문 · 고객명은 가명</span>
+        <span className="note">내방 → 영상 → 사건요약 → 상담 변호사 → 전문인력 · 고객명은 가명</span>
       </div>
       <div className="stage one">
         <Tablet data={data} screen={screen} onScreen={setScreen} />

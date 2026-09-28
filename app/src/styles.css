@@ -759,14 +759,11 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .yh-bring-note{margin:11px 0 0; font-size:11.5px; color:#9A958A; line-height:1.6;}
 .yh-src{margin:18px 0 0; padding-top:14px; border-top:1px solid rgba(169,138,75,.22); font-size:11px; color:#9A958A; line-height:1.6;}
 
-.pframe{--frame-outer:#A98A4B; --frame-mid:#C4B08A; --frame-ink:#1A140C; --frame-mat:#12100C;
-  --foil-a:#F3E2B0; --foil-b:#8A6E32; --frame-corner:#E4C56A; --foil:.42;
-  position:relative; margin:0; display:flex; flex-direction:column; flex:none; padding:5px;
-  background:linear-gradient(160deg, var(--foil-a) 0%, var(--frame-outer) 42%, var(--foil-b) 100%);
-  border:0; border-radius:0; box-shadow:none; overflow:hidden;
-  clip-path:polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 8px);}
-.pframe .pfoil{position:absolute; inset:0; z-index:4; pointer-events:none; opacity:var(--foil);
-  background:linear-gradient(115deg, transparent 20%, rgba(255,255,255,.5) 42%, transparent 50%, rgba(255,255,255,.16) 70%, transparent 82%);}
+/* 회의 결정(09-28): 평가 개념 제거. 등급별 금장·빛번짐을 없애고 모두 같은 액자로 담는다. */
+.pframe{--frame-mat:#12100C;
+  position:relative; margin:0; display:flex; flex-direction:column; flex:none; padding:1px;
+  background:rgba(169,138,75,.30);
+  border:0; border-radius:0; box-shadow:none; overflow:hidden;}
 .pframe .pmat{position:relative; z-index:1; display:block; flex:1; min-height:0; width:100%; padding:0;
   background:var(--frame-mat); border:0; border-radius:0; overflow:hidden;}
 .pframe img{display:block; width:100%; height:100%; object-fit:cover; object-position:center top;}
@@ -783,24 +780,6 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .pframe.card img{width:100%; height:100%; max-width:none; max-height:none;
   object-fit:cover; object-position:center top;}
 .pframe.card .mono{width:100%; height:100%; font-size:36px;}
-.pframe.rep{--frame-outer:#E4C56A; --frame-mid:#FFF4C8; --frame-ink:#3A2E12;
-  --foil-a:#FFF8DC; --foil-b:#B8923A; --frame-corner:#FFF6D0; --foil:.95;}
-.pframe.counsel{--frame-outer:#8E3A4C; --frame-mid:#E4C56A; --frame-ink:#2A1218;
-  --foil-a:#C46A7C; --foil-b:#4A1824; --frame-corner:#F3E2B0; --foil:.7;}
-.pframe.partner{--frame-outer:#C4A15A; --frame-mid:#F3E2B0; --frame-ink:#2A2214;
-  --foil-a:#F0DFA8; --foil-b:#8A6E32; --frame-corner:#E8CE7A; --foil:.45;}
-.pframe.assoc{--frame-outer:#6E5A32; --frame-mid:#A89870; --frame-ink:#1A140C;
-  --foil-a:#8A7344; --foil-b:#3E3218; --frame-corner:#A89870; --foil:0;}
-.pframe.advisor{--frame-outer:#D5DEE6; --frame-mid:#FFFFFF; --frame-ink:#1A1F27;
-  --foil-a:#FFFFFF; --foil-b:#8E9BAB; --frame-corner:#F7FBFF; --foil:.95;}
-.pframe.expert{--frame-outer:#C5D6E6; --frame-mid:#FFFFFF; --frame-ink:#243244;
-  --foil-a:#FFFFFF; --foil-b:#6E8EAE; --frame-corner:#FFFFFF; --foil:.8;}
-.pframe.consultant{--frame-outer:#3A342C; --frame-mid:#5C554C; --frame-ink:#120F0C;
-  --foil-a:#4A433A; --foil-b:#1C1814; --frame-corner:#5C554C; --foil:0;}
-.pframe.lux3{padding:6px;}
-.pframe.lux-mid{padding:5px;}
-.pframe.lux2{padding:5px;}
-.pframe.lux1{padding:4px;}
 
 .counselpane{background:#0C0F14;}
 .pane.on.counselpane{display:flex; flex-direction:column; overflow:auto; min-height:0;}
@@ -857,21 +836,6 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .xmeta{position:relative; z-index:1; padding:0; flex:1; display:flex; flex-direction:column;
   min-height:0; min-width:0; justify-content:center; gap:0;}
 /* 등급 별: 카드 바깥 상단 테두리 · 사진 칸 중앙(텍스트 칸 밖) */
-.legendgrid .xcard > .prank{position:absolute; z-index:4; top:-7px; left:calc(12px + 59px); right:auto; width:auto;
-  display:inline-flex; justify-content:center; align-items:center; gap:2px; pointer-events:none;
-  transform:translateX(-50%); padding:2px 6px;
-  background:linear-gradient(180deg, #1A1610 0%, #100E0A 100%);
-  border:1px solid rgba(228,197,106,.6); box-shadow:0 1px 0 rgba(0,0,0,.4);
-  box-sizing:border-box;}
-.legendgrid .xcard > .prank svg{width:10px; height:10px; display:block; fill:#E4C56A;
-  filter:none;}
-.legendgrid .xcard > .prank svg.half{clip-path:inset(0 50% 0 0);}
-.legendgrid .xcard.advisor > .prank{border-color:rgba(213,222,230,.65);}
-.legendgrid .xcard.advisor > .prank svg{fill:#F4F8FC;}
-.legendgrid .xcard.expert > .prank{border-color:rgba(197,214,230,.65);}
-.legendgrid .xcard.expert > .prank svg{fill:#D7E6F4;}
-.legendgrid .xcard.counsel > .prank{border-color:rgba(168,92,110,.55);}
-.legendgrid .xcard.counsel > .prank svg{fill:#E8C4CC;}
 .legendgrid .xmeta{height:100%; justify-content:flex-start; padding:0; min-width:0;}
 .legendgrid .xmeta-body{flex:1; min-height:0; width:100%; display:flex; flex-direction:column;
   justify-content:center; gap:4px;}
@@ -981,7 +945,6 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
   .legendgrid{grid-template-columns:repeat(auto-fill, 320px); grid-auto-rows:208px;}
   .legendgrid .xcard{width:320px; height:208px; grid-template-columns:104px minmax(0, 1fr); column-gap:10px; padding:8px 10px;}
   .legendgrid .pframe,.legendgrid .pframe.card{width:104px; height:100%;}
-  .legendgrid .xcard > .prank{left:calc(10px + 52px);}
   .legendgrid .xcard .xtags .f{font-size:11.5px; padding:3px 10px 3px 7px;}
   .profile .xlead{gap:12px 18px;}
   .profile .xsec.xcareer .clist{gap:0 20px;}
