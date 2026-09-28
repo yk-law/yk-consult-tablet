@@ -425,14 +425,23 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .unshare.sm{margin-left:8px; padding:4px 9px; font-size:9.5px;}
 
 /* 우 — 고객 태블릿 미러링 */
-.mirror{flex:1; background:#0B0E13; display:flex; flex-direction:column; align-items:center;
-  padding:20px 16px 0; min-height:430px; overflow:hidden;}
-.mfr{width:100%; max-width:430px; flex:1; overflow:hidden; border-radius:14px 14px 0 0;
+/* 미러링은 고객 태블릿을 그대로 줄인 것이어야 한다. 실제 기기는 가로 태블릿이므로
+   프레임도 가로 16:10 로 고정하고, 안에는 1280x800 짜리 화면을 통째로 넣어
+   프레임 폭에 맞춰 줄인다. 세로로 잘리거나 늘어나는 구간이 없다. */
+.mirror{--mw:1280; --mh:800;
+  flex:1; background:#0B0E13; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:18px 16px; min-height:300px; overflow:hidden; gap:10px;
+  container-type:size;}
+.mfr{width:100%; max-width:min(100%, calc((100cqh - 90px) * var(--mw) / var(--mh)));
+  aspect-ratio:var(--mw) / var(--mh); flex:none; overflow:hidden; border-radius:10px;
+  container-type:size;
   background:var(--sf); box-shadow:0 0 0 6px #1A1E26, 0 20px 50px -20px rgba(0,0,0,.9);}
-.mscale{width:500px; height:116.28%; transform:scale(.86); transform-origin:top left;}
+.mscale{width:calc(var(--mw) * 1px); height:calc(var(--mh) * 1px);
+  transform:scale(calc(100cqw / (var(--mw) * 1px))); transform-origin:top left;}
 .mclone{height:100%; pointer-events:none; user-select:none;}
-.mfoot{width:100%; max-width:430px; display:flex; justify-content:space-between; gap:10px;
-  padding:9px 4px 11px; font-size:9.5px; color:#7B818B; font-weight:300;}
+.mfoot{width:100%; max-width:min(100%, calc((100cqh - 90px) * var(--mw) / var(--mh)));
+  display:flex; justify-content:space-between; gap:10px;
+  padding:0 4px; font-size:9.5px; color:#7B818B; font-weight:300;}
 .mfoot #mnow{color:#E4E6EA; font-weight:500;}
 .oempty{flex:1; background:#0B0E13; color:#E4E6EA; display:flex; flex-direction:column; align-items:center;
   justify-content:center; text-align:center; padding:48px 28px; min-height:430px;}
