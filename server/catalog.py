@@ -29,6 +29,7 @@ def catalog() -> dict:
         "advisors": load("advisors.json"),
         "fee": load("fee.json"),
         "scenarios": load("scenarios.json"),
+        "intake": load("intake.json"),
         "firm": load("firm.json"),
         "sign": load("sign.json"),
         "cases": load("cases.json"),
@@ -404,11 +405,17 @@ def helper_view(b: dict) -> dict:
     """고객 태블릿 사건요약. 네 칸 구조(관계·경과·입장·확인하고 싶은 점)는 유지하되 어체는 고객향."""
     role = f"{b['role']} · {b['rel']}" if b.get("rel") else b.get("role") or ""
     sections = b.get("overview") or []
+    # 콜에서 사건 내용을 전혀 받지 못한 예약은 요약 대신 '오늘 이렇게 여쭤볼게요'를 띄운다.
+    intake = None
+    if not sections:
+        table = catalog()["intake"]
+        intake = table.get(b.get("cat2")) or table.get(b.get("cat1")) or table["__default"]
     return {
         "engId": b["id"],
         "title": "말씀하신 내용을 이렇게 정리했습니다",
         "facts": b.get("memo") or [],
         "sections": sections,
+        "intake": intake,
         "emptyNote": b.get("memoNote") or "",
         "rows": [
             ["사건 종류", f"{b['cat1']} > {b['cat2']}"],

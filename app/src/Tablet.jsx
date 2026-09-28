@@ -322,7 +322,57 @@ function CounselVideo({ l, onDone }) {
 
 function Report({ helper, onReady }) {
   const sections = helper?.sections || [];
+  const intake = helper?.intake;
   const none = !sections.length;
+
+  // 콜에서 사건 내용을 전혀 받지 못한 예약 — 요약할 게 없으니 '오늘 이렇게 여쭤볼게요'를 대신 띄운다.
+  // 빈 화면이나 사과문을 보여주면 고객이 준비가 덜 된 기분이 든다. 대기 시간에 생각을 정리하도록 돕는 편이 낫다.
+  if (none && intake) {
+    return (
+      <section className="pane on reportpane">
+        <div className="ykhelper">
+          <div className="yh-body">
+            <h3>오늘은 처음부터 편하게 말씀해 주세요</h3>
+            <p className="yh-lead">
+              {helper?.emptyNote
+                ? `${helper.emptyNote} `
+                : "예약하실 때에는 사건 내용을 따로 남기지 않으셨습니다. "}
+              정리해서 오실 필요는 없습니다. 상담에서 이런 순서로 여쭤보겠습니다.
+            </p>
+
+            <ol className="yh-steps">
+              {intake.steps.map(([t, d], i) => (
+                <li key={t}>
+                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h4>{t}</h4>
+                    <p>{d}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {intake.bring?.length > 0 && (
+              <div className="yh-bring">
+                <h4>가지고 계시면 도움이 되는 것</h4>
+                <ul>
+                  {intake.bring.map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+                <p className="yh-bring-note">
+                  지금 없으셔도 괜찮습니다. 상담 후에 보내주셔도 됩니다.
+                </p>
+              </div>
+            )}
+
+            <p className="yh-src">기억나시는 대로 말씀해 주시면 됩니다. 순서가 뒤바뀌어도 저희가 정리해 드립니다.</p>
+          </div>
+        </div>
+        <button type="button" className="go counsel-go" onClick={onReady}>상담 변호사 확인하기</button>
+      </section>
+    );
+  }
 
   return (
     <section className="pane on reportpane">
