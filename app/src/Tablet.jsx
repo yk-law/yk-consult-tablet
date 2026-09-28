@@ -4,7 +4,9 @@ import Myk from "./Myk.jsx";
 import Survey from "./Survey.jsx";
 import { Portrait, RankMarks, rankPips, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
 
-const FILM = "https://ykos.yklawfirm.co.kr/assets/yk-brand-film.mp4";
+// 브랜드 영상은 앱에 동봉한다. 외부(YK-OS) 참조는 상담실 회선이 느리거나
+// 그 서버가 점검 중이면 대기 화면이 비어 버리고, 태블릿 오프라인에서도 못 쓴다.
+const FILM = `${import.meta.env.BASE_URL}yk-brand-film.mp4`;
 const PREP_MS = 2200;
 
 /** 고객이 태블릿 안에서 자유 이동하는 퍼널 장면. */
