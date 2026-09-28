@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Logo from "./Logo.jsx";
 import Tablet from "./Tablet.jsx";
-import { api } from "./api.js";
-import { ST_CLS, man, visitWhen, won } from "./util.jsx";
+import { DEMO_TODAY, ST_CLS, addDays, visitWhen } from "./util.jsx";
 
 /** 고객 태블릿이 지금 어느 장면에 있는지. 실장이 한눈에 보는 문구. */
 const WATCH = {
@@ -14,40 +13,22 @@ const WATCH = {
   seniors: ["전문인력", "고문·전문위원 둘러보는 중"],
 };
 
-/** 실장이 태블릿으로 넘길 수 있는 장면. 설문은 09-28 회의에서 뺐다. */
-const PUSH = [
-  ["wait", "내방"],
-  ["film", "영상"],
-  ["report", "사건요약"],
-  ["counsel", "상담 변호사"],
-  ["seniors", "전문인력"],
-];
+/** 방문 예정일 퀵버튼. 실제 YK-OS 최상단 날짜 이동을 따른다. */
+const DAYS = [["prev", "어제", -1], ["today", "오늘", 0], ["next", "내일", 1]];
 
 export default function YKOS({ cat, data, booking, connected, screen, act }) {
   const [vq, setVq] = useState("");
-  const [oq, setOq] = useState("");
-  const [rank, setRank] = useState([]);
-  const [osd, setOsd] = useState(null);
+  const [day, setDay] = useState("today");
 
   const rows = useMemo(() => {
     const q = vq.trim().toLowerCase();
-    return (cat?.bookings || []).filter(
-      (x) => !q || [x.name, x.tel, x.cat1, x.cat2].join(" ").toLowerCase().includes(q),
-    );
-  }, [cat, vq]);
+    const want = addDays(DEMO_TODAY, DAYS.find(([k]) => k === day)[2]);
+    return (cat?.bookings || [])
+      .filter((x) => x.date === want)
+      .filter((x) => !q || [x.name, x.tel, x.cat1, x.cat2].join(" ").toLowerCase().includes(q))
+      .sort((a, z) => a.time.localeCompare(z.time));
+  }, [cat, vq, day]);
 
-  useEffect(() => {
-    if (!booking) return;
-    api.search(oq, { field: booking.field, court: booking.court, limit: 8 }).then(setRank);
-  }, [oq, booking]);
-
-  useEffect(() => {
-    const n = rank[0]?.n;
-    if (!n) { setOsd(null); return; }
-    api.lawyer(n).then(setOsd);
-  }, [rank]);
-
-  const fee = cat && booking ? (cat.fee[booking.feeKey] || cat.fee.__all) : null;
   const watch = WATCH[screen] || ["—", ""];
   const rst = connected ? `${booking?.branch} · ${booking?.name}(가명) 님` : "미연결";
 
@@ -76,6 +57,11 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
             <section className="lft">
               <div className="vhd">
                 <h3>방문 예정 목록</h3>
+                <div className="dnav">
+                  {DAYS.map(([k, label]) => (
+                    <button key={k} className={day === k ? "on" : ""} onClick={() => setDay(k)}>{label}</button>
+                  ))}
+                </div>
                 <div className="seg2"><button className="on">전체</button><button>형사</button><button>민·가사</button></div>
               </div>
               <div className="vsearch">
@@ -119,26 +105,13 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
 
-                  {/* 09-28 회의 1번 — 태블릿 화면을 여기서 직접 넘긴다 */}
-                  <div>
-                    <h4>태블릿 화면 제어 <em>누르면 고객 화면이 바뀝니다</em></h4>
-                    <div className="tctl">
-                      {PUSH.map(([id, label]) => (
-                        <button
-                          key={id}
-                          className={screen === id || (id === "counsel" && screen === "counsel-video") ? "on" : ""}
-                          onClick={() => act.screen(id)}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="watch" style={{ marginTop: 10 }}>
-                      <div>
-                        <div className="l">지금 이 화면</div>
-                        <div className="t">{watch[0]}</div>
-                        <div className="d">{watch[1]}</div>
-                      </div>
+                  {/* 09-28 회의: 화면 제어를 세분화하지 않는다. 고객이 태블릿에서 직접 움직이고,
+                      실장은 지금 어디를 보는지만 확인한다. 조작은 연결·해제뿐. */}
+                  <div className="watch">
+                    <div>
+                      <div className="l">지금 이 화면</div>
+                      <div className="t">{watch[0]}</div>
+                      <div className="d">{watch[1]}</div>
                     </div>
                   </div>
 
@@ -156,33 +129,6 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                     </div>
                   </div>
 
-                  <div>
-                    <h4>추천 순위 · 근거 <em>{oq ? `"${oq}"` : `${booking.cat1} ${booking.cat2} · ${booking.court}`}</em></h4>
-                    <div className="tools" style={{ margin: "0 0 10px" }}>
-                      <input value={oq} onChange={(e) => setOq(e.target.value)} placeholder="변호사 검색 — 이름 · 분야 · 출신 · 경력" />
-                    </div>
-                    <table className="tb">
-                      <thead><tr><th>변호사</th><th className="r">분야</th><th className="r">인접</th><th className="r">관할</th><th className="r">직위</th><th className="r">합계</th><th /></tr></thead>
-                      <tbody>
-                        {rank.map((l) => (
-                          <tr key={l.n}>
-                            <td>
-                              <div className="n2">{l.n}</div>
-                              <div style={{ fontSize: 9, color: "var(--mut)", fontWeight: 300 }}>{l.pos}{l.o ? ` · ${l.o}` : ""}</div>
-                            </td>
-                            <td className="r">{l.score?.parts?.field || "–"}</td>
-                            <td className="r">{l.score?.parts?.near || "–"}</td>
-                            <td className="r">{l.score?.parts?.court || "–"}</td>
-                            <td className="r">{l.score?.parts?.pos || "–"}</td>
-                            <td className="tot">{l.score?.s}</td>
-                            <td><button className="sb" onClick={() => act.pushLawyer(l.n)}>화면 공유</button></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {osd && <OsDetail l={osd} fee={fee} all={cat.fee.__all} feeKey={booking.feeKey} />}
                 </div>
               ) : (
                 <p className="sub" style={{ fontSize: 10, marginTop: 12 }}>
@@ -222,41 +168,6 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function OsDetail({ l, fee, all, feeKey }) {
-  const pct = (v) => Math.round((v / 50000000) * 100);
-  return (
-    <div>
-      <h4>{l.n} {l.pos} <em>고객이 열어 본 프로필</em></h4>
-      {fee && (
-        <div className="pr">
-          <div className="h">제안 금액 가이드<span>{feeKey} · 유사 {fee.n}건</span></div>
-          <div className="b">
-            <div className="rg">{man(fee.p25)} — {man(fee.p75)}</div>
-            <div className="rn">YK-OS 선임 목록의 <b>약정금</b> 실적 분포(25~75 백분위). 부가세 포함.</div>
-            <div className="bar"><i style={{ left: `${pct(fee.p25)}%`, right: `${100 - pct(fee.p75)}%` }} /></div>
-            <div className="bl"><span>₩0</span><span>₩50,000,000</span></div>
-            <div className="kv"><span>중앙값</span><span>{won(fee.mid)}</span></div>
-            <div className="kv"><span>전체 사건 중앙값</span><span>{won(all.mid)}</span></div>
-          </div>
-        </div>
-      )}
-      {l.d?.links ? (
-        <div style={{ marginTop: 14 }}>
-          <div className="lnk">
-            <div className="h">처분권자 접점<span>YK-OS 전용 · 고객 화면 비노출</span></div>
-            <div className="b">{l.d.links.map((x) => (
-              <div className="lr" key={x.t}>
-                <span className="lk2">{x.k}</span>
-                <span className="lt" dangerouslySetInnerHTML={{ __html: x.t + (x.e ? `<em>${x.e}</em>` : "") }} />
-              </div>
-            ))}</div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

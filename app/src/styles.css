@@ -48,6 +48,8 @@ button{font-family:inherit; letter-spacing:inherit;}
   box-shadow:0 40px 90px -34px rgba(0,0,0,.82), 0 0 0 1px rgba(169,138,75,.28), inset 0 1px 0 rgba(255,248,220,.06);
   display:flex; flex-direction:column;}
 .stage.one .tab{max-width:none; width:100%; height:100%; min-height:0;}
+/* 태블릿을 감싸는 그리드 아이템. 폭을 명시하지 않으면 shrink-to-fit 으로 0 이 된다. */
+.tabwrap{width:100%; min-width:0; min-height:0; display:flex; justify-content:center;}
 .tbar{background:linear-gradient(180deg, #141820 0%, #10141A 100%); color:#F4EFE6; padding:12px 22px; display:flex; justify-content:space-between;
   align-items:center; font-size:10px; font-weight:500; letter-spacing:.28em;
   border-bottom:1px solid rgba(169,138,75,.42);}
@@ -355,6 +357,11 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 
 .vhd{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
 .vhd h3{flex:1; margin:0; font-family:var(--font-serif); font-size:22px; font-weight:600; letter-spacing:-.02em; color:var(--ink);}
+/* 방문 예정일 퀵버튼 — 실제 YK-OS 최상단 날짜 이동 자리를 그대로 쓴다. */
+.dnav{display:flex; background:var(--sf); border:1px solid var(--hair2); border-radius:7px; padding:2px;}
+.dnav button{border:0; background:none; font-size:11px; font-weight:500; color:var(--mut);
+  padding:5px 12px; border-radius:5px; cursor:pointer; white-space:nowrap;}
+.dnav button.on{background:var(--nv); color:#fff; font-weight:700;}
 .seg2{display:flex; background:var(--ivory2); border:1px solid var(--hair2); border-radius:7px; padding:2px;}
 .seg2 button{border:0; background:none; font-size:13px; font-weight:500; color:var(--ink2); padding:6px 14px; border-radius:5px; cursor:default;}
 .seg2 button.on{background:var(--sf); color:var(--ink); font-weight:700;}
@@ -414,10 +421,8 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
   padding:20px 16px 0; min-height:430px; overflow:hidden;}
 .mfr{width:100%; max-width:430px; flex:1; overflow:hidden; border-radius:14px 14px 0 0;
   background:var(--sf); box-shadow:0 0 0 6px #1A1E26, 0 20px 50px -20px rgba(0,0,0,.9);}
-.mscale{width:500px; transform:scale(.86); transform-origin:top left;}
-.mclone{pointer-events:none; user-select:none;}
-.mclone .pane{display:none;} .mclone .pane.on{display:block; padding:22px 24px 28px;}
-.mclone .intro{min-height:560px;}
+.mscale{width:500px; height:116.28%; transform:scale(.86); transform-origin:top left;}
+.mclone{height:100%; pointer-events:none; user-select:none;}
 .mfoot{width:100%; max-width:430px; display:flex; justify-content:space-between; gap:10px;
   padding:9px 4px 11px; font-size:9.5px; color:#7B818B; font-weight:300;}
 .mfoot #mnow{color:#E4E6EA; font-weight:500;}
@@ -760,9 +765,11 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .yh-src{margin:18px 0 0; padding-top:14px; border-top:1px solid rgba(169,138,75,.22); font-size:11px; color:#9A958A; line-height:1.6;}
 
 /* 회의 결정(09-28): 평가 개념 제거. 등급별 금장·빛번짐을 없애고 모두 같은 액자로 담는다. */
+/* 09-28 회의: 평가 개념(별·등급별 장식·빛번짐)은 없애되, 액자 테두리는 유지한다.
+   누구나 같은 두께·같은 색으로 담아 우열이 읽히지 않게 한다. */
 .pframe{--frame-mat:#12100C;
-  position:relative; margin:0; display:flex; flex-direction:column; flex:none; padding:1px;
-  background:rgba(169,138,75,.30);
+  position:relative; margin:0; display:flex; flex-direction:column; flex:none; padding:4px;
+  background:#A98A4B;
   border:0; border-radius:0; box-shadow:none; overflow:hidden;}
 .pframe .pmat{position:relative; z-index:1; display:block; flex:1; min-height:0; width:100%; padding:0;
   background:var(--frame-mat); border:0; border-radius:0; overflow:hidden;}
