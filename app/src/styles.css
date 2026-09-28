@@ -775,12 +775,34 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 /* 회의 결정(09-28): 평가 개념 제거. 등급별 금장·빛번짐을 없애고 모두 같은 액자로 담는다. */
 /* 09-28 회의: 평가 개념(별·등급별 장식·빛번짐)은 없애되, 액자 테두리는 유지한다.
    누구나 같은 두께·같은 색으로 담아 우열이 읽히지 않게 한다. */
-.pframe{--frame-mat:#12100C;
-  position:relative; margin:0; display:flex; flex-direction:column; flex:none; padding:4px;
-  background:#A98A4B;
-  border:0; border-radius:0; box-shadow:none; overflow:hidden;}
+/* 인물 액자.
+   09-28 회의 결정은 '별을 없앤다' 였다. 평가로 읽히는 표식(별·등급별 장식)은 두지 않되,
+   액자 자체는 제대로 만든다. 도금 몰딩의 결과 안쪽 필렛, 매트의 깊이로 격을 낸다.
+   누구의 액자든 완전히 같다. 직위나 연차로 달라지는 값은 하나도 없다. */
+.pframe{
+  --frame-mat:#12100C;
+  --g-lit:#EBD9AC;   /* 빛 받는 면 */
+  --g-mid:#C0A05C;   /* 본색 */
+  --g-dim:#8A6E36;   /* 그늘 */
+  --g-deep:#54411D;  /* 몰딩 골 */
+  position:relative; margin:0; display:flex; flex-direction:column; flex:none;
+  padding:7px;
+  background:
+    linear-gradient(118deg,
+      var(--g-dim)  0%,  var(--g-lit) 11%, var(--g-mid) 26%,
+      var(--g-deep) 45%, var(--g-mid) 58%, var(--g-lit) 74%,
+      var(--g-mid)  86%, var(--g-dim) 100%);
+  border:0; border-radius:2px; overflow:hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,249,228,.34),   /* 바깥 모서리 광 */
+    inset 0 0 0 2px rgba(84,65,29,.5),       /* 몰딩 골 */
+    inset 0 0 0 3px rgba(235,217,172,.28),   /* 안쪽 필렛 */
+    inset 0 0 0 7px rgba(58,44,19,.42),      /* 매트에 닿는 그늘 */
+    0 3px 9px -3px rgba(0,0,0,.62);          /* 액자가 얹힌 그림자 */
+}
 .pframe .pmat{position:relative; z-index:1; display:block; flex:1; min-height:0; width:100%; padding:0;
-  background:var(--frame-mat); border:0; border-radius:0; overflow:hidden;}
+  background:var(--frame-mat); border:0; border-radius:0; overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(235,217,172,.22), inset 0 2px 5px rgba(0,0,0,.55);}
 .pframe img{display:block; width:100%; height:100%; object-fit:cover; object-position:center top;}
 .pframe .mono{display:flex; align-items:center; justify-content:center; background:#15120E;
   color:#C4B08A; font-family:var(--font-serif);}
