@@ -63,7 +63,8 @@ export default function App() {
   return (
     <div className="shell">
       <div className="dbar">
-        <span className="bd">YK 상담 태블릿 <em>시연</em></span>
+        {/* 시연 중 어느 배포본을 보고 있는지 확인용. 마우스를 올려야 보이므로 고객 화면에는 드러나지 않는다. */}
+        <span className="bd" title={`빌드 ${__BUILD__}`}>YK 상담 태블릿 <em>시연</em></span>
         <div className="seg">
           {VIEWS.map(([v, l]) => (
             <button key={v} className={view === v ? "on" : ""} onClick={() => setView(v)}>{l}</button>

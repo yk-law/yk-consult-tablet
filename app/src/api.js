@@ -10,9 +10,9 @@ const j = async (res) => {
 /** 태블릿 한 건의 화면 데이터. 현재는 파이썬이 미리 뽑아 둔 스냅샷을 쓴다. */
 async function snapshotVisit(id) {
   const base = import.meta.env.BASE_URL;
-  const index = await fetch(`${base}snapshot/index.json`).then(j);
+  const index = await fetch(`${base}snapshot/index.json?v=${__BUILD__}`).then(j);
   const key = (id && (index.byId?.[id] || index.byName?.[id])) || index.default;
-  return fetch(`${base}snapshot/${encodeURIComponent(key)}.json`).then(j);
+  return fetch(`${base}snapshot/${encodeURIComponent(key)}.json?v=${__BUILD__}`).then(j);
 }
 
 export const api = {

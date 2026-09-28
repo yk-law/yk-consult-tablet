@@ -16,7 +16,7 @@ export async function catalog() {
   const base = import.meta.env.BASE_URL;
   const entries = await Promise.all(
     FILES.map(async (name) => {
-      const res = await fetch(`${base}data/${name}.json`);
+      const res = await fetch(`${base}data/${name}.json?v=${__BUILD__}`);
       if (!res.ok) throw new Error(`${name}.json 을 불러오지 못했습니다 (${res.status})`);
       return [name, await res.json()];
     }),
