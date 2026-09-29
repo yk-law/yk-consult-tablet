@@ -786,7 +786,8 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
    누구나 같은 두께·같은 색으로 담아 우열이 읽히지 않게 한다. */
 /* 인물 액자.
    09-28 회의 결정은 '별을 없앤다' 였다. 평가로 읽히는 표식(별·등급별 장식)은 두지 않되,
-   액자 자체는 제대로 만든다. 도금 몰딩의 결과 안쪽 필렛, 매트의 깊이로 격을 낸다.
+   액자 자체는 제대로 만든다. 도금 몰딩 위에 기요셰(물결 각인)를 새기고 네 모서리에
+   당초 장식을 얹었다. 증서나 지폐의 각인처럼 촘촘해서, 가까이서 볼수록 결이 드러난다.
    누구의 액자든 완전히 같다. 직위나 연차로 달라지는 값은 하나도 없다. */
 .pframe{
   --frame-mat:#12100C;
@@ -794,29 +795,49 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
   --g-mid:#C0A05C;   /* 본색 */
   --g-dim:#8A6E36;   /* 그늘 */
   --g-deep:#54411D;  /* 몰딩 골 */
+  --wave:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='12' viewBox='0 0 44 12'><g fill='none' stroke='%23F6E8BE' stroke-width='.75' stroke-linecap='round'><path d='M0 6C5.5 1 16.5 1 22 6S38.5 11 44 6'/><path d='M0 6C5.5 11 16.5 11 22 6S38.5 1 44 6'/></g><g fill='none' stroke='%23412F11' stroke-width='.45'><path d='M0 6C5.5 1.9 16.5 1.9 22 6S38.5 10.1 44 6'/><path d='M0 6C5.5 10.1 16.5 10.1 22 6S38.5 1.9 44 6'/></g></svg>");
   position:relative; margin:0; display:flex; flex-direction:column; flex:none;
-  padding:7px;
+  padding:13px;
+  /* 물결 각인이 위, 도금 바탕이 아래. 가운데는 사진이 덮으므로 테두리에서만 보인다. */
   background:
+    var(--wave) repeat 0 0,
     linear-gradient(118deg,
       var(--g-dim)  0%,  var(--g-lit) 11%, var(--g-mid) 26%,
       var(--g-deep) 45%, var(--g-mid) 58%, var(--g-lit) 74%,
       var(--g-mid)  86%, var(--g-dim) 100%);
   border:0; border-radius:2px; overflow:hidden;
   box-shadow:
-    inset 0 0 0 1px rgba(255,249,228,.34),   /* 바깥 모서리 광 */
-    inset 0 0 0 2px rgba(84,65,29,.5),       /* 몰딩 골 */
-    inset 0 0 0 3px rgba(235,217,172,.28),   /* 안쪽 필렛 */
-    inset 0 0 0 7px rgba(58,44,19,.42),      /* 매트에 닿는 그늘 */
-    0 3px 9px -3px rgba(0,0,0,.62);          /* 액자가 얹힌 그림자 */
+    inset 0 0 0 1px rgba(255,249,228,.42),    /* 바깥 모서리 광 */
+    inset 0 0 0 2.5px rgba(66,50,21,.62),     /* 바깥 몰딩 골 */
+    inset 0 0 0 3.5px rgba(240,224,180,.34),  /* 물결이 놓이는 면의 위쪽 광 */
+    inset 0 0 0 10px rgba(58,44,19,.30),      /* 안쪽 필렛 */
+    inset 0 0 0 11px rgba(240,224,180,.30),   /* 필렛 광 */
+    inset 0 0 0 13px rgba(28,21,9,.55),       /* 매트에 닿는 그늘 */
+    0 4px 12px -4px rgba(0,0,0,.66);          /* 액자가 얹힌 그림자 */
+}
+/* 네 모서리 당초 장식. 한 장을 네 방향으로 뒤집어 같은 결이 이어지게 했다.
+   사진(z-index 1) 아래에 깔려 몰딩 위에서만 보인다. */
+.pframe::after{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.9;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'><g transform='translate(0,0)' fill='none' stroke='%23FBF0D2' stroke-width='1.05' stroke-linecap='round'><path d='M1.5 21V10C1.5 5.3 5.3 1.5 10 1.5h11'/><path d='M5.6 21v-9.7c0-3.1 2.6-5.7 5.7-5.7H21'/><path d='M9.9 16.6c0-2.4 1.9-4.3 4.3-4.3 1.6 0 2.7 1.1 2.7 2.5 0 1.2-.9 2-2 2-.9 0-1.5-.6-1.5-1.4'/></g></svg>") no-repeat left top,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'><g transform='translate(22,0) scale(-1,1)' fill='none' stroke='%23FBF0D2' stroke-width='1.05' stroke-linecap='round'><path d='M1.5 21V10C1.5 5.3 5.3 1.5 10 1.5h11'/><path d='M5.6 21v-9.7c0-3.1 2.6-5.7 5.7-5.7H21'/><path d='M9.9 16.6c0-2.4 1.9-4.3 4.3-4.3 1.6 0 2.7 1.1 2.7 2.5 0 1.2-.9 2-2 2-.9 0-1.5-.6-1.5-1.4'/></g></svg>") no-repeat right top,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'><g transform='translate(22,22) scale(-1,-1)' fill='none' stroke='%23FBF0D2' stroke-width='1.05' stroke-linecap='round'><path d='M1.5 21V10C1.5 5.3 5.3 1.5 10 1.5h11'/><path d='M5.6 21v-9.7c0-3.1 2.6-5.7 5.7-5.7H21'/><path d='M9.9 16.6c0-2.4 1.9-4.3 4.3-4.3 1.6 0 2.7 1.1 2.7 2.5 0 1.2-.9 2-2 2-.9 0-1.5-.6-1.5-1.4'/></g></svg>") no-repeat right bottom,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'><g transform='translate(0,22) scale(1,-1)' fill='none' stroke='%23FBF0D2' stroke-width='1.05' stroke-linecap='round'><path d='M1.5 21V10C1.5 5.3 5.3 1.5 10 1.5h11'/><path d='M5.6 21v-9.7c0-3.1 2.6-5.7 5.7-5.7H21'/><path d='M9.9 16.6c0-2.4 1.9-4.3 4.3-4.3 1.6 0 2.7 1.1 2.7 2.5 0 1.2-.9 2-2 2-.9 0-1.5-.6-1.5-1.4'/></g></svg>") no-repeat left bottom;
+  background-size:22px 22px;
 }
 .pframe .pmat{position:relative; z-index:1; display:block; flex:1; min-height:0; width:100%; padding:0;
   background:var(--frame-mat); border:0; border-radius:0; overflow:hidden;
-  box-shadow:inset 0 0 0 1px rgba(235,217,172,.22), inset 0 2px 5px rgba(0,0,0,.55);}
+  box-shadow:
+    inset 0 0 0 1px rgba(246,232,190,.30),
+    inset 0 0 0 2px rgba(20,15,6,.9),
+    inset 0 3px 7px rgba(0,0,0,.6);}
+
 .pframe img{display:block; width:100%; height:100%; object-fit:cover; object-position:center top;}
 .pframe .mono{display:flex; align-items:center; justify-content:center; background:#15120E;
   color:#C4B08A; font-family:var(--font-serif);}
 .pframe.bust .pmat{overflow:hidden;}
-.pframe.hero{width:148px; align-self:start; flex:none;}
+.pframe.hero{width:168px; align-self:start; flex:none;}
 .pframe.hero .pmat{flex:none; width:100%; height:186px;}
 .pframe.hero img{width:100%; height:100%; max-width:none; max-height:none;
   object-fit:cover; object-position:center top;}
@@ -867,8 +888,8 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
   display:grid; grid-template-columns:118px minmax(0, 1fr); align-items:stretch;
   column-gap:12px; padding:10px 12px; overflow:visible;
   appearance:none; -webkit-appearance:none; font:inherit;}
-.legendgrid .pframe{display:flex; flex:none; width:118px; align-self:stretch;}
-.legendgrid .pframe.card{width:118px; height:100%; box-sizing:border-box;}
+.legendgrid .pframe{display:flex; flex:none; width:134px; align-self:stretch;}
+.legendgrid .pframe.card{width:134px; height:100%; box-sizing:border-box;}
 .legendgrid .pframe.card .pmat{width:100%; height:auto; flex:1; min-height:0; padding:0; display:flex; align-items:stretch; justify-content:center; overflow:hidden;}
 .legendgrid .pframe.card img{width:100%; height:100%; flex:1; min-height:0; max-width:none; max-height:none; object-fit:cover; object-position:center top;}
 .legendgrid .pframe.card .mono{width:100%; height:100%; font-size:36px;}
@@ -990,7 +1011,7 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 @container tablet (max-width: 1080px){
   .legendgrid{grid-template-columns:repeat(auto-fill, 320px); grid-auto-rows:208px;}
   .legendgrid .xcard{width:320px; height:208px; grid-template-columns:104px minmax(0, 1fr); column-gap:10px; padding:8px 10px;}
-  .legendgrid .pframe,.legendgrid .pframe.card{width:104px; height:100%;}
+  .legendgrid .pframe,.legendgrid .pframe.card{width:118px; height:100%;}
   .legendgrid .xcard .xtags .f{font-size:11.5px; padding:3px 10px 3px 7px;}
   .profile .xlead{gap:12px 18px;}
   .profile .xsec.xcareer .clist{gap:0 20px;}
