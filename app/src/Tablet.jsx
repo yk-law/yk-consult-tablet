@@ -591,21 +591,22 @@ function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
       <p className="sub">고객님의 사건을 성심껏 맡아드리기 위한 전담인력을 소개합니다</p>
       <div className="legendgrid">
         {list.map((l) => (
-          <button type="button" className={`xcard ${l.grade}`} key={`${l.pos}-${l.n}`} onClick={() => setOpen(l.n)}>
-            <Portrait l={l} portraits={portraits} size="card" />
-            <div className="xmeta">
-              <div className="xmeta-body">
-                <TitleBlock titles={l.titles} soft />
-                <div className="xwho">
-                  <strong>{l.n}</strong>
-                  <em>{l.pos}</em>
-                </div>
-                <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} />
-              </div>
-              <p className={`xaward${l.awards?.length ? "" : " blank"}`}>
-                {l.awards?.length ? l.awards[0] : ""}
-              </p>
-            </div>
+          /* 사진을 카드 전면에 깔고 아래에 정보를 얹는다. 인물이 가장 크게 보인다. */
+          <button type="button" className="xcard" key={`${l.pos}-${l.n}`} onClick={() => setOpen(l.n)}>
+            <span className="xshot">
+              {portraits?.[l.n]
+                ? <img src={portraits[l.n]} alt={l.n} />
+                : <span className="xmono">{l.n[0]}</span>}
+            </span>
+            <span className="xveil" />
+            <span className="xmeta">
+              <span className="xti">{l.titles?.[0] || ""}</span>
+              <span className="xwho">
+                <strong>{l.n}</strong>
+                <em>{l.pos}{l.o ? ` · ${l.o}` : ""}</em>
+              </span>
+              <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} />
+            </span>
           </button>
         ))}
       </div>
