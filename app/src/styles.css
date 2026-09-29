@@ -863,35 +863,53 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .seniorpane .h1{color:#F7F3EB; font-size:clamp(22px, 3.2cqw, 30px);}
 .seniorpane .sub{color:#C9C4B8; margin:6px 0 8px; font-size:clamp(13px, 1.6cqw, 15px);}
 .seniorpane .subhint{color:#9A958A; margin:0 0 22px; font-size:clamp(11px, 1.3cqw, 13px); line-height:1.7; font-weight:400;}
-/* 전문인력 카드 — 사진 전면형.
-   사진을 카드 전체에 깔고 아래쪽에 정보를 얹는다. 인물이 가장 크게 보이고
-   장식 액자가 없어 사진과 부딪히지 않는다. 직위로 달라지는 값은 두지 않는다. */
-.legendgrid{display:grid; grid-template-columns:repeat(auto-fill, 236px);
-  gap:18px; justify-content:center; padding:4px 0 8px; width:100%;}
+/* 전문인력 카드.
+   추천이 아니라 '이 사람들이 사건을 함께 맡는다'는 소개다. 드러나는 것은
+   최종 출신 · 주요 경력 · 업무 분야 · 업무 사례 넷뿐이고, 사건 매칭 문구는 두지 않는다.
+   사내 직위와 전관 경력은 성격이 달라 서체로 가른다. 직위는 고딕에 자간을 벌려
+   라벨처럼, 전관은 명조로 이름과 같은 결에 둔다. */
+.legendgrid{display:grid; grid-template-columns:repeat(auto-fill, 246px);
+  gap:16px; justify-content:center; padding:4px 0 8px; width:100%;}
 .xcard{position:relative; display:flex; flex-direction:column; text-align:left;
-  background:#0E0C08; border:1px solid #241E14; border-radius:3px; cursor:pointer;
+  background:#100D09; border:1px solid #241E14; border-radius:4px; cursor:pointer;
   padding:0; overflow:hidden; transition:border-color .15s, transform .15s;}
-.legendgrid .xcard{width:236px; aspect-ratio:3/4; height:auto; min-height:0; align-self:stretch;}
+.legendgrid .xcard{width:246px; height:auto; min-height:0; align-self:stretch;}
 .legendgrid .xcard:hover{border-color:#C4A15A; transform:translateY(-2px);}
-.xshot{position:absolute; inset:0; display:block; overflow:hidden;}
-.xshot img{width:100%; height:100%; object-fit:cover; object-position:center 10%; display:block;}
+.xshot{position:relative; display:block; width:100%; aspect-ratio:3/2; overflow:hidden; background:#0E0C08;}
+.xshot img{width:100%; height:100%; object-fit:cover; object-position:center 6%; display:block;}
 .xmono{width:100%; height:100%; display:flex; align-items:center; justify-content:center;
-  background:#15120E; color:#C4B08A; font-family:var(--font-serif); font-size:44px;}
-/* 사진이 밝아도 글자가 읽히도록 아래쪽을 충분히 눌러 준다. */
-.xveil{position:absolute; inset:auto 0 0 0; height:62%; pointer-events:none;
-  background:linear-gradient(to top, rgba(6,5,4,.98) 42%, rgba(6,5,4,.9) 62%,
-    rgba(6,5,4,.55) 80%, transparent);}
-.legendgrid .xmeta{position:absolute; inset:auto 0 0 0; z-index:1; display:flex; flex-direction:column;
-  padding:0 16px 16px; gap:0; height:auto; min-width:0;}
-.legendgrid .xti{display:block; min-height:16px; font-size:11px; letter-spacing:.06em;
-  color:#E7D2A0; margin:0 0 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.legendgrid .xwho{display:block; margin:0 0 9px;}
-.legendgrid .xwho strong{display:block; font-family:var(--font-serif); font-size:21px;
-  font-weight:500; color:#F4EFE6; letter-spacing:-.01em;}
-.legendgrid .xwho em{display:block; font-size:12px; font-weight:400; font-style:normal;
-  color:#B9B0A0; margin:2px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.legendgrid .xtags{display:flex; flex-wrap:wrap; gap:5px; margin:0; min-height:0; max-height:52px;
-  overflow:hidden; justify-content:flex-start;}
+  background:#15120E; color:#C4B08A; font-family:var(--font-serif); font-size:40px;}
+.xveil{position:absolute; inset:auto 0 0 0; height:66%; pointer-events:none;
+  background:linear-gradient(to top, rgba(6,5,4,.98) 34%, rgba(6,5,4,.66) 72%, transparent);}
+.xname{position:absolute; inset:auto 0 0 0; padding:0 14px 11px;
+  font-family:var(--font-serif); font-size:19px; font-weight:500; color:#F4EFE6;}
+.xbody{display:flex; flex-direction:column; flex:1; padding:13px 14px 16px;}
+
+/* 직위 | 전관 */
+.xline{display:flex; align-items:baseline; flex-wrap:wrap; line-height:1.6;
+  margin:0 0 11px; padding:0 0 10px; border-bottom:1px solid #241E14;}
+.xline .rank{font-size:11px; font-weight:500; color:#D4CAB6; letter-spacing:.12em;}
+.xline .sep{display:inline-block; width:1px; height:11px; background:#39311F; margin:0 9px; flex:none;}
+.xline .prev{font-family:var(--font-serif); font-size:13.5px; font-weight:500; color:#E7D2A0;}
+/* 전관이 길면 한 단씩 낮춰 한 줄에 앉힌다. 그래도 안 되면 줄을 나눈다.
+   자격을 줄임표로 자르지는 않는다. 어디 출신인지가 이 줄의 전부다. */
+.xline.sm .prev{font-size:12.5px;}
+.xline.xs .prev{font-size:11.5px;}
+.xline.xs .rank{letter-spacing:.08em;}
+.xline.stack{display:block;}
+.xline.stack .sep{display:none;}
+.xline.stack .prev{display:block; font-size:12.5px; margin:0 0 1px;}
+.xline.stack .rank{display:block; letter-spacing:.08em;}
+
+.xh{display:block; font-size:10px; letter-spacing:.07em; color:#C6A25E;
+  margin:12px 0 6px; padding-top:10px; border-top:1px solid #241E14;}
+.xline + .xh{border-top:0; padding-top:0; margin-top:0;}
+.xlist{margin:0; padding:0; list-style:none;}
+.xlist li{font-size:12px; color:#CFC5B2; line-height:1.5; padding:0 0 0 10px;
+  position:relative; margin:0 0 4px;}
+.xlist li::before{content:""; position:absolute; left:0; top:7px; width:3px; height:3px;
+  background:#C6A25E; border-radius:50%;}
+.legendgrid .xtags{display:flex; flex-wrap:wrap; gap:4px; margin:0; min-height:0;}
 .seniorpane .xtags .f,
 .profile .xtags .f{display:inline-flex; align-items:center; gap:4px; max-width:100%; min-width:0;
   font-size:10px; line-height:1.35; padding:1px 10px 1px 7px; letter-spacing:.02em; font-weight:500;

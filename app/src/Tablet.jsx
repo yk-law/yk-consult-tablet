@@ -581,6 +581,53 @@ function FieldTags({ l, FIELD, NEAR, b, full }) {
   );
 }
 
+/** 경력 한 줄에서 대괄호·괄호 상세를 덜어낸다. 카드에서는 기관명만 읽히면 된다. */
+function briefCareer(c) {
+  return c.replace(/\s*\[[^\]]*\]/g, "").replace(/\s*\([^)]*\)/g, "").trim();
+}
+
+/** 전문인력 카드.
+ *  추천이 아니라 '이 사람들이 사건을 함께 맡는다'는 소개다. 드러나는 것은
+ *  최종 출신 · 주요 경력 · 업무 분야 · 업무 사례 넷뿐이다.
+ *  사내 직위(대표변호사)와 전관 경력(부장판사 역임)은 성격이 달라 서체로 가른다. */
+function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen }) {
+  const prev = l.titles?.[0] || (l.o ? `${l.o} 출신` : "");
+  // 246px 카드에서 이 줄이 쓸 수 있는 폭은 216px 이고, 구분자가 19px 을 먹는다.
+  // 직위는 자간을 벌려 글자당 폭이 더 크므로 1.25 를 곱해 함께 센다.
+  // 실측: 전관 명조 13.5px 은 글자당 약 12.3px, 12.5px 은 11.4px, 11.5px 은 10.5px.
+  const load = l.pos.length * 1.25 + prev.length;
+  const fit = !prev ? "" : load <= 16 ? "" : load <= 19 ? " sm" : load <= 22 ? " xs" : " stack";
+  const career = (l.career || []).map(briefCareer).filter(Boolean).slice(0, 3);
+  const works = (l.works || []).map((w) => (w?.title || w || "").split(" | ")[0]).filter(Boolean).slice(0, 2);
+  return (
+    <button type="button" className="xcard" onClick={onOpen}>
+      <span className="xshot">
+        {portraits?.[l.n] ? <img src={portraits[l.n]} alt={l.n} /> : <span className="xmono">{l.n[0]}</span>}
+        <span className="xveil" />
+        <span className="xname">{l.n}</span>
+      </span>
+      <span className="xbody">
+        <span className={`xline${fit}`}>
+          <span className="rank">{l.pos}</span>
+          {prev ? <><span className="sep" /><span className="prev">{prev}</span></> : null}
+        </span>
+        {career.length ? (
+          <><span className="xh">주요 경력</span>
+          <ul className="xlist">{career.map((c) => <li key={c}>{c}</li>)}</ul></>
+        ) : null}
+        {l.f?.length || l.areas?.length ? (
+          <><span className="xh">업무 분야</span>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} /></>
+        ) : null}
+        {works.length ? (
+          <><span className="xh">업무 사례</span>
+          <ul className="xlist">{works.map((w) => <li key={w}>{w}</li>)}</ul></>
+        ) : null}
+      </span>
+    </button>
+  );
+}
+
 function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
   const [open, setOpen] = useState(null);
   const shown = open ? list.find((x) => x.n === open) : null;
@@ -591,23 +638,8 @@ function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
       <p className="sub">고객님의 사건을 성심껏 맡아드리기 위한 전담인력을 소개합니다</p>
       <div className="legendgrid">
         {list.map((l) => (
-          /* 사진을 카드 전면에 깔고 아래에 정보를 얹는다. 인물이 가장 크게 보인다. */
-          <button type="button" className="xcard" key={`${l.pos}-${l.n}`} onClick={() => setOpen(l.n)}>
-            <span className="xshot">
-              {portraits?.[l.n]
-                ? <img src={portraits[l.n]} alt={l.n} />
-                : <span className="xmono">{l.n[0]}</span>}
-            </span>
-            <span className="xveil" />
-            <span className="xmeta">
-              <span className="xti">{l.titles?.[0] || ""}</span>
-              <span className="xwho">
-                <strong>{l.n}</strong>
-                <em>{l.pos}{l.o ? ` · ${l.o}` : ""}</em>
-              </span>
-              <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} />
-            </span>
-          </button>
+          <SeniorCard l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b}
+            key={`${l.pos}-${l.n}`} onOpen={() => setOpen(l.n)} />
         ))}
       </div>
       {!list.length ? <p className="empty">아직 연결된 전문인력 프로필이 없습니다.</p> : null}
