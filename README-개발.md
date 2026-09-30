@@ -5,7 +5,7 @@
 ## 시작 — 셋 중 아무거나
 
 ### 1. 더블클릭 (제일 쉬움)
-Finder에서 **`개발서버 시작.command`** 더블클릭.
+Finder에서 **`개발서버.command`** 더블클릭. 배포는 **`푸시.command`**.
 검은 창이 뜨고 브라우저가 알아서 http://localhost:5173 을 엽니다.
 끌 때는 그 창에서 **Ctrl + C** 를 누르거나 창을 닫으면 됩니다.
 
@@ -44,7 +44,7 @@ node tools/dev.mjs
 | 확장 질문 | `server/data/scenarios.json` |
 | 약정금 분포 | `server/data/fee.json` |
 
-예전 vanilla HTML/JS는 `vanilla/` 에 비교용으로만 남아 있습니다. `목업 열기.command` 는 그 파일을 엽니다.
+예전 vanilla HTML/JS는 `vanilla/` 에 비교용으로만 남아 있습니다. 화면과는 무관합니다.
 
 ## 딥링크 — 고칠 화면으로 바로 들어가기
 
@@ -81,6 +81,6 @@ FastAPI는 `app/dist` 가 있으면 8000 포트에서 SPA도 같이 서빙합니
 
 ## 주의
 
-- **원본은 `app/src/` 와 `server/` 입니다.** `app/dist/` · `dist/` · `mockups/` 는 빌드 결과물입니다.
+- **원본은 `app/src/` 와 `server/` 입니다.** `app/dist/` 는 빌드 결과물입니다.
 - 세션은 서버 메모리 한 건입니다. uvicorn을 재시작하면 공유 상태가 풀립니다.
 - 브랜드 영상은 `yklawfirm.co.kr` 을 직접 참조합니다. 로컬·태블릿에서는 재생되지만 망분리 환경에서는 영상만 빠집니다.

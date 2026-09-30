@@ -10,7 +10,7 @@
 node tools/dev.mjs        # FastAPI :8000 + Vite :5173
 ```
 
-브라우저에서 http://localhost:5173 을 연다. Finder에서는 **`개발서버 시작.command`** 를 더블클릭.
+브라우저에서 http://localhost:5173 을 연다. Finder에서는 **`개발서버.command`** 를 더블클릭.
 자세한 내용은 **`README-개발.md`**.
 
 ## 무엇을 고치면 되나
