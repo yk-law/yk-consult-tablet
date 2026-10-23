@@ -1,0 +1,254 @@
+/* colors.md (2026-10-22): light roles are authoritative; dark is a proposed mapping. */
+.binder-theme.theme-light, .customer-fullscreen .dbar[data-theme="light"] {
+  --yk-background:#FFFFFF;
+  --yk-foreground:#202631;
+  --yk-card:#FFFFFF;
+  --yk-card-foreground:#202631;
+  --yk-popover:#FFFFFF;
+  --yk-popover-foreground:#202631;
+  --yk-muted:#EDEFF5;
+  --yk-muted-foreground:#626873;
+  --yk-primary:#102169;
+  --yk-primary-foreground:#FFFFFF;
+  --yk-secondary:#EDEFF5;
+  --yk-secondary-foreground:#102169;
+  --yk-primary-hover:#1B3074;
+  --yk-primary-pressed:#081449;
+  --yk-secondary-hover:#D5DBE5;
+  --yk-secondary-pressed:#ACB6C7;
+  --yk-ring:#3754A0;
+  --yk-disabled:#EDEFF5;
+  --yk-disabled-foreground:#80858D;
+  --yk-icon-disabled:#A6A8AB;
+  --yk-border:#D5DBE5;
+  --yk-input:#80858D;
+  --yk-input-hover:#626873;
+  --yk-input-focus:#3754A0;
+  --yk-input-disabled:#D5DBE5;
+  --yk-success:#F0FDF4;
+  --yk-success-foreground:#166534;
+  --yk-success-icon:#16A34A;
+  --yk-success-border:#BBF7D0;
+  --yk-warning:#FFFBEB;
+  --yk-warning-foreground:#92400E;
+  --yk-warning-icon:#B45309;
+  --yk-warning-border:#FDE68A;
+  --yk-error:#FEF2F2;
+  --yk-error-foreground:#991B1B;
+  --yk-error-icon:#DC2626;
+  --yk-error-border:#FECACA;
+  --yk-info:#EFF6FF;
+  --yk-info-foreground:#1E40AF;
+  --yk-info-icon:#2563EB;
+  --yk-info-border:#BFDBFE;
+  --yk-input-error:#DC2626;
+  --yk-input-error-foreground:#B91C1C;
+  --yk-destructive:#DC2626;
+  --yk-destructive-foreground:#FFFFFF;
+  --yk-destructive-hover:#B91C1C;
+  --yk-destructive-pressed:#991B1B;
+  --yk-accent:#EDEFF5;
+  --yk-accent-foreground:#202631;
+  --yk-accent-pressed:#D5DBE5;
+  --yk-selected:#F3F5FC;
+  --yk-selected-foreground:#102169;
+  --yk-selected-border:#3754A0;
+  --yk-selected-hover:#E7EBF8;
+  --yk-selected-pressed:#CDD6F0;
+  --yk-link:#263F86;
+  --yk-link-hover:#102169;
+  --yk-link-pressed:#081449;
+  --yk-overlay:rgba(0, 0, 0, 0.5);
+}
+.binder-theme.theme-dark, .customer-fullscreen .dbar[data-theme="dark"] {
+  --yk-background:#131720;
+  --yk-foreground:#EDEFF5;
+  --yk-card:#202631;
+  --yk-card-foreground:#EDEFF5;
+  --yk-popover:#202631;
+  --yk-popover-foreground:#EDEFF5;
+  --yk-muted:#323945;
+  --yk-muted-foreground:#ACB6C7;
+  --yk-primary:#A7B6E3;
+  --yk-primary-foreground:#081449;
+  --yk-secondary:#323945;
+  --yk-secondary-foreground:#CDD6F0;
+  --yk-primary-hover:#CDD6F0;
+  --yk-primary-pressed:#7B91D1;
+  --yk-secondary-hover:#484F5B;
+  --yk-secondary-pressed:#626873;
+  --yk-ring:#7B91D1;
+  --yk-disabled:#323945;
+  --yk-disabled-foreground:#80858D;
+  --yk-icon-disabled:#626873;
+  --yk-border:#484F5B;
+  --yk-input:#80858D;
+  --yk-input-hover:#ACB6C7;
+  --yk-input-focus:#7B91D1;
+  --yk-input-disabled:#484F5B;
+  --yk-success:#F0FDF4;
+  --yk-success-foreground:#166534;
+  --yk-success-icon:#4ADE80;
+  --yk-success-border:#BBF7D0;
+  --yk-warning:#FFFBEB;
+  --yk-warning-foreground:#92400E;
+  --yk-warning-icon:#B45309;
+  --yk-warning-border:#FDE68A;
+  --yk-error:#FEF2F2;
+  --yk-error-foreground:#FCA5A5;
+  --yk-error-icon:#DC2626;
+  --yk-error-border:#FECACA;
+  --yk-info:#EFF6FF;
+  --yk-info-foreground:#1E40AF;
+  --yk-info-icon:#2563EB;
+  --yk-info-border:#BFDBFE;
+  --yk-input-error:#DC2626;
+  --yk-input-error-foreground:#B91C1C;
+  --yk-destructive:#DC2626;
+  --yk-destructive-foreground:#FFFFFF;
+  --yk-destructive-hover:#B91C1C;
+  --yk-destructive-pressed:#991B1B;
+  --yk-accent:#323945;
+  --yk-accent-foreground:#EDEFF5;
+  --yk-accent-pressed:#484F5B;
+  --yk-selected:#081449;
+  --yk-selected-foreground:#CDD6F0;
+  --yk-selected-border:#7B91D1;
+  --yk-selected-hover:#102169;
+  --yk-selected-pressed:#1B3074;
+  --yk-link:#A7B6E3;
+  --yk-link-hover:#CDD6F0;
+  --yk-link-pressed:#7B91D1;
+  --yk-overlay:rgba(0, 0, 0, 0.5);
+}
+
+.binder-theme, .customer-fullscreen .dbar {
+  --bt-bg:var(--yk-background);--bt-surface:var(--yk-card);--bt-text:var(--yk-foreground);
+  --bt-muted:var(--yk-muted-foreground);--bt-accent:var(--yk-secondary-foreground);
+  --bt-line:var(--yk-border);--bt-tint:var(--yk-muted);--bt-active:var(--yk-selected-foreground);
+}
+.binder-theme.theme-light, .customer-fullscreen .dbar[data-theme="light"], .binder-theme.theme-dark, .customer-fullscreen .dbar[data-theme="dark"] {
+  --bt-bg:var(--yk-background);--bt-surface:var(--yk-card);--bt-text:var(--yk-foreground);
+  --bt-muted:var(--yk-muted-foreground);--bt-accent:var(--yk-secondary-foreground);
+  --bt-line:var(--yk-border);--bt-tint:var(--yk-muted);--bt-active:var(--yk-selected-foreground);
+  --drawer-bg:var(--yk-background);--drawer-surface:var(--yk-card);--drawer-text:var(--yk-foreground);
+  --drawer-muted:var(--yk-muted-foreground);--drawer-line:var(--yk-border);--drawer-hover:var(--yk-accent);
+  --drawer-selected:var(--yk-selected);--drawer-selected-text:var(--yk-selected-foreground);
+  --drawer-focus:var(--yk-ring);--drawer-error:var(--yk-error-foreground);
+}
+.binder-theme {--ink:var(--yk-foreground);--ink2:var(--yk-foreground);--mut:var(--yk-muted-foreground);--mut2:var(--yk-muted-foreground);--ivory:var(--yk-background);--ivory2:var(--yk-muted);--sf:var(--yk-card);--hair:var(--yk-border);--hair2:var(--yk-input);--gold:var(--yk-secondary-foreground);--acc:var(--yk-primary);--acc-d:var(--yk-primary-pressed);--acc-s:var(--yk-selected);}
+.binder-theme .go,.binder-theme .confirm-actions .go {background:var(--yk-primary);color:var(--yk-primary-foreground);border-color:var(--yk-primary);}
+.binder-theme .go:hover,.binder-theme .confirm-actions .go:hover {background:var(--yk-primary-hover);border-color:var(--yk-primary-hover);}
+.binder-theme .go:active,.binder-theme .confirm-actions .go:active {background:var(--yk-primary-pressed);border-color:var(--yk-primary-pressed);}
+.customer-fullscreen.controls-open .dbar .fullscreen-toggle {background:transparent;color:var(--yk-secondary-foreground);border-color:var(--yk-input);}
+.customer-fullscreen.controls-open .dbar .fullscreen-toggle:hover {background:var(--yk-accent);border-color:var(--yk-input-hover);}
+.customer-fullscreen.controls-open .dbar .fullscreen-toggle:active {background:var(--yk-accent-pressed);border-color:var(--yk-input-hover);}
+.customer-fullscreen .drawer-icon-button {color:var(--yk-foreground);}
+.customer-fullscreen .drawer-icon-button:hover {background:var(--yk-accent);}
+.customer-fullscreen .drawer-icon-button:active {background:var(--yk-accent-pressed);}
+.customer-fullscreen .drawer-icon-button:disabled {opacity:1;color:var(--yk-icon-disabled);background:transparent;}
+.binder-theme .jnav button.on {background:#102169;color:#FFFFFF;font-weight:600;box-shadow:none;}
+.customer-fullscreen.controls-open .dbar .screen-controls button.on {box-shadow:none;}
+.binder-theme .jnav button.on:hover {background:#1B3074;color:#FFFFFF;}
+.customer-fullscreen.controls-open .dbar .screen-controls button.on:hover {background:var(--yk-selected-hover);}
+.binder-theme .jnav button.on:active {background:#081449;color:#FFFFFF;}
+.customer-fullscreen.controls-open .dbar .screen-controls button.on:active {background:var(--yk-selected-pressed);}
+.binder-theme .wrong-note {color:var(--yk-error-foreground);}
+.binder-theme:is(.theme-light,.theme-dark) .tbar .lk.on::before {background:var(--yk-success-icon);box-shadow:0 0 0 3px color-mix(in srgb,var(--yk-success-icon) 20%,transparent);}
+.binder-theme button:focus-visible,.customer-fullscreen .dbar button:focus-visible {outline:2px solid var(--yk-ring);outline-offset:2px;}
+/* Preserve room for the external focus ring in the scrolling menu. */
+.customer-fullscreen.controls-open .drawer-body {margin-inline:-4px;padding-inline:4px;}
+.customer-fullscreen .theme-controls .theme-switch {background:var(--yk-muted);border-color:var(--yk-input);}
+.customer-fullscreen .theme-switch .theme-switch-thumb {background:var(--yk-card);color:var(--yk-foreground);box-shadow:none;}
+.customer-fullscreen .theme-switch[aria-checked="true"] {background:var(--yk-selected);border-color:var(--yk-selected-border);}
+.customer-fullscreen .theme-switch[aria-checked="true"] .theme-switch-thumb {background:var(--yk-primary);color:var(--yk-primary-foreground);}
+.drawer-backdrop {background:rgba(0,0,0,.5);}
+.binder-theme .profile .xwho strong,.binder-theme .xwho strong {color:var(--yk-foreground);}
+.binder-theme .profile .xsec .empty {color:var(--yk-muted-foreground);}
+.binder-theme .profile .xtags .f.hit {background:var(--yk-selected);color:var(--yk-selected-foreground);border-color:var(--yk-selected-border);box-shadow:none;}
+.binder-theme .profile .xtags .f.rel {background:var(--yk-muted);color:var(--yk-foreground);border-color:var(--yk-border);}
+.binder-theme .profile .clist a {color:var(--yk-link);}
+.binder-theme .profile .clist a:hover {color:var(--yk-link-hover);}
+.binder-theme .profile .clist a:active {color:var(--yk-link-pressed);}
+/* Portrait frame colors follow the neutral palette; official CI assets remain intact. */
+.binder-theme .pframe {background:var(--yk-muted);border-color:var(--yk-border);box-shadow:inset 0 0 0 1px var(--yk-border);}
+.binder-theme .pframe::before,.binder-theme .pframe::after {filter:grayscale(1);}
+.binder-theme .pframe .pmat {background:var(--yk-card);box-shadow:inset 0 0 0 1px var(--yk-border);}
+.binder-theme .pframe .mono {background:var(--yk-muted);color:var(--yk-muted-foreground);}
+
+.binder-theme .xmeta em,.binder-theme .xmeta .xwho em {color:var(--yk-muted-foreground);}
+.binder-theme .xmeta p {color:var(--yk-foreground);}
+.binder-theme .profile .xsec.xcareer {border-color:var(--yk-border);}
+
+/* 다크 고객 화면의 주요 액션: 차분한 Navy 채움 */
+.binder-theme.theme-dark {
+  --yk-primary:#263F86;
+  --yk-primary-foreground:#FFFFFF;
+  --yk-primary-hover:#3754A0;
+  --yk-primary-pressed:#1B3074;
+}
+
+/* 고객 바인더에서는 왼쪽 강조선 대신 배경과 글자 위계로 구분한다. */
+.binder-theme .cl.rel,.binder-theme .watch,.binder-theme .wcorr {border-left:0;}
+.binder-theme .ri.on {box-shadow:none;}
+
+/* 예약 확인 안내 및 보조 행동의 위계 */
+.binder-theme .confirmpane .confirm-instruction {color:var(--yk-muted-foreground);}
+.binder-theme:is(.theme-light,.theme-dark) .confirm-actions .ghost {border:0;background:transparent;color:var(--yk-accent-foreground);}
+.binder-theme:is(.theme-light,.theme-dark) .confirm-actions .ghost:hover {background:var(--yk-accent);}
+.binder-theme:is(.theme-light,.theme-dark) .confirm-actions .ghost:active {background:var(--yk-accent-pressed);}
+
+.binder-theme .reservation-return {background:var(--yk-card);color:var(--yk-secondary-foreground);border:1px solid var(--yk-input);}
+.binder-theme .reservation-return:hover {background:var(--yk-accent);border-color:var(--yk-input-hover);}
+.binder-theme .reservation-return:active {background:var(--yk-accent-pressed);border-color:var(--yk-input-hover);}
+
+/* 사용자가 제공한 추상 영상 원본 배경 */
+.binder-theme.theme-light {--welcome-video-opacity:.8;--wave-veil:rgba(255,255,255,.88);}
+.binder-theme.theme-dark {--welcome-video-opacity:.24;--wave-veil:rgba(19,23,32,.88);}
+.binder-theme .confirmpane {position:relative;isolation:isolate;}
+.binder-theme .confirmpane > .confirm-main,.binder-theme .confirmpane > .myk {position:relative;z-index:1;}
+.binder-theme .welcome-on {position:relative;isolation:isolate;background:var(--yk-background);}
+.binder-theme .welcome-on > .welcome-backdrop {position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.binder-theme .welcome-on > .tablet-content,
+.binder-theme .welcome-on > .tablet-content > .viewscr {position:relative;z-index:1;background:transparent;}
+.binder-theme .welcome-on .confirmpane {background:transparent;}
+.welcome-backdrop video {display:block;width:100%;height:100%;object-fit:cover;opacity:var(--welcome-video-opacity);}
+.welcome-backdrop::after {content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,var(--wave-veil) 0%,var(--wave-veil) 22%,transparent 78%);}
+
+/* 고객 화면 헤더: 테마별 반투명 유리 표면 */
+.binder-theme .tbar {
+  position:relative;z-index:3;
+  -webkit-backdrop-filter:blur(16px) saturate(120%);
+  backdrop-filter:blur(16px) saturate(120%);
+}
+.binder-theme.theme-light .tbar {
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(237,239,245,.35));
+  border-bottom-color:rgba(172,182,199,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+.binder-theme.theme-dark .tbar {
+  background:linear-gradient(180deg,rgba(32,38,49,.55),rgba(19,23,32,.35));
+  border-bottom-color:rgba(172,182,199,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  .binder-theme .tbar {background:var(--yk-background);}
+}
+
+/* 고객 화면 헤더의 하단 구분선 제거 */
+.binder-theme .tbar {border-bottom:0;}
+/* 정보 탐색 화면에만 공통 헤더 경계를 표시한다. */
+.binder-theme .tbar.journey-header {border-bottom:1px solid var(--navigation-line);}
+
+/* 헤더는 배경 없이 CI와 상담실 정보만 표시한다. */
+.binder-theme:is(.theme-light,.theme-dark) .tbar {
+  background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;
+}
+
+.binder-theme.theme-dark {--loader-front:#A7B6E3;--loader-mid:#7B91D1;--loader-back:#CDD6F0;}
+
+/* 영상 위 포커스는 테마와 무관하게 흰색으로 유지한다. */
+.binder-theme .film-skip:focus-visible {outline:2px solid #FFFFFF;outline-offset:2px;}
+
+/* 헤더·고객 내비게이션 경계만 은은하게 처리한다. */
+.binder-theme {--navigation-line:color-mix(in srgb,var(--yk-border) 60%,transparent);}

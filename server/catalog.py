@@ -464,7 +464,7 @@ def advisor_cards() -> list[dict]:
             "cases": [],
             "awards": bits["awards"],
             "works": [],
-            "areas": [],
+            "areas": bits["areas"],
             "papers": bits["papers"],
             "quote": pitch,
             "titles": titles,
@@ -514,6 +514,18 @@ def seniors_for(
     by_name = {l["n"]: l for l in cat["lawyers"]}
 
     if roster:
+        advisors_by_name = {a["n"]: a for a in advisor_cards()}
+        if any(name in advisors_by_name for name in roster):
+            # 직군을 포함해 지정한 명단은 지정 순서 그대로 표시한다.
+            selected = []
+            for name in roster:
+                if name == counsel_name:
+                    continue
+                if name in by_name:
+                    selected.append(public_profile(by_name[name]))
+                elif name in advisors_by_name:
+                    selected.append(advisors_by_name[name])
+            return selected[:6], "법무법인 YK의 전문인력입니다"
         out = []
         for name in roster:
             l = by_name.get(name)

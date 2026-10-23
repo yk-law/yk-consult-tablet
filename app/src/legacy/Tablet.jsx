@@ -1,0 +1,663 @@
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Logo from "./Logo.jsx";
+import Myk from "./Myk.jsx";
+import { Portrait, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
+
+// 브랜드 영상은 앱에 동봉한다. 외부(YK-OS) 참조는 상담실 회선이 느리거나
+// 그 서버가 점검 중이면 대기 화면이 비어 버리고, 태블릿 오프라인에서도 못 쓴다.
+const FILM = `${import.meta.env.BASE_URL}yk-brand-film.mp4`;
+const PREP_MS = 2200;
+
+/** 고객이 태블릿 안에서 자유 이동하는 퍼널 장면. */
+const JOURNEY = [
+  ["report", "사건요약"],
+  ["counsel", "상담 변호사"],
+  ["seniors", "전문인력"],
+];
+
+export default function Tablet({ data, screen, onScreen }) {
+  const b = data.booking;
+  const FIELD = data.FIELD || {};
+  const NEAR = data.NEAR || {};
+  const counsel = data.counsel;
+  const [waitStep, setWaitStep] = useState("confirm");
+  const goCounsel = useCallback(() => {
+    if (counsel?.videoId) onScreen("counsel-video");
+    else onScreen("counsel");
+  }, [onScreen, counsel]);
+
+  useEffect(() => {
+    setWaitStep("confirm");
+  }, [b.id]);
+
+  useEffect(() => {
+    if (screen === "wait") setWaitStep("confirm");
+    if (screen === "film") setWaitStep("film");
+  }, [screen]);
+
+  const filmOn =
+    screen === "film" ||
+    screen === "counsel-video" ||
+    (screen === "wait" && waitStep === "film");
+  const prepOn = screen === "prep" || (screen === "wait" && waitStep === "prep");
+  const counselVideo =
+    screen === "counsel-video" && counsel?.videoId
+      ? counsel
+      : null;
+  const journeyOn = JOURNEY.some(([id]) => id === screen);
+  const journeyActive = screen === "counsel-video" ? "counsel" : screen;
+
+  return (
+    <div className={`tab viewtab ${filmOn ? "filmon" : ""}`} id="tabDev">
+      {!filmOn && (
+        <div className="tbar">
+          <span>법무법인 YK</span>
+          <span className="lk on">{b.branch}</span>
+        </div>
+      )}
+      <div className={`scr viewscr ${filmOn || prepOn ? "darkscr" : ""}`}>
+        {(screen === "wait" || screen === "prep" || screen === "film") && (
+          <WaitFlow
+            b={b}
+            step={screen === "film" ? "film" : screen === "prep" ? "prep" : waitStep}
+            autoAdvance={screen !== "prep" && screen !== "film"}
+            onStep={setWaitStep}
+            onDone={() => onScreen("report")}
+          />
+        )}
+        {screen === "report" && (
+          <Report helper={data.helper} onReady={goCounsel} />
+        )}
+        {counselVideo && (
+          <CounselVideo l={counselVideo} onDone={() => onScreen("counsel")} />
+        )}
+        {(screen === "counsel" || (screen === "counsel-video" && !counsel?.videoId)) && (
+          <Counsel
+            l={counsel}
+            portraits={data.portraits}
+            FIELD={FIELD}
+            NEAR={NEAR}
+            b={b}
+            onNext={() => onScreen("seniors")}
+          />
+        )}
+        {screen === "seniors" && (
+          <Seniors
+            list={data.seniors}
+            headline={data.seniorHeadline}
+            portraits={data.portraits}
+            FIELD={FIELD}
+            NEAR={NEAR}
+            b={b}
+          />
+        )}
+      </div>
+      {journeyOn && (
+        <nav className="jnav" aria-label="상담 안내">
+          {JOURNEY.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={journeyActive === id ? "on" : ""}
+              onClick={() => onScreen(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
+    </div>
+  );
+}
+
+function WaitFlow({ b, step, onStep, onDone, autoAdvance = true }) {
+  const [wrong, setWrong] = useState(false);
+
+  useEffect(() => {
+    if (step !== "prep" || !autoAdvance) return undefined;
+    const t = setTimeout(() => onStep("film"), PREP_MS);
+    return () => clearTimeout(t);
+  }, [step, onStep, autoAdvance]);
+
+  if (step === "prep") {
+    return (
+      <section className="pane on preppane">
+        <Logo />
+        <p className="prep-lbl">상담 준비</p>
+        <h2>상담을 준비 중입니다</h2>
+        <p className="prep-sub">잠시 후 법무법인 YK를 소개하는 영상이 이어집니다.</p>
+        <span className="prep-bar" />
+      </section>
+    );
+  }
+
+  if (step === "film") {
+    return <Film onDone={onDone} autoAdvance={autoAdvance} />;
+  }
+
+  return (
+    <section className="pane on confirmpane">
+      <div className="confirm-main">
+        <h2 className="h1">예약자가 맞으신가요?</h2>
+        <p className="sub">상담실에서 안내드리기 전에, 오늘 예약 정보를 확인해 주세요.</p>
+        <div className="who-card">
+          <div className="who-name">
+            {b.name} <span className="al">가명</span>
+          </div>
+          <p>{b.at}</p>
+          <p>{b.branch}</p>
+        </div>
+        {wrong ? (
+          <div className="wrong-box">
+            <p className="wrong-note">
+              예약이 다르시면<br />
+              상담실장에게 말씀해 주세요.<br />
+              이 화면은 그대로 두시면 됩니다.
+            </p>
+            <button type="button" className="ghost" onClick={() => setWrong(false)}>뒤로가기</button>
+          </div>
+        ) : (
+          <div className="confirm-actions">
+            <button className="go" onClick={() => onStep("prep")}>네, 맞습니다</button>
+            <button className="ghost" onClick={() => setWrong(true)}>아닙니다</button>
+          </div>
+        )}
+      </div>
+      <Myk hero />
+    </section>
+  );
+}
+
+function Film({ onDone, autoAdvance = true }) {
+  const ref = useRef(null);
+  const [failed, setFailed] = useState(false);
+  const [showSkip, setShowSkip] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowSkip(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <section className="pane on filmpane">
+      <video
+        ref={ref}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        src={FILM}
+        loop={!autoAdvance}
+        onEnded={autoAdvance ? onDone : undefined}
+        onError={() => setFailed(true)}
+      />
+      <div className="film-vignette" />
+      <button
+        type="button"
+        className={`film-skip${failed ? " fail" : ""}${showSkip ? " on" : ""}`}
+        onClick={onDone}
+      >
+        {failed ? "영상을 불러오지 못했습니다 · 사건요약으로" : "건너뛰기"}
+      </button>
+    </section>
+  );
+}
+
+/** 끝 3초 전 전환 — YouTube 엔드스크린(관련영상) 노출 전에 프로필로. */
+const COUNSEL_VIDEO_EARLY_CUT_S = 3;
+
+/** 상담 변호사 인터뷰 — 브랜드 필름과 같이 전면 재생, 끝나면/건너뛰면 프로필. */
+function CounselVideo({ l, onDone }) {
+  const frame = useRef(null);
+  const doneRef = useRef(false);
+  const [showSkip, setShowSkip] = useState(false);
+
+  const finish = useCallback(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDone();
+  }, [onDone]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowSkip(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    let duration = 0;
+    const onMsg = (e) => {
+      if (typeof e.data !== "string") return;
+      try {
+        const data = JSON.parse(e.data);
+        if (data.event === "onStateChange" && data.info === 0) {
+          finish();
+          return;
+        }
+        if (data.event === "infoDelivery" && data.info && typeof data.info === "object") {
+          const info = data.info;
+          const d =
+            (typeof info.duration === "number" && info.duration) ||
+            (typeof info.progressState?.duration === "number" && info.progressState.duration) ||
+            0;
+          if (d > 0) duration = d;
+          const t =
+            (typeof info.currentTime === "number" && info.currentTime) ||
+            (typeof info.progressState?.current === "number" && info.progressState.current);
+          if (typeof t === "number" && duration > 0) {
+            const cutAt = Math.max(0, duration - COUNSEL_VIDEO_EARLY_CUT_S);
+            if (t >= cutAt) finish();
+          }
+        }
+      } catch {
+        /* ignore non-YT messages */
+      }
+    };
+    window.addEventListener("message", onMsg);
+    const ping = setInterval(() => {
+      const win = frame.current?.contentWindow;
+      if (!win) return;
+      win.postMessage(JSON.stringify({ event: "listening", id: 1 }), "*");
+      win.postMessage(
+        JSON.stringify({
+          event: "command",
+          func: "addEventListener",
+          args: ["onStateChange"],
+        }),
+        "*",
+      );
+    }, 800);
+    /* playing 중 duration·currentTime 폴링 → 끝 3초 전 finish */
+    const poll = setInterval(() => {
+      const win = frame.current?.contentWindow;
+      if (!win || doneRef.current) return;
+      win.postMessage(
+        JSON.stringify({ event: "command", func: "getDuration", args: [] }),
+        "*",
+      );
+      win.postMessage(
+        JSON.stringify({ event: "command", func: "getCurrentTime", args: [] }),
+        "*",
+      );
+    }, 400);
+    return () => {
+      window.removeEventListener("message", onMsg);
+      clearInterval(ping);
+      clearInterval(poll);
+    };
+  }, [finish]);
+
+  const origin =
+    typeof window !== "undefined" ? encodeURIComponent(window.location.origin) : "";
+  const src =
+    `https://www.youtube.com/embed/${l.videoId}` +
+    `?rel=0&autoplay=1&mute=1&playsinline=1&enablejsapi=1&modestbranding=1` +
+    (origin ? `&origin=${origin}` : "");
+
+  return (
+    <section className="pane on filmpane counsel-videopane">
+      <div className="counsel-video-stage">
+        <iframe
+          ref={frame}
+          title={`${l.n} 인터뷰`}
+          src={src}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+      <div className="counsel-video-chrome-mask" aria-hidden="true" />
+      <div className="counsel-video-meta">
+        <p className="lbl">상담 변호사</p>
+        <strong>{l.n}</strong>
+      </div>
+      <button
+        type="button"
+        className={`film-skip${showSkip ? " on" : ""}`}
+        onClick={finish}
+      >
+        프로필 바로 보기
+      </button>
+    </section>
+  );
+}
+
+function Report({ helper, onReady }) {
+  const sections = helper?.sections || [];
+  const intake = helper?.intake;
+  const none = !sections.length;
+
+  // 콜에서 사건 내용을 전혀 받지 못한 예약 — 요약할 게 없으니 '오늘 이렇게 여쭤볼게요'를 대신 띄운다.
+  // 빈 화면이나 사과문을 보여주면 고객이 준비가 덜 된 기분이 든다. 대기 시간에 생각을 정리하도록 돕는 편이 낫다.
+  if (none && intake) {
+    return (
+      <section className="pane on reportpane">
+        <div className="ykhelper">
+          <div className="yh-body">
+            <h3>오늘은 처음부터 편하게 말씀해 주세요</h3>
+            <p className="yh-lead">
+              {helper?.emptyNote
+                ? `${helper.emptyNote} `
+                : "예약하실 때에는 사건 내용을 따로 남기지 않으셨습니다. "}
+              정리해서 오실 필요는 없습니다. 상담에서 이런 순서로 여쭤보겠습니다.
+            </p>
+
+            <ol className="yh-steps">
+              {intake.steps.map(([t, d], i) => (
+                <li key={t}>
+                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h4>{t}</h4>
+                    <p>{d}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {intake.bring?.length > 0 && (
+              <div className="yh-bring">
+                <h4>가지고 계시면 도움이 되는 것</h4>
+                <ul>
+                  {intake.bring.map((x) => (
+                    <li key={x}>{x}</li>
+                  ))}
+                </ul>
+                <p className="yh-bring-note">
+                  지금 없으셔도 괜찮습니다. 상담 후에 보내주셔도 됩니다.
+                </p>
+              </div>
+            )}
+
+            <p className="yh-src">기억나시는 대로 말씀해 주시면 됩니다. 순서가 뒤바뀌어도 저희가 정리해 드립니다.</p>
+          </div>
+        </div>
+        <button type="button" className="go counsel-go" onClick={onReady}>상담 변호사 확인하기</button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="pane on reportpane">
+      <div className="ykhelper">
+        <div className="yh-body">
+          <h3>{helper?.title || "말씀하신 내용을 이렇게 정리했습니다"}</h3>
+          <p className="yh-lead">
+            상담을 시작하기 전에, 예약하실 때 들려주신 이야기를 다시 안내드립니다.
+            다른 점이 있으시면 오늘 상담에서 편하게 말씀해 주세요.
+          </p>
+          {none ? (
+            <p className="yh-empty">
+              예약하실 때에는 자세한 사건 내용을 미리 남겨 두지 않으셨습니다.
+              {helper?.emptyNote ? ` ${helper.emptyNote}` : ""}
+              {" "}오늘은 편하게 이야기해 주시면, 그 자리에서 함께 정리하겠습니다.
+            </p>
+          ) : (
+            <ol className="yh-secs">
+              {sections.map((s, i) => (
+                <li key={s.title}>
+                  <div className="yh-sec-h">
+                    <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                    <h4>{s.title}</h4>
+                  </div>
+                  {(s.body || "").split("\n").map((p, j) => (
+                    <p key={j}>{p}</p>
+                  ))}
+                </li>
+              ))}
+            </ol>
+          )}
+          <p className="yh-src">예약 상담 때 말씀하신 내용을 바탕으로 정리했습니다. 글에 나오는 이름은 가명입니다.</p>
+        </div>
+      </div>
+      <button type="button" className="go counsel-go" onClick={onReady}>상담 변호사 확인하기</button>
+    </section>
+  );
+}
+
+/** 미니 카드 대표 경력: 칸 너비에 맞춰 최대 글자 크기(한 줄). */
+function FitTitle({ text, maxPx = 15.5, minPx = 11.5 }) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let size = maxPx;
+    el.style.fontSize = `${size}px`;
+    el.style.letterSpacing = ".02em";
+    while (size > minPx && el.scrollWidth > el.clientWidth + 0.5) {
+      size -= 0.25;
+      el.style.fontSize = `${size}px`;
+      if (size < 13.5) el.style.letterSpacing = "-.01em";
+      if (size < 12.5) el.style.letterSpacing = "-.02em";
+    }
+  }, [text, maxPx, minPx]);
+  return <span ref={ref}>{text}</span>;
+}
+
+function TitleBlock({ titles, soft }) {
+  if (!titles?.length) return null;
+  return (
+    <div className="xtitles">
+      {titles.map((t) => (
+        soft ? <FitTitle key={t} text={t} /> : <span key={t}>{t}</span>
+      ))}
+    </div>
+  );
+}
+
+function ProfileBody({ l, portraits, FIELD, NEAR, b }) {
+  const edu = [l.edu, l.exam, l.tr].filter(Boolean).join(" · ");
+  const pos = [l.pos, l.o ? `${l.o} 출신` : ""].filter(Boolean).join(" · ");
+  const hasFields = !!(l.areas?.length || l.f?.length || l.tags?.length);
+  return (
+    <div className="profile">
+      <div className="xlead">
+        <Portrait l={l} portraits={portraits} size="hero" />
+        <div className="xident xmeta">
+          <TitleBlock titles={l.titles} />
+          <div className="xwho">
+            <strong>{l.n}</strong>
+            {pos ? <em>{pos}</em> : null}
+          </div>
+          {l.pitch ? <p className="xquote">{l.pitch}</p> : null}
+          {edu ? <p className="xedu">{edu}</p> : null}
+        </div>
+      </div>
+      {l.career?.length ? (
+        <section className="xsec xcareer">
+          <h3>경력</h3>
+          <ul className="clist">{l.career.map((t) => <li key={t}>{t}</li>)}</ul>
+        </section>
+      ) : null}
+      {hasFields ? (
+        <section className="xsec">
+          <h3>업무분야</h3>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} full />
+        </section>
+      ) : null}
+      {l.awards?.length ? (
+        <section className="xsec">
+          <h3>수상실적</h3>
+          <ul className="clist">{l.awards.map((t) => <li key={t}>{t}</li>)}</ul>
+        </section>
+      ) : null}
+      {l.kind === "lawyer" && l.cases?.length ? (
+        <section className="xsec">
+          <h3>주요 업무 실적</h3>
+          <ul className="clist">{l.cases.map((t) => <li key={t}>{t}</li>)}</ul>
+        </section>
+      ) : null}
+      {l.papers?.length ? (
+        <section className="xsec">
+          <h3>논문·저서</h3>
+          <ul className="clist">{l.papers.map((t) => <li key={t}>{t}</li>)}</ul>
+        </section>
+      ) : null}
+      {l.kind === "lawyer" && l.works?.length ? (
+        <section className="xsec">
+          <h3>업무사례</h3>
+          <ul className="clist">
+            {l.works.map((w) => (
+              <li key={w.href}>
+                <a href={w.href} target="_blank" rel="noreferrer">{w.title}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function Counsel({ l, portraits, FIELD, NEAR, b, onNext }) {
+  if (!l) {
+    return (
+      <section className="pane on">
+        <p className="empty">오늘 상담 변호사가 지정되지 않았습니다.</p>
+      </section>
+    );
+  }
+  return (
+    <section className="pane on counselpane">
+      <ProfileBody l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} />
+      {onNext ? (
+        <div className="journey-foot">
+          <button type="button" className="go counsel-go" onClick={onNext}>전문인력 살펴보기</button>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function FieldTags({ l, FIELD, NEAR, b, full }) {
+  const areas = l.areas || [];
+  if (areas.length) {
+    if (full) {
+      const order = [];
+      const by = new Map();
+      for (const a of areas) {
+        if (!by.has(a.group)) {
+          by.set(a.group, []);
+          order.push(a.group);
+        }
+        by.get(a.group).push(a);
+      }
+      const primary = fieldLabelsOf(FIELD, b?.field);
+      const rank = (g) => (groupMatchesFieldLabels(g, primary) ? 0 : 1);
+      order.sort((a, c) => rank(a) - rank(c));
+      return (
+        <div className="xareas">
+          {order.map((g) => (
+            <div className="xareag" key={g}>
+              <b>{g}</b>
+              <div className="fl xtags">
+                {by.get(g).map((a) => {
+                  const m = areaCaseMark(a, b, FIELD, NEAR);
+                  return <span className={m ? `f ${m}` : "f"} key={a.name}><i>{areaLabel(a.name)}</i></span>;
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    const hits = [];
+    for (const a of areas) {
+      const m = areaCaseMark(a, b, FIELD, NEAR);
+      if (m) hits.push({ ...a, m });
+    }
+    hits.sort((a, c) => (a.m === c.m ? 0 : a.m === "hit" ? -1 : 1));
+    if (!hits.length) return null;
+    return (
+      <div className="fl xtags">
+        {hits.slice(0, 6).map((a) => <span className={`f ${a.m}`} key={`${a.group}-${a.name}`}><i>{areaLabel(a.name)}</i></span>)}
+      </div>
+    );
+  }
+  const fieldName = FIELD?.[b?.field]?.[0] || "";
+  const fromField = (l.f || []).map((c) => FIELD[c]?.[0]).filter(Boolean);
+  const extra = (l.tags || []).filter((t) => t && !fromField.includes(t));
+  const tags = [...fromField, ...extra];
+  if (!tags.length) return null;
+  return (
+    <div className="fl xtags">
+      {tags.map((t) => <span className={t === fieldName ? "f hit" : "f"} key={t}><i>{areaLabel(t)}</i></span>)}
+    </div>
+  );
+}
+
+/** 경력 한 줄에서 대괄호·괄호 상세를 덜어낸다. 카드에서는 기관명만 읽히면 된다. */
+function briefCareer(c) {
+  return c.replace(/\s*\[[^\]]*\]/g, "").replace(/\s*\([^)]*\)/g, "").trim();
+}
+
+/** 전문인력 카드.
+ *  추천이 아니라 '이 사람들이 사건을 함께 맡는다'는 소개다. 드러나는 것은
+ *  최종 출신 · 주요 경력 · 업무 분야 · 업무 사례 넷뿐이다.
+ *  사내 직위(대표변호사)와 전관 경력(부장판사 역임)은 성격이 달라 서체로 가른다. */
+function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen }) {
+  const prev = l.titles?.[0] || (l.o ? `${l.o} 출신` : "");
+  // 246px 카드에서 이 줄이 쓸 수 있는 폭은 216px 이고, 구분자가 19px 을 먹는다.
+  // 직위는 자간을 벌려 글자당 폭이 더 크므로 1.25 를 곱해 함께 센다.
+  // 실측: 전관 명조 13.5px 은 글자당 약 12.3px, 12.5px 은 11.4px, 11.5px 은 10.5px.
+  const load = l.pos.length * 1.25 + prev.length;
+  const fit = !prev ? "" : load <= 16 ? "" : load <= 19 ? " sm" : load <= 22 ? " xs" : " stack";
+  const career = (l.career || []).map(briefCareer).filter(Boolean).slice(0, 3);
+  const works = (l.works || []).map((w) => (w?.title || w || "").split(" | ")[0]).filter(Boolean).slice(0, 2);
+  return (
+    <button type="button" className="xcard" onClick={onOpen}>
+      <span className="xshot">
+        {portraits?.[l.n] ? <img src={portraits[l.n]} alt={l.n} /> : <span className="xmono">{l.n[0]}</span>}
+        <span className="xveil" />
+        <span className="xname">{l.n}</span>
+      </span>
+      <span className="xbody">
+        <span className={`xline${fit}`}>
+          <span className="rank">{l.pos}</span>
+          {prev ? <><span className="sep" /><span className="prev">{prev}</span></> : null}
+        </span>
+        {career.length ? (
+          <><span className="xh">주요 경력</span>
+          <ul className="xlist">{career.map((c) => <li key={c}>{c}</li>)}</ul></>
+        ) : null}
+        {l.f?.length || l.areas?.length ? (
+          <><span className="xh">업무 분야</span>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} /></>
+        ) : null}
+        {works.length ? (
+          <><span className="xh">업무 사례</span>
+          <ul className="xlist">{works.map((w) => <li key={w}>{w}</li>)}</ul></>
+        ) : null}
+      </span>
+    </button>
+  );
+}
+
+function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
+  const [open, setOpen] = useState(null);
+  const shown = open ? list.find((x) => x.n === open) : null;
+  return (
+    <section className="pane on seniorpane">
+      <span className="lbl">전문인력</span>
+      <h2 className="h1">{headline || "법무법인 YK의 전문인력입니다"}</h2>
+      <p className="sub">고객님의 사건을 성심껏 맡아드리기 위한 전담인력을 소개합니다</p>
+      <div className="legendgrid">
+        {list.map((l) => (
+          <SeniorCard l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b}
+            key={`${l.pos}-${l.n}`} onOpen={() => setOpen(l.n)} />
+        ))}
+      </div>
+      {!list.length ? <p className="empty">아직 연결된 전문인력 프로필이 없습니다.</p> : null}
+      {onNext ? (
+        <div className="journey-foot">
+          <button type="button" className="go counsel-go" onClick={onNext}>설문 참여하기</button>
+        </div>
+      ) : null}
+      {shown ? (
+        <div className="xmodal" onClick={() => setOpen(null)} role="presentation">
+          <article className={`xcard ${shown.grade} open`} onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="xclose" onClick={() => setOpen(null)}>닫기</button>
+            <ProfileBody l={shown} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} />
+          </article>
+        </div>
+      ) : null}
+    </section>
+  );
+}

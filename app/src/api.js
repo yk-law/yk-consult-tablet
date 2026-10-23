@@ -8,18 +8,19 @@ const j = async (res) => {
 };
 
 /** 태블릿 한 건의 화면 데이터. 현재는 파이썬이 미리 뽑아 둔 스냅샷을 쓴다. */
-async function snapshotVisit(id) {
+async function snapshotVisit(id, { refresh = false } = {}) {
+  const options = { cache: refresh ? "no-store" : "default" };
   const base = import.meta.env.BASE_URL;
-  const index = await fetch(`${base}snapshot/index.json?v=${__BUILD__}`).then(j);
+  const index = await fetch(`${base}snapshot/index.json?v=${__BUILD__}`, options).then(j);
   const key = (id && (index.byId?.[id] || index.byName?.[id])) || index.default;
-  return fetch(`${base}snapshot/${encodeURIComponent(key)}.json?v=${__BUILD__}`).then(j);
+  return fetch(`${base}snapshot/${encodeURIComponent(key)}.json?v=${__BUILD__}`, options).then(j);
 }
 
 export const api = {
-  visit: (id) => snapshotVisit(id),
+  visit: (id, options) => snapshotVisit(id, options),
 
   /** 방문 예정 목록 등 YK-OS 쪽에서 쓰는 전체 데이터 */
-  catalog: () => catalog(),
+  catalog: (options) => catalog(options),
 
   /** 추천 순위. 검색어가 비면 그 사건 분야 담당자만 본다. */
   search: async (q, { field, court, limit = 25 } = {}) => {

@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { cleanProfileContent, profileCategories } from "./profileContent.js";
+import { specialistHero, specialistHeadline } from "./specialistHero.js";
+import HeroBackdrop from "./HeroBackdrop.jsx";
+import { relatedCaseWorks } from "./caseWorks.js";
+import { customerDateParts } from "./customerDate.js";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
+import WelcomeBackdrop from "./WelcomeBackdrop.jsx";
 import Myk from "./Myk.jsx";
 import { Portrait, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
 
@@ -7,24 +13,25 @@ import { Portrait, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMa
 // 그 서버가 점검 중이면 대기 화면이 비어 버리고, 태블릿 오프라인에서도 못 쓴다.
 const FILM = `${import.meta.env.BASE_URL}yk-brand-film.mp4`;
 const PREP_MS = 2200;
+// 예약 확인 중앙 배치 검토 중에는 숨김. true로 바꾸면 기존 QR 안내를 복구한다.
+const SHOW_RESERVATION_QR = false;
 
 /** 고객이 태블릿 안에서 자유 이동하는 퍼널 장면. */
 const JOURNEY = [
-  ["report", "사건요약"],
+  ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
-  ["seniors", "전문인력"],
+  ["seniors", "전문 인력"],
 ];
 
 export default function Tablet({ data, screen, onScreen }) {
   const b = data.booking;
+  const roomLabel = b.location != null && b.room != null
+    ? `${b.location} ${b.room} 상담실`
+    : b.branch;
   const FIELD = data.FIELD || {};
   const NEAR = data.NEAR || {};
   const counsel = data.counsel;
   const [waitStep, setWaitStep] = useState("confirm");
-  const goCounsel = useCallback(() => {
-    if (counsel?.videoId) onScreen("counsel-video");
-    else onScreen("counsel");
-  }, [onScreen, counsel]);
 
   useEffect(() => {
     setWaitStep("confirm");
@@ -39,7 +46,8 @@ export default function Tablet({ data, screen, onScreen }) {
     screen === "film" ||
     screen === "counsel-video" ||
     (screen === "wait" && waitStep === "film");
-  const prepOn = screen === "wait" && waitStep === "prep";
+  const prepOn = screen === "prep" || (screen === "wait" && waitStep === "prep");
+  const welcomeOn = prepOn || (screen === "wait" && waitStep === "confirm");
   const counselVideo =
     screen === "counsel-video" && counsel?.videoId
       ? counsel
@@ -48,24 +56,27 @@ export default function Tablet({ data, screen, onScreen }) {
   const journeyActive = screen === "counsel-video" ? "counsel" : screen;
 
   return (
-    <div className={`tab viewtab ${filmOn ? "filmon" : ""}`} id="tabDev">
+    <div className={`tab viewtab ${filmOn ? "filmon" : ""} ${welcomeOn ? "welcome-on" : ""}`} id="tabDev">
+      {welcomeOn && <WelcomeBackdrop />}
       {!filmOn && (
-        <div className="tbar">
-          <span>법무법인 YK</span>
-          <span className="lk on">{b.branch}</span>
+        <div className={`tbar${journeyOn ? " journey-header" : ""}`}>
+          <Logo className="header-ci" />
+          <span className="lk on">{roomLabel}</span>
         </div>
       )}
-      <div className={`scr viewscr ${filmOn || prepOn ? "darkscr" : ""}`}>
-        {(screen === "wait" || screen === "film") && (
+      <div className={`tablet-content${journeyOn ? " has-journey" : ""}`}>
+      <div className={`scr viewscr ${filmOn ? "darkscr" : ""}`}>
+        {(screen === "wait" || screen === "prep" || screen === "film") && (
           <WaitFlow
             b={b}
-            step={screen === "film" ? "film" : waitStep}
+            step={screen === "film" ? "film" : screen === "prep" ? "prep" : waitStep}
+            autoAdvance={screen !== "prep" && screen !== "film"}
             onStep={setWaitStep}
             onDone={() => onScreen("report")}
           />
         )}
         {screen === "report" && (
-          <Report helper={data.helper} onReady={goCounsel} />
+          <Report helper={data.helper} onCounsel={() => onScreen("counsel")} />
         )}
         {counselVideo && (
           <CounselVideo l={counselVideo} onDone={() => onScreen("counsel")} />
@@ -78,11 +89,13 @@ export default function Tablet({ data, screen, onScreen }) {
             NEAR={NEAR}
             b={b}
             onNext={() => onScreen("seniors")}
+            onPrevious={() => onScreen("report")}
           />
         )}
         {screen === "seniors" && (
           <Seniors
             list={data.seniors}
+            counsel={counsel}
             headline={data.seniorHeadline}
             portraits={data.portraits}
             FIELD={FIELD}
@@ -93,89 +106,111 @@ export default function Tablet({ data, screen, onScreen }) {
       </div>
       {journeyOn && (
         <nav className="jnav" aria-label="상담 안내">
+          {b.name?.trim() && <div className="journey-client"><p className="journey-client-greeting">안녕하세요,</p><p className="journey-client-name"><strong>{b.name.trim()}</strong><span> 고객님</span></p></div>}
           {JOURNEY.map(([id, label]) => (
             <button
               key={id}
               type="button"
               className={journeyActive === id ? "on" : ""}
+              aria-current={journeyActive === id ? "page" : undefined}
               onClick={() => onScreen(id)}
             >
               {label}
             </button>
           ))}
+          <div className="journey-qr">
+            <p className="journey-qr-title">법률 과정을 더 쉽게,<br />의뢰인의 곁에 더 가까이</p>
+            <p className="journey-qr-description">상담과 사건 진행을 편리하게 확인하고 이어갈 수 있습니다.</p>
+            <img src={`${import.meta.env.BASE_URL}consultation-room-tablet-qr.svg`} width="147" height="147" alt="YourK 접속 QR코드" />
+            <a className="journey-qr-url" href="https://yourk.legal" target="_blank" rel="noreferrer" aria-label="https://yourk.legal (새 탭에서 열림)">https://yourk.legal</a>
+            <p className="journey-qr-caption">QR코드를 스캔해 만나보세요.</p>
+          </div>
         </nav>
       )}
+      </div>
     </div>
   );
 }
 
-function WaitFlow({ b, step, onStep, onDone }) {
+function WaitFlow({ b, step, onStep, onDone, autoAdvance = true }) {
+  const { dateLabel, timeLabel } = customerDateParts(b.date, b.time);
   const [wrong, setWrong] = useState(false);
 
   useEffect(() => {
-    if (step !== "prep") return undefined;
+    if (step !== "prep" || !autoAdvance) return undefined;
     const t = setTimeout(() => onStep("film"), PREP_MS);
     return () => clearTimeout(t);
-  }, [step, onStep]);
+  }, [step, onStep, autoAdvance]);
 
   if (step === "prep") {
     return (
-      <section className="pane on preppane">
-        <Logo />
-        <p className="prep-lbl">상담 준비</p>
-        <h2>상담을 준비 중입니다</h2>
-        <p className="prep-sub">잠시 후 법무법인 YK를 소개하는 영상이 이어집니다.</p>
-        <span className="prep-bar" />
+      <section className="pane on confirmpane preppane">
+        <div className="confirm-main">
+          <div className="welcome-brand">
+            <Logo className="welcome-ci" />
+            <p className="sub">법무법인 YK를 찾아주셔서 감사합니다.</p>
+          </div>
+          <h2 className="prep-title">상담을 준비하고 있습니다.</h2>
+          <p className="prep-description">잠시 후 법무법인 YK 소개 영상이 시작됩니다.</p>
+          <div className="prep-loading" role="status" aria-label="상담 준비 중">
+            <span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" />
+          </div>
+        </div>
       </section>
     );
   }
 
   if (step === "film") {
-    return <Film onDone={onDone} />;
+    return <Film onDone={onDone} autoAdvance={autoAdvance} />;
   }
 
   return (
     <section className="pane on confirmpane">
       <div className="confirm-main">
-        <h2 className="h1">예약자가 맞으신가요?</h2>
-        <p className="sub">상담실에서 안내드리기 전에, 오늘 예약 정보를 확인해 주세요.</p>
-        <div className="who-card">
-          <div className="who-name">
-            {b.name} <span className="al">가명</span>
-          </div>
-          <p>{b.at}</p>
-          <p>{b.branch}</p>
+        <div className="welcome-brand">
+          <Logo className="welcome-ci" />
+          <p className="sub">법무법인 YK를 찾아주셔서 감사합니다.</p>
         </div>
         {wrong ? (
-          <div className="wrong-box">
-            <p className="wrong-note">
-              예약이 다르시면<br />
-              상담실장에게 말씀해 주세요.<br />
-              이 화면은 그대로 두시면 됩니다.
-            </p>
-            <button type="button" className="ghost" onClick={() => setWrong(false)}>뒤로가기</button>
+          <div className="reservation-help" role="region" aria-labelledby="reservation-help-title">
+            <div role="status">
+              <h2 id="reservation-help-title">예약 정보 확인을 도와드리겠습니다.</h2>
+              <p className="reservation-help-description">담당 직원이 예약 정보를 확인해 드립니다.<br />이 화면을 그대로 두시면 됩니다.</p>
+            </div>
+            <div className="confirm-actions">
+              <button type="button" className="reservation-return" onClick={() => setWrong(false)}>
+                <svg className="lucide lucide-arrow-left" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                  <path d="m12 19-7-7 7-7" /><path d="M5 12h14" />
+                </svg>
+                <span>예약 정보 다시 보기</span>
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="confirm-actions">
-            <button className="go" onClick={() => onStep("prep")}>네, 맞습니다</button>
-            <button className="ghost" onClick={() => setWrong(true)}>아닙니다</button>
+          <>
+        <h2 className="h1"><span className="client-name">{b.name}</span>고객님, 반갑습니다.</h2>
+        <div className="reservation-check" role="group" aria-labelledby="reservation-check-heading">
+          <p id="reservation-check-heading" className="confirm-instruction">예약하신 시간과 장소를 확인해 주세요.</p>
+          <div className="who-card">
+            <p>{[dateLabel, timeLabel].filter(Boolean).join(" ")}</p>
+            <p>{b.location != null && b.room != null ? `${b.location} ${b.room} 상담실` : b.branch}</p>
           </div>
+        </div>
+            <div className="confirm-actions">
+              <button className="go" onClick={() => onStep("prep")}>네, 맞습니다</button>
+              <button className="ghost" onClick={() => setWrong(true)}>제 예약이 아니에요</button>
+            </div>
+          </>
         )}
       </div>
-      <Myk hero />
+      {SHOW_RESERVATION_QR && <Myk hero />}
     </section>
   );
 }
 
-function Film({ onDone }) {
+function Film({ onDone, autoAdvance = true }) {
   const ref = useRef(null);
   const [failed, setFailed] = useState(false);
-  const [showSkip, setShowSkip] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowSkip(true), 2000);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <section className="pane on filmpane">
@@ -186,16 +221,20 @@ function Film({ onDone }) {
         playsInline
         preload="auto"
         src={FILM}
-        onEnded={onDone}
+        loop={!autoAdvance}
+        onEnded={autoAdvance ? onDone : undefined}
         onError={() => setFailed(true)}
       />
       <div className="film-vignette" />
       <button
         type="button"
-        className={`film-skip${failed ? " fail" : ""}${showSkip ? " on" : ""}`}
+        className={`film-skip brand-film-skip on${failed ? " fail" : ""}`}
         onClick={onDone}
       >
-        {failed ? "영상을 불러오지 못했습니다 · 사건요약으로" : "건너뛰기"}
+        <span>{failed ? "영상을 불러오지 못했습니다 · 사건 요약으로" : "영상 건너뛰기"}</span>
+        <svg className="lucide lucide-arrow-right" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+          <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+        </svg>
       </button>
     </section>
   );
@@ -318,7 +357,20 @@ function CounselVideo({ l, onDone }) {
   );
 }
 
-function Report({ helper, onReady }) {
+function ReportNext({ onClick, label = "상담 변호사 확인하기", previous = false }) {
+  return (
+    <div className={`report-next${previous ? " report-previous" : ""}`}>
+      <button type="button" onClick={onClick}>
+        <span>{label}</span>
+        <svg className={`lucide ${previous ? "lucide-arrow-left" : "lucide-arrow-right"}`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+          <path d="M5 12h14" /><path d={previous ? "m12 19-7-7 7-7" : "m12 5 7 7-7 7"} />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function Report({ helper, onCounsel }) {
   const sections = helper?.sections || [];
   const intake = helper?.intake;
   const none = !sections.length;
@@ -365,9 +417,9 @@ function Report({ helper, onReady }) {
             )}
 
             <p className="yh-src">기억나시는 대로 말씀해 주시면 됩니다. 순서가 뒤바뀌어도 저희가 정리해 드립니다.</p>
+            <ReportNext onClick={onCounsel} />
           </div>
         </div>
-        <button type="button" className="go counsel-go" onClick={onReady}>상담 변호사 확인하기</button>
       </section>
     );
   }
@@ -376,10 +428,10 @@ function Report({ helper, onReady }) {
     <section className="pane on reportpane">
       <div className="ykhelper">
         <div className="yh-body">
-          <h3>{helper?.title || "말씀하신 내용을 이렇게 정리했습니다"}</h3>
+          <h3>말씀하신 내용을 정리했습니다.</h3>
           <p className="yh-lead">
-            상담을 시작하기 전에, 예약하실 때 들려주신 이야기를 다시 안내드립니다.
-            다른 점이 있으시면 오늘 상담에서 편하게 말씀해 주세요.
+            예약 시 말씀해 주신 내용입니다.<br />
+            다르거나 덧붙이고 싶은 내용은 상담에서 편하게 말씀해 주세요.
           </p>
           {none ? (
             <p className="yh-empty">
@@ -403,12 +455,13 @@ function Report({ helper, onReady }) {
             </ol>
           )}
           <p className="yh-src">예약 상담 때 말씀하신 내용을 바탕으로 정리했습니다. 글에 나오는 이름은 가명입니다.</p>
+            <ReportNext onClick={onCounsel} />
         </div>
       </div>
-      <button type="button" className="go counsel-go" onClick={onReady}>상담 변호사 확인하기</button>
     </section>
   );
 }
+
 
 /** 미니 카드 대표 경력: 칸 너비에 맞춰 최대 글자 크기(한 줄). */
 function FitTitle({ text, maxPx = 15.5, minPx = 11.5 }) {
@@ -440,57 +493,272 @@ function TitleBlock({ titles, soft }) {
   );
 }
 
-function ProfileBody({ l, portraits, FIELD, NEAR, b }) {
+function CareerSection({ items }) {
+  const [expanded, setExpanded] = useState(false);
+  const listId = useId();
+  if (!items?.length) return null;
+  const hasMore = items.length > 10;
+  return <section className="detail-subsection">
+    <h4>주요 경력</h4>
+    <ul className="clist" id={listId}>
+      {(expanded ? items : items.slice(0, 10)).map((text, index) => <li key={`${index}-${text}`}>{text}</li>)}
+    </ul>
+    {hasMore && <button className="career-toggle" type="button" aria-expanded={expanded} aria-controls={listId} onClick={() => setExpanded(!expanded)}>
+      <span>{expanded ? "경력 접기" : <>경력 더 보기 <span className="career-toggle-count">({items.length - 10}개)</span></>}</span>
+      <svg className={`lucide lucide-chevron-${expanded ? "up" : "down"}`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        <path d={expanded ? "m18 15-6-6-6 6" : "m6 9 6 6 6-6"} />
+      </svg>
+    </button>}
+  </section>;
+}
+
+function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, specialist = false }) {
+  if (specialist) {
+    l = cleanProfileContent(l);
+    hasFields = profileCategories(l, FIELD).length > 0;
+  }
+  const listSection = (title, items, className = "") => items?.length ? (
+    <section className={`detail-subsection ${className}`} key={title}>
+      <h4>{title}</h4>
+      <ul className="clist">{items.map((text) => <li key={text}>{text}</li>)}</ul>
+    </section>
+  ) : null;
+  const hasCases = l.kind === "lawyer" && l.cases?.length;
+  const relatedWorks = relatedCaseWorks(l.works, b?.field);
+  const hasWorks = l.kind === "lawyer" && relatedWorks.length;
+  return <>
+    <header className="counsel-intro">
+      <h2>{specialist ? "다양한 경험을 갖춘 전문 인력을 소개합니다." : "고객님과 함께할 변호사를 소개합니다."}</h2>
+      <p>{l.n} {specialist ? (l.pos || "전문 인력") : "변호사"}의 주요 업무 분야와 이력을 정리했습니다.<br />
+        고객님의 상황과 관련된 경험과 사례를 살펴보세요.</p>
+    </header>
+    {(hasFields || hasCases || hasWorks) ? <section className="xsec detail-group">
+      <h3>업무 분야 및 사례</h3>
+      <div className="detail-group-body">
+        {hasFields && <section className="detail-subsection xfields">
+          <h4>주요 업무 분야</h4>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} full categoriesOnly />
+        </section>}
+        {hasCases ? listSection("주요 업무 실적", l.cases, "counsel-results") : null}
+        {hasWorks ? <section className="detail-subsection counsel-works">
+          <h4>관련 업무 사례</h4>
+          <ul className="clist">{relatedWorks.map((work) => <li key={work.href}>
+            <a href={work.href} target="_blank" rel="noreferrer" aria-label={`${work.title} (새 탭에서 열림)`}>
+              <span>{work.title}</span>
+              <svg className="lucide lucide-arrow-up-right" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                <path d="M7 7h10v10M7 17 17 7" />
+              </svg>
+            </a>
+          </li>)}</ul>
+        </section> : null}
+      </div>
+    </section> : null}
+    {(l.career?.length || l.awards?.length || l.papers?.length) ? <section className="xsec detail-group counsel-history">
+      <h3>이력 사항</h3>
+      <div className="detail-group-body">
+        <CareerSection key={l.n} items={l.career} />
+        {listSection("수상 내역", l.awards)}
+        {listSection("논문·저서", l.papers)}
+      </div>
+    </section> : null}
+  </>;
+}
+
+function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specialist = false, onNext, onPrevious }) {
+  const heroRef = useRef(null);
+  const profileRef = useRef(null);
+  const indexId = useId();
+  const indexNavigation = useRef(null);
+  const indexSettleTimer = useRef(null);
+  const indexUpdate = useRef(() => {});
+  const [indexItems, setIndexItems] = useState([]);
+  const [activeIndex, setActiveIndex] = useState("");
+  const [heroHidden, setHeroHidden] = useState(false);
+  useEffect(() => {
+    const profile = profileRef.current;
+    const pane = profile?.closest(".counselpane");
+    if (!counselHero || !pane) return;
+    const headings = [...profile.querySelectorAll(".counsel-details .detail-group > h3, .counsel-details .detail-subsection > h4")];
+    const items = headings.map((element, index) => {
+      element.id = `${indexId}-${index}`;
+      return { id: element.id, label: element.textContent, group: element.tagName === "H3", element };
+    });
+    setIndexItems(items);
+    indexNavigation.current = null;
+    const update = () => {
+      const top = pane.getBoundingClientRect().top + 48;
+      let active = items.find((item) => !item.group)?.id || "";
+      for (const [index, item] of items.entries()) {
+        if (item.element.getBoundingClientRect().top <= top) {
+          active = item.group ? (items.slice(index + 1).find((next) => !next.group)?.id || active) : item.id;
+        }
+      }
+      const maxScroll = pane.scrollHeight - pane.clientHeight;
+      if (maxScroll > 0 && pane.scrollTop >= maxScroll - 2) {
+        active = items.filter((item) => !item.group).at(-1)?.id || active;
+      }
+      setActiveIndex(indexNavigation.current?.id || active);
+      profile.style.setProperty("--counsel-scroll-height", `${pane.clientHeight}px`);
+    };
+    indexUpdate.current = update;
+    const finish = () => {
+      clearTimeout(indexSettleTimer.current);
+      indexNavigation.current = null;
+      update();
+    };
+    const onScroll = () => {
+      update();
+      clearTimeout(indexSettleTimer.current);
+      if (indexNavigation.current) indexSettleTimer.current = setTimeout(finish, 180);
+    };
+    const onScrollEnd = () => {
+      const navigation = indexNavigation.current;
+      if (!navigation || Math.abs(pane.scrollTop - navigation.top) < 2) finish();
+    };
+    const onManualScroll = (event) => {
+      if (event.target.closest?.(".counsel-profile-card")) return;
+      if (event.type === "keydown" && !["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) return;
+      finish();
+    };
+    update();
+    pane.addEventListener("scroll", onScroll, { passive: true });
+    pane.addEventListener("scrollend", onScrollEnd);
+    for (const type of ["wheel", "touchmove", "pointerdown", "keydown"]) pane.addEventListener(type, onManualScroll, { passive: true });
+    const resize = new ResizeObserver(update);
+    resize.observe(pane);
+    resize.observe(profile.querySelector(".counsel-details"));
+    return () => {
+      pane.removeEventListener("scroll", onScroll);
+      pane.removeEventListener("scrollend", onScrollEnd);
+      for (const type of ["wheel", "touchmove", "pointerdown", "keydown"]) pane.removeEventListener(type, onManualScroll);
+      clearTimeout(indexSettleTimer.current);
+      indexNavigation.current = null;
+      indexUpdate.current = () => {};
+      resize.disconnect();
+    };
+  }, [counselHero, l, b?.field, indexId]);
+  const navigateIndex = (item) => {
+    const pane = profileRef.current?.closest(".counselpane");
+    if (!pane) return;
+    const top = Math.max(0, Math.min(pane.scrollHeight - pane.clientHeight,
+      pane.scrollTop + item.element.getBoundingClientRect().top - pane.getBoundingClientRect().top - 24));
+    clearTimeout(indexSettleTimer.current);
+    indexNavigation.current = { id: item.id, top };
+    setActiveIndex(item.id);
+    pane.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    // Also settle clicks that do not generate a scroll event (already at the destination).
+    indexSettleTimer.current = setTimeout(() => {
+      indexNavigation.current = null;
+      indexUpdate.current();
+    }, 180);
+  };
+  useEffect(() => {
+    setHeroHidden(false);
+    const hero = heroRef.current;
+    const pane = hero?.closest(".counselpane");
+    if (!counselHero || !hero || !pane) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setHeroHidden(!entry.isIntersecting && entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0));
+    }, { root: pane, threshold: 0 });
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [counselHero, l]);
   const edu = [l.edu, l.exam, l.tr].filter(Boolean).join(" · ");
   const pos = [l.pos, l.o ? `${l.o} 출신` : ""].filter(Boolean).join(" · ");
+  const heroInfo = specialist ? specialistHero(l) : { greeting: l.pitch, titles: l.titles };
   const hasFields = !!(l.areas?.length || l.f?.length || l.tags?.length);
   return (
-    <div className="profile">
+    <div className="profile" ref={profileRef}>
+      <div ref={heroRef} className={counselHero ? "counsel-hero" : "profile-hero-pass"}>
+      {counselHero && <HeroBackdrop />}
       <div className="xlead">
         <Portrait l={l} portraits={portraits} size="hero" />
         <div className="xident xmeta">
-          <TitleBlock titles={l.titles} />
-          <div className="xwho">
-            <strong>{l.n}</strong>
-            {pos ? <em>{pos}</em> : null}
-          </div>
-          {l.pitch ? <p className="xquote">{l.pitch}</p> : null}
-          {edu ? <p className="xedu">{edu}</p> : null}
+          {counselHero ? (
+            <>
+              {heroInfo.greeting ? <p className="xquote">{heroInfo.greeting}</p> : null}
+              {heroInfo.greeting && (heroInfo.titles?.length || l.n || l.pos || edu) ? <div className="hero-message-divider" aria-hidden="true" /> : null}
+              <TitleBlock titles={heroInfo.titles} />
+              <div className="xwho">
+                <strong>{l.n}</strong>
+                {l.pos ? <em>{l.pos}</em> : null}
+              </div>
+              {edu ? <p className="xedu">{edu}</p> : null}
+            </>
+          ) : (
+            <>
+              <TitleBlock titles={l.titles} />
+              <div className="xwho">
+                <strong>{l.n}</strong>
+                {pos ? <em>{pos}</em> : null}
+              </div>
+              {l.pitch ? <p className="xquote">{l.pitch}</p> : null}
+              {edu ? <p className="xedu">{edu}</p> : null}
+            </>
+          )}
         </div>
       </div>
-      {l.career?.length ? (
+      </div>
+      <div className={counselHero ? "counsel-detail-layout" : "profile-detail-layout-pass"}>
+      {counselHero && <aside className={`counsel-profile-card${heroHidden ? " is-visible" : ""}`} aria-hidden={!heroHidden} aria-label={specialist ? "전문 인력 프로필" : "상담 변호사 프로필"}>
+        <div className="counsel-profile-card-photo">
+          {portraits?.[l.n] ? <img src={portraits[l.n]} alt={`${l.n} ${l.pos || ""}`} /> : <span>{l.n?.[0]}</span>}
+        </div>
+        <div className="counsel-card-content">
+        <div className="counsel-card-identity"><strong>{l.n}</strong><span>{l.pos || "변호사"}</span></div>
+        {indexItems.length > 0 && <nav className="counsel-index" aria-label="소개 목차">
+          {indexItems.map((item) => item.group ? <p key={item.id} className="index-group">{item.label}</p> : <button key={item.id} type="button"
+            className="index-section"
+            aria-current={activeIndex === item.id ? "location" : undefined}
+            aria-controls={item.id} tabIndex={heroHidden ? 0 : -1}
+            onClick={() => navigateIndex(item)}>{item.label}</button>)}
+        </nav>}
+        </div>
+      </aside>}
+      <div className={counselHero ? "counsel-details" : "profile-details-pass"}>
+      {counselHero ? <CounselDetailGroups l={l} FIELD={FIELD} NEAR={NEAR} b={b} hasFields={hasFields} specialist={specialist} /> : <>
+      {counselHero ? <>{hasFields ? (
+        <section className="xsec xfields">
+          <h3>{counselHero ? "주요 업무 분야" : "업무분야"}</h3>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} full categoriesOnly={counselHero} />
+        </section>
+      ) : null}{l.career?.length ? (
         <section className="xsec xcareer">
-          <h3>경력</h3>
+          <h3>{counselHero ? "주요 경력" : "경력"}</h3>
           <ul className="clist">{l.career.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
-      ) : null}
-      {hasFields ? (
-        <section className="xsec">
-          <h3>업무분야</h3>
-          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} full />
+      ) : null}</> : <>{l.career?.length ? (
+        <section className="xsec xcareer">
+          <h3>{counselHero ? "주요 경력" : "경력"}</h3>
+          <ul className="clist">{l.career.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
-      ) : null}
+      ) : null}{hasFields ? (
+        <section className="xsec xfields">
+          <h3>{counselHero ? "주요 업무 분야" : "업무분야"}</h3>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} full categoriesOnly={counselHero} />
+        </section>
+      ) : null}</>}
       {l.awards?.length ? (
-        <section className="xsec">
-          <h3>수상실적</h3>
+        <section className="xsec xawards">
+          <h3>{counselHero ? "수상 내역" : "수상실적"}</h3>
           <ul className="clist">{l.awards.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
       ) : null}
       {l.kind === "lawyer" && l.cases?.length ? (
-        <section className="xsec">
+        <section className="xsec xresults">
           <h3>주요 업무 실적</h3>
           <ul className="clist">{l.cases.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
       ) : null}
       {l.papers?.length ? (
-        <section className="xsec">
+        <section className="xsec xpublications">
           <h3>논문·저서</h3>
           <ul className="clist">{l.papers.map((t) => <li key={t}>{t}</li>)}</ul>
         </section>
       ) : null}
       {l.kind === "lawyer" && l.works?.length ? (
         <section className="xsec">
-          <h3>업무사례</h3>
+          <h3>{counselHero ? "관련 업무 사례" : "업무사례"}</h3>
           <ul className="clist">
             {l.works.map((w) => (
               <li key={w.href}>
@@ -500,11 +768,20 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b }) {
           </ul>
         </section>
       ) : null}
+      </>}
+      {counselHero && (onPrevious || onNext) ? (
+        <div className="counsel-page-links">
+          {onPrevious && <ReportNext onClick={onPrevious} label="사건 요약으로" previous />}
+          {onNext && <ReportNext onClick={onNext} label="전문 인력 살펴보기" />}
+        </div>
+      ) : null}
+      </div>
+      </div>
     </div>
   );
 }
 
-function Counsel({ l, portraits, FIELD, NEAR, b, onNext }) {
+function Counsel({ l, portraits, FIELD, NEAR, b, onNext, onPrevious }) {
   if (!l) {
     return (
       <section className="pane on">
@@ -514,18 +791,26 @@ function Counsel({ l, portraits, FIELD, NEAR, b, onNext }) {
   }
   return (
     <section className="pane on counselpane">
-      <ProfileBody l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} />
-      {onNext ? (
-        <div className="journey-foot">
-          <button type="button" className="go counsel-go" onClick={onNext}>전문인력 살펴보기</button>
-        </div>
-      ) : null}
+      <ProfileBody l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero onNext={onNext} onPrevious={onPrevious} />
     </section>
   );
 }
 
-function FieldTags({ l, FIELD, NEAR, b, full }) {
+function FieldTags({ l, FIELD, NEAR, b, full, categoriesOnly = false, limit = Infinity }) {
   const areas = l.areas || [];
+  if (categoriesOnly) {
+    const categories = [...new Set(areas.length
+      ? areas.map((a) => a.group).filter(Boolean)
+      : (l.f || []).map((code) => FIELD[code]?.[0]).filter(Boolean))];
+    if (!categories.length) return null;
+    const primary = fieldLabelsOf(FIELD, b?.field);
+    return <ul className="field-keywords">{categories.slice(0, limit).map((name) => {
+      const related = groupMatchesFieldLabels(name, primary);
+      return <li className={`field-category${related ? " case-related" : ""}`} key={name}>
+        <span>{name}</span>
+      </li>;
+    })}</ul>;
+  }
   if (areas.length) {
     if (full) {
       const order = [];
@@ -590,26 +875,18 @@ function briefCareer(c) {
  *  추천이 아니라 '이 사람들이 사건을 함께 맡는다'는 소개다. 드러나는 것은
  *  최종 출신 · 주요 경력 · 업무 분야 · 업무 사례 넷뿐이다.
  *  사내 직위(대표변호사)와 전관 경력(부장판사 역임)은 성격이 달라 서체로 가른다. */
-function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen }) {
-  const prev = l.titles?.[0] || (l.o ? `${l.o} 출신` : "");
-  // 246px 카드에서 이 줄이 쓸 수 있는 폭은 216px 이고, 구분자가 19px 을 먹는다.
-  // 직위는 자간을 벌려 글자당 폭이 더 크므로 1.25 를 곱해 함께 센다.
-  // 실측: 전관 명조 13.5px 은 글자당 약 12.3px, 12.5px 은 11.4px, 11.5px 은 10.5px.
-  const load = l.pos.length * 1.25 + prev.length;
-  const fit = !prev ? "" : load <= 16 ? "" : load <= 19 ? " sm" : load <= 22 ? " xs" : " stack";
-  const career = (l.career || []).map(briefCareer).filter(Boolean).slice(0, 3);
-  const works = (l.works || []).map((w) => (w?.title || w || "").split(" | ")[0]).filter(Boolean).slice(0, 2);
+function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen, focused, clone, offset = 0 }) {
+  const prev = specialistHeadline(l);
+  const career = (l.career || []).map(briefCareer).filter(Boolean).slice(0, 2);
   return (
-    <button type="button" className="xcard" onClick={onOpen}>
-      <span className="xshot">
+    <button type="button" className={`xcard${focused ? " is-focused" : ""}${clone ? " is-clone" : ""}`} aria-label={`${l.n} ${l.pos} 프로필`} onClick={onOpen}>
+      <span className="xshot" style={{ "--portrait-offset": `${offset}px` }}>
         {portraits?.[l.n] ? <img src={portraits[l.n]} alt={l.n} /> : <span className="xmono">{l.n[0]}</span>}
-        <span className="xveil" />
-        <span className="xname">{l.n}</span>
       </span>
       <span className="xbody">
-        <span className={`xline${fit}`}>
-          <span className="rank">{l.pos}</span>
-          {prev ? <><span className="sep" /><span className="prev">{prev}</span></> : null}
+        <span className="senior-identity">
+          {prev ? <span className="senior-career">{prev}</span> : null}
+          <span className="senior-name-row"><strong>{l.n}</strong><span>{l.pos}</span></span>
         </span>
         {career.length ? (
           <><span className="xh">주요 경력</span>
@@ -617,45 +894,224 @@ function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen }) {
         ) : null}
         {l.f?.length || l.areas?.length ? (
           <><span className="xh">업무 분야</span>
-          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} /></>
+          <FieldTags l={l} FIELD={FIELD} NEAR={NEAR} b={b} categoriesOnly limit={3} /></>
         ) : null}
-        {works.length ? (
-          <><span className="xh">업무 사례</span>
-          <ul className="xlist">{works.map((w) => <li key={w}>{w}</li>)}</ul></>
-        ) : null}
+
       </span>
     </button>
   );
 }
 
-function Seniors({ list, headline, portraits, FIELD, NEAR, b, onNext }) {
+function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext }) {
   const [open, setOpen] = useState(null);
-  const shown = open ? list.find((x) => x.n === open) : null;
+  const visibleList = list.filter((person) => !counsel?.n || person.n !== counsel.n).slice(0, 6);
+  const shown = open ? visibleList.find((x) => x.n === open) : null;
+  const trackRef = useRef(null);
+  const trackId = useId();
+  const count = visibleList.length;
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const focusedRef = useRef(0);
+  const [changing, setChanging] = useState(false);
+  const changingRef = useRef(false);
+  const changeTimer = useRef(null);
+  const revealFrame = useRef(null);
+  const swipeStart = useRef(null);
+  const suppressClick = useRef(false);
+  useEffect(() => () => { clearTimeout(changeTimer.current); cancelAnimationFrame(revealFrame.current); }, []);
+  const pausedUntil = useRef(0);
+  const [autoPaused, setAutoPaused] = useState(false);
+  const [interacting, setInteractingState] = useState(false);
+  const interactingRef = useRef(false);
+  const setInteracting = (value) => { interactingRef.current = value; setInteractingState(value); };
+  const [infoIndex, setInfoIndex] = useState(0);
+  const focusedPerson = visibleList[((infoIndex % count) + count) % count];
+  const renderedList = Array.from({ length: 7 }, () => visibleList).flat();
+  const rosterKey = visibleList.map((person) => person.n).join("|");
+  const pauseBriefly = () => { pausedUntil.current = Date.now() + 8000; };
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track || !count) return;
+    let settling;
+    let frame;
+    let width = 0;
+    const paint = (position) => {
+      // Scale and opacity follow the same fractional scroll position, including loop copies.
+      Array.from(track.children).forEach((card, index) => {
+        const distance = index - position;
+        const proximity = Math.max(0, 1 - Math.abs(distance));
+        const weight = proximity * proximity * (3 - 2 * proximity);
+        card.style.setProperty("--motion-scale", String(.62 + .48 * weight));
+        card.style.setProperty("--motion-opacity", String(.5 + .5 * weight));
+        card.style.setProperty("--motion-x", `${Math.max(-2, Math.min(2, distance)) * -12}px`);
+        // A constant bottom origin with translation preserves the focused top-aligned endpoint.
+        card.style.setProperty("--motion-y", `${34 * weight}px`);
+      });
+      const index = Math.round(position);
+      focusedRef.current = index;
+      setFocusedIndex(index);
+    };
+    const settle = () => {
+      if (getComputedStyle(track).display !== "flex" || interactingRef.current) return;
+      const step = track.firstElementChild.getBoundingClientRect().width;
+      const position = track.scrollLeft / step + 3;
+      const index = Math.round(position);
+      if (Math.abs(position - index) > .02) return;
+      setInfoIndex(index);
+      revealFrame.current = requestAnimationFrame(() => {
+        setChanging(false);
+        changingRef.current = false;
+      });
+      if (index < count * 2 || index >= count * 4) {
+        const normalized = count * 3 + ((index % count) + count) % count;
+        // Paint the matching copy before the instantaneous, visually identical reposition.
+        paint(normalized);
+        track.scrollTo({ left: (normalized - 3) * step, behavior: "instant" });
+      }
+    };
+    const update = () => {
+      clearTimeout(settling);
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (getComputedStyle(track).display !== "flex") return;
+        const step = track.firstElementChild.getBoundingClientRect().width;
+        paint(track.scrollLeft / step + 3);
+      });
+      settling = setTimeout(settle, 220);
+    };
+    const resize = () => {
+      if (getComputedStyle(track).display !== "flex") { width = 0; return; }
+      if (width === track.clientWidth) return;
+      const initial = count * 3 + (width ? focusedRef.current % count : Math.min(3, count - 1));
+      width = track.clientWidth;
+      paint(initial);
+      setInfoIndex(initial);
+      track.scrollTo({ left: (initial - 3) * track.firstElementChild.getBoundingClientRect().width, behavior: "instant" });
+    };
+    resize();
+    track.addEventListener("scroll", update, { passive: true });
+    track.addEventListener("scrollend", settle);
+    const observer = new ResizeObserver(resize);
+    observer.observe(track);
+    return () => {
+      clearTimeout(settling); cancelAnimationFrame(frame);
+      track.removeEventListener("scroll", update); track.removeEventListener("scrollend", settle);
+      observer.disconnect();
+    };
+  }, [rosterKey]);
+  const focusPerson = (index) => {
+    const track = trackRef.current;
+    if (!track || changingRef.current || index === focusedRef.current) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    changingRef.current = true;
+    setChanging(true);
+    changeTimer.current = setTimeout(() => {
+      const step = track.firstElementChild.getBoundingClientRect().width;
+      track.scrollTo({ left: (index - 3) * step, behavior: reduced ? "instant" : "smooth" });
+    }, reduced ? 0 : 180);
+  };
+  const startSwipe = (event) => {
+    if (getComputedStyle(trackRef.current).display !== "flex") return;
+    swipeStart.current = { x: event.clientX, y: event.clientY };
+    suppressClick.current = false;
+    setInteracting(true); pauseBriefly();
+  };
+  const endSwipe = (event) => {
+    const start = swipeStart.current;
+    swipeStart.current = null; setInteracting(false); pauseBriefly();
+    if (!start) return;
+    const dx = event.clientX - start.x, dy = event.clientY - start.y;
+    if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy)) {
+      suppressClick.current = true;
+      focusPerson(focusedRef.current + (dx < 0 ? 1 : -1));
+    }
+  };
+  const move = (direction) => { pauseBriefly(); focusPerson(focusedRef.current + direction); };
+  useEffect(() => {
+    if (open || autoPaused || interacting || count < 2) return;
+    const timer = setInterval(() => {
+      const track = trackRef.current;
+      if (document.hidden || Date.now() < pausedUntil.current || !track ||
+          getComputedStyle(track).display !== "flex" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      focusPerson(focusedRef.current + 1);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [open, autoPaused, interacting, rosterKey]);
+
   return (
-    <section className="pane on seniorpane">
-      <span className="lbl">전문인력</span>
-      <h2 className="h1">{headline || "법무법인 YK의 전문인력입니다"}</h2>
-      <p className="sub">고객님의 사건을 성심껏 맡아드리기 위한 전담인력을 소개합니다</p>
-      <div className="legendgrid">
-        {list.map((l) => (
+    <div className="senior-pages">
+    <section className={`pane on seniorpane${shown ? " is-detail-hidden" : ""}`} aria-hidden={shown ? true : undefined} inert={shown ? "" : undefined}>
+      <div className="senior-content">
+      <h2 className="h1">다양한 경험을 갖춘 전문 인력을 소개합니다.</h2>
+      <p className="sub">주요 업무 분야와 경력을 살펴보세요.<br />프로필을 누르면 자세한 정보를 확인하실 수 있습니다.</p>
+      <div className={`senior-stage${changing ? " is-changing" : ""}`}>
+      {count > 1 && <div className="senior-side-navigation">
+        {[-1, 1].map((direction) => <button key={direction} type="button"
+          className={direction < 0 ? "senior-prev" : "senior-next"}
+          aria-label={direction < 0 ? "이전 전문 인력" : "다음 전문 인력"} aria-controls={trackId}
+          disabled={changing} onClick={() => move(direction)}>
+          <svg className={`lucide lucide-chevron-${direction < 0 ? "left" : "right"}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d={direction < 0 ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} />
+          </svg>
+        </button>)}
+      </div>}
+      <div className="legendgrid senior-carousel" ref={trackRef} onPointerDown={startSwipe} onPointerUp={endSwipe} onPointerCancel={() => { swipeStart.current = null; setInteracting(false); }} onPointerLeave={() => { swipeStart.current = null; setInteracting(false); }} onWheel={pauseBriefly} onFocusCapture={pauseBriefly} id={trackId} role="region" aria-label="전문 인력 목록" aria-roledescription="캐러셀">
+        {renderedList.map((l, index) => (
           <SeniorCard l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b}
-            key={`${l.pos}-${l.n}`} onOpen={() => setOpen(l.n)} />
+            key={`${index}-${l.n}`} clone={Math.floor(index / count) !== 3} offset={Math.max(-2, Math.min(2, index - focusedIndex)) * -12} focused={index === focusedIndex} onOpen={() => {
+              if (suppressClick.current) { suppressClick.current = false; return; }
+              if (changingRef.current) return;
+              if (getComputedStyle(trackRef.current).display === "flex" && index !== focusedIndex) { pauseBriefly(); focusPerson(index); }
+              else setOpen(l.n);
+            }} />
         ))}
       </div>
-      {!list.length ? <p className="empty">아직 연결된 전문인력 프로필이 없습니다.</p> : null}
+      {focusedPerson && <div className="senior-focused-info" aria-live="off" aria-atomic="true">
+        {visibleList.map((person) => <div className="senior-info-copy senior-info-sizer" aria-hidden="true" key={person.n}>
+        <p className="senior-focused-career">{specialistHeadline(person)}</p>
+        <p className="senior-focused-name"><strong>{person.n}</strong><span>{person.pos}</span></p>
+        <span className="senior-profile-action">프로필 보기
+          <svg className="lucide lucide-arrow-right" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
+        </span>
+        </div>)}
+        <div className="senior-info-copy">
+        <p className="senior-focused-career">{specialistHeadline(focusedPerson)}</p>
+        <p className="senior-focused-name"><strong>{focusedPerson.n}</strong><span>{focusedPerson.pos}</span></p>
+        <button type="button" disabled={changing} onClick={() => setOpen(focusedPerson.n)}>프로필 보기
+          <svg className="lucide lucide-arrow-right" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7" /></svg>
+        </button>
+        </div>
+      </div>}
+      </div>
+      {visibleList.length > 0 && <div className="senior-carousel-controls">
+        <span>전체 {visibleList.length}명</span>
+        <div className="senior-carousel-arrows">
+          <button type="button" className="senior-auto-toggle" onClick={() => setAutoPaused((paused) => !paused)} aria-label={autoPaused ? "자동 넘김 재생" : "자동 넘김 일시정지"}>{autoPaused ? "재생" : "일시정지"}</button>
+          {[-1, 1].map((direction) => <button key={direction} type="button"
+            aria-label={direction < 0 ? "이전 전문 인력" : "다음 전문 인력"} aria-controls={trackId}
+            disabled={count < 2} onClick={() => move(direction)}>
+            <svg className={`lucide lucide-arrow-${direction < 0 ? "left" : "right"}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d={direction < 0 ? "m12 19-7-7 7-7" : "m12 5 7 7-7 7"} /><path d="M5 12h14" />
+            </svg>
+          </button>)}
+        </div>
+      </div>}
+      {!visibleList.length ? <p className="empty">현재 표시할 전문 인력 정보가 없습니다.</p> : null}
       {onNext ? (
         <div className="journey-foot">
           <button type="button" className="go counsel-go" onClick={onNext}>설문 참여하기</button>
         </div>
       ) : null}
-      {shown ? (
-        <div className="xmodal" onClick={() => setOpen(null)} role="presentation">
-          <article className={`xcard ${shown.grade} open`} onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="xclose" onClick={() => setOpen(null)}>닫기</button>
-            <ProfileBody l={shown} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} />
-          </article>
-        </div>
-      ) : null}
+      </div>
     </section>
+      {shown && <section className="pane on counselpane specialist-detail-page" aria-label={`${shown.n} 프로필 상세`}>
+        <div className="specialist-back-row">
+          <button type="button" autoFocus onClick={() => { pauseBriefly(); setOpen(null); }}>
+            <svg className="lucide lucide-arrow-left" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14" /></svg>
+            전문 인력 목록
+          </button>
+        </div>
+        <ProfileBody key={shown.n} l={shown} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero specialist />
+      </section>}
+    </div>
   );
 }

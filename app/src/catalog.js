@@ -11,12 +11,12 @@ const FILES = [
 let cache = null;
 
 /** 전체 데이터를 한 번만 불러온다. 두 번째 호출부터는 같은 객체를 돌려준다. */
-export async function catalog() {
-  if (cache) return cache;
+export async function catalog({ refresh = false } = {}) {
+  if (cache && !refresh) return cache;
   const base = import.meta.env.BASE_URL;
   const entries = await Promise.all(
     FILES.map(async (name) => {
-      const res = await fetch(`${base}data/${name}.json?v=${__BUILD__}`);
+      const res = await fetch(`${base}data/${name}.json?v=${__BUILD__}`, { cache: refresh ? "no-store" : "default" });
       if (!res.ok) throw new Error(`${name}.json 을 불러오지 못했습니다 (${res.status})`);
       return [name, await res.json()];
     }),

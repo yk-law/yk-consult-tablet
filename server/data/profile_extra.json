@@ -166,19 +166,6 @@
     ]
   },
   "한상진": {
-    "awards": [
-      "검찰총장 모범검사상"
-    ],
-    "works": [
-      {
-        "title": "가등기말소 | 가족 간 이전 약정 성립 여부와 권리행사 기간 경과를 근거로 한 말소 판결",
-        "href": "https://www.yklawfirm.co.kr/case/civil/14912"
-      },
-      {
-        "title": "강제추행",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/1054871"
-      }
-    ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/6071",
     "areas": [
       {
@@ -270,8 +257,17 @@
         "name": "선거범죄"
       }
     ],
+    "works": [
+      {
+        "title": "강제추행 혐의 사건 — 불송치",
+        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/1054871"
+      }
+    ],
     "papers": [
       "영국 검찰의 권한 변화와 전망"
+    ],
+    "awards": [
+      "검찰총장 모범검사상"
     ]
   },
   "김경": {
@@ -493,23 +489,6 @@
     ]
   },
   "최영운": {
-    "awards": [
-      "2007년 법무부장관상"
-    ],
-    "works": [
-      {
-        "title": "중고거래사기무죄 | 공모관계와 돈 전달 증거 부족을 근거로 방어",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14985"
-      },
-      {
-        "title": "사기 기소유예 | 송치 후 합의서와 검사실 변론으로 사실관계 소명",
-        "href": "https://www.yklawfirm.co.kr/case/detective/15188"
-      },
-      {
-        "title": "공중밀집장소추행 기소유예 | 피해자와 원만히 합의하고 반성한 사정을 바탕으로 선처를 이끈 사례",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/15671"
-      }
-    ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/6006",
     "areas": [
       {
@@ -552,6 +531,11 @@
         "group": "노동·산업재해",
         "name": "근로기준법"
       }
+    ],
+    "works": [],
+    "papers": [],
+    "awards": [
+      "2007년 법무부장관상"
     ]
   },
   "변민선": {
@@ -858,6 +842,7 @@
     ]
   },
   "김동진": {
+    "profile": "https://www.yklawfirm.co.kr/member/lawyer/6254",
     "areas": [
       {
         "group": "형사",
@@ -964,6 +949,7 @@
         "name": "기타민사"
       }
     ],
+    "works": [],
     "papers": [
       "지식재산권에 관한 형사소송 집필 (3판, 2012)",
       "특허권침해금지가처분 집필 (초판, 2001)",
@@ -972,7 +958,7 @@
       "알파벳이 포함된 결합상표의 독점력에 대한 법적 보호의 정도 (2008, 대법원 지식재산권법연구회)",
       "온라인서비스 제공자의 법적 책임과 한계 (2003, 법원도서관, 재판자료집)"
     ],
-    "profile": "https://www.yklawfirm.co.kr/member/lawyer/6254"
+    "awards": []
   },
   "권순일": {
     "areas": [
@@ -1168,5 +1154,159 @@
   },
   "정창호": {
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/6267"
+  },
+  "유병두": {
+    "awards": [
+      "검찰총장 표창(마약유공)",
+      "국무총리 표창(직무유공)"
+    ],
+    "papers": [],
+    "areas": [
+      {
+        "group": "형사",
+        "name": "일반사기"
+      },
+      {
+        "group": "형사",
+        "name": "횡령·배임"
+      },
+      {
+        "group": "형사",
+        "name": "특수경제범죄(특경법)"
+      },
+      {
+        "group": "형사",
+        "name": "보험사기"
+      },
+      {
+        "group": "형사",
+        "name": "살인"
+      },
+      {
+        "group": "형사",
+        "name": "절도"
+      },
+      {
+        "group": "형사",
+        "name": "부패범죄"
+      },
+      {
+        "group": "형사",
+        "name": "스토킹"
+      },
+      {
+        "group": "형사",
+        "name": "공무집행방해"
+      },
+      {
+        "group": "형사",
+        "name": "도박"
+      },
+      {
+        "group": "형사",
+        "name": "기타형사"
+      },
+      {
+        "group": "성범죄",
+        "name": "강간"
+      },
+      {
+        "group": "성범죄",
+        "name": "강제추행"
+      },
+      {
+        "group": "성범죄",
+        "name": "카메라등이용촬영"
+      },
+      {
+        "group": "성범죄",
+        "name": "아동청소년보호법위반(아청법위반)"
+      },
+      {
+        "group": "성범죄",
+        "name": "성착취물"
+      },
+      {
+        "group": "성범죄",
+        "name": "성매매"
+      },
+      {
+        "group": "성범죄",
+        "name": "공연음란"
+      },
+      {
+        "group": "성범죄",
+        "name": "통신매체이용음란"
+      },
+      {
+        "group": "성범죄",
+        "name": "디지털성범죄"
+      },
+      {
+        "group": "마약",
+        "name": "마약류 제조유통"
+      },
+      {
+        "group": "마약",
+        "name": "대마"
+      },
+      {
+        "group": "마약",
+        "name": "향정신성의약품(향정)"
+      },
+      {
+        "group": "지식재산권",
+        "name": "상표"
+      },
+      {
+        "group": "군형사",
+        "name": "군폭행"
+      },
+      {
+        "group": "군형사",
+        "name": "상관모욕"
+      },
+      {
+        "group": "군형사",
+        "name": "군징계"
+      },
+      {
+        "group": "의료",
+        "name": "의료소송"
+      },
+      {
+        "group": "해양법무",
+        "name": "해양"
+      }
+    ],
+    "works": [
+      {
+        "title": "강제추행 불송치 | 직장 동료 진술 불일치와 객관적 증거 부재를 근거로 혐의없음 입증",
+        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/14768"
+      },
+      {
+        "title": "손해배상청구 기각 | 무죄 확정 뒤 제기된 허위 고소 주장, 고의·중과실 부재로 방어",
+        "href": "https://www.yklawfirm.co.kr/case/civil/15124"
+      }
+    ]
+  },
+  "강성용": {
+    "profile": "https://www.yklawfirm.co.kr/member/advisory/6148",
+    "areas": [
+      {
+        "group": "기업법무",
+        "name": "기업자문"
+      }
+    ],
+    "works": [],
+    "papers": [],
+    "awards": []
+  },
+  "강신선": {
+    "profile": "https://www.yklawfirm.co.kr/member/expert/6018",
+    "areas": [],
+    "works": [],
+    "papers": [],
+    "awards": []
   }
 }
