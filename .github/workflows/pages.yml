@@ -1,8 +1,10 @@
 name: pages
 
+# 미리보기 브랜치 전용 배포. main 빌드를 루트에, 이 브랜치(PR #1) 빌드를 /binder-feedback/ 에 함께 올린다.
+# 기존 주소는 그대로 main을 보여 주고, 같은 쿼리로 개선본을 나란히 열어 비교한다.
+# main에 다시 푸시되면 main만 배포되어 /binder-feedback/ 은 사라진다.
+
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -22,20 +24,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: preview
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: base
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: pip install -r server/requirements.txt
+      - run: pip install -r base/server/requirements.txt
       - run: python tools/snapshot.py
+        working-directory: base
       - run: npm install && npm run build
-        working-directory: app
+        working-directory: base/app
         env:
           VITE_BASE: /yk-consult-tablet/
+      - run: python tools/snapshot.py
+        working-directory: preview
+      - run: npm install && npm run build
+        working-directory: preview/app
+        env:
+          VITE_BASE: /yk-consult-tablet/binder-feedback/
+      - run: cp -r preview/app/dist base/app/dist/binder-feedback
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: app/dist
+          path: base/app/dist
       - id: deployment
         uses: actions/deploy-pages@v4
