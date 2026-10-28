@@ -24,7 +24,7 @@ const JOURNEY = [
   ["seniors", "전문 인력"],
 ];
 
-export default function Tablet({ data, screen, onScreen }) {
+export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer = () => {} }) {
   const b = data.booking;
   const roomLabel = b.location != null && b.room != null
     ? `${b.location} ${b.room} 상담실`
@@ -53,8 +53,10 @@ export default function Tablet({ data, screen, onScreen }) {
     screen === "counsel-video" && counsel?.videoId
       ? counsel
       : null;
-  const journeyOn = JOURNEY.some(([id]) => id === screen);
-  const journeyActive = screen === "counsel-video" ? "counsel" : screen;
+  const journeyOn = JOURNEY.some(([id]) => id === screen) || screen === "topics";
+  const journeyActive = screen === "counsel-video" ? "counsel" : screen === "topics" ? "report" : screen;
+  // 1뎁스 요약이 없는 예약은 사건 요약에서 바로 2뎁스(사건 종류 템플릿)를 보여 준다.
+  const hasSummary = (data.helper?.summary || []).length > 0;
 
   return (
     <div className={`tab viewtab ${filmOn ? "filmon" : ""} ${welcomeOn ? "welcome-on" : ""}`} id="tabDev">
@@ -79,8 +81,15 @@ export default function Tablet({ data, screen, onScreen }) {
         {screen === "firm" && (
           <FirmIntro firm={data.firm} portraits={data.portraits} FIELD={FIELD} onNext={() => onScreen("report")} />
         )}
-        {screen === "report" && (
-          <Report helper={data.helper} onCounsel={() => onScreen("counsel")} />
+        {screen === "report" && hasSummary && (
+          <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} />
+        )}
+        {(screen === "topics" || (screen === "report" && !hasSummary)) && (
+          <Report
+            helper={data.helper}
+            onCounsel={() => onScreen("counsel")}
+            onPrevious={screen === "topics" ? () => onScreen("report") : null}
+          />
         )}
         {counselVideo && (
           <CounselVideo l={counselVideo} onDone={() => onScreen("counsel")} />
@@ -93,7 +102,7 @@ export default function Tablet({ data, screen, onScreen }) {
             NEAR={NEAR}
             b={b}
             onNext={() => onScreen("seniors")}
-            onPrevious={() => onScreen("report")}
+            onPrevious={() => onScreen(hasSummary ? "topics" : "report")}
           />
         )}
         {screen === "seniors" && (
@@ -470,88 +479,100 @@ function ReportNext({ onClick, label = "상담 변호사 확인하기", previous
   );
 }
 
-function Report({ helper, onCounsel }) {
-  const agenda = helper?.agenda || [];
-  const intake = helper?.intake;
-  const none = !agenda.length;
-
-  // 콜에서 사건 내용을 전혀 받지 못한 예약 — 요약할 게 없으니 '오늘 이렇게 여쭤볼게요'를 대신 띄운다.
-  // 빈 화면이나 사과문을 보여주면 고객이 준비가 덜 된 기분이 든다. 대기 시간에 생각을 정리하도록 돕는 편이 낫다.
-  if (none) {
-    return (
-      <section className="pane on reportpane">
-        <div className="ykhelper">
-          <div className="yh-body">
-            <h3>오늘은 처음부터 편하게 말씀해 주세요</h3>
-            <p className="yh-lead">
-              {helper?.emptyNote
-                ? `${helper.emptyNote} `
-                : "예약하실 때에는 사건 내용을 따로 남기지 않으셨습니다. "}
-              정리해서 오실 필요는 없습니다. 상담에서 이런 순서로 여쭤보겠습니다.
-            </p>
-
-            <ol className="yh-steps">
-              {(intake?.steps || []).map(([t, d], i) => (
-                <li key={t}>
-                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                  <div>
-                    <h4>{t}</h4>
-                    <p>{d}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            {intake?.bring?.length > 0 && (
-              <div className="yh-bring">
-                <h4>가지고 계시면 도움이 되는 것</h4>
-                <ul>
-                  {intake.bring.map((x) => (
-                    <li key={x}>{x}</li>
-                  ))}
-                </ul>
-                <p className="yh-bring-note">
-                  지금 없으셔도 괜찮습니다. 상담 후에 보내주셔도 됩니다.
-                </p>
-              </div>
-            )}
-
-            <p className="yh-src">기억나시는 대로 말씀해 주시면 됩니다. 순서가 뒤바뀌어도 저희가 정리해 드립니다.</p>
-            <ReportNext onClick={onCounsel} />
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // 사실관계 서술은 띄우지 않는다(2026-10-28). 상담 주제와 고객이 확인하고 싶은 점만 둔다.
+/** 사건 요약 1뎁스(10-28 미팅). 노출 가능한 예약에만 짧은 요약을 띄우고 문장마다 맞아요/아니요를 받는다.
+ *  고객이 고른 값은 상담실장 YK-OS에 그대로 보인다. 아니요는 상담에서 다시 여쭤본다. */
+function Summary({ helper, answers, onAnswer, onNext }) {
+  const rows = helper.summary;
   return (
     <section className="pane on reportpane">
       <div className="ykhelper">
         <div className="yh-body">
-          <h3>오늘 상담에서 확인하실 내용입니다.</h3>
+          <h3>예약하실 때 말씀하신 내용입니다.</h3>
           <p className="yh-lead">
-            예약하실 때 궁금하다고 하신 점을 상담 순서대로 적었습니다.<br />
-            사건 내용은 상담에서 변호사가 직접 듣고 정리해 드립니다.
+            저희가 이해한 내용이 맞는지 확인해 주세요.<br />
+            다른 부분은 상담에서 다시 여쭤보겠습니다.
           </p>
+          <ol className="yh-check">
+            {rows.map((t, i) => (
+              <li key={t}>
+                <p>{t}</p>
+                <div className="yh-check-a" role="group" aria-label={`${i + 1}번 확인`}>
+                  {[["yes", "맞아요"], ["no", "아니요"]].map(([v, l]) => (
+                    <button
+                      type="button"
+                      key={v}
+                      className={answers[i] === v ? `on ${v}` : v}
+                      aria-pressed={answers[i] === v}
+                      onClick={() => onAnswer(i, answers[i] === v ? null : v)}
+                    >{l}</button>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="yh-src">모두 고르지 않으셔도 괜찮습니다.</p>
+          <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** 사건 요약 2뎁스. 개인화는 사건 종류까지만 하고, 같은 종류 상담에서 많이 확인하는 내용을 보여 준다. */
+function Report({ helper, onCounsel, onPrevious }) {
+  const topics = helper?.topics || [];
+  const intake = helper?.intake;
+  const steps = topics.length ? topics : intake?.steps || [];
+
+  return (
+    <section className="pane on reportpane">
+      <div className="ykhelper">
+        <div className="yh-body">
+          <h3>오늘 상담에서 함께 볼 내용입니다.</h3>
+          <p className="yh-lead">
+            같은 고민으로 찾아오신 분들이 상담에서 많이 확인하신 내용입니다.<br />
+            정리해서 오실 필요는 없습니다. 이 순서로 편하게 말씀 나누시면 됩니다.
+          </p>
+          {/* 세부 죄명은 옆 사람 눈에도 띄므로 대분류만 쓴다. */}
           {helper?.topic && (
             <div className="yh-topic">
               <span className="yh-topic-l">상담 분야</span>
               <strong>{helper.topic}</strong>
             </div>
           )}
-          <ol className="yh-secs yh-agenda">
-            {agenda.map((t, i) => (
+          <ol className="yh-steps">
+            {steps.map(([t, d], i) => (
               <li key={t}>
-                <div className="yh-sec-h">
-                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                <div>
                   <h4>{t}</h4>
+                  <p>{d}</p>
                 </div>
               </li>
             ))}
           </ol>
+
+          {!topics.length && intake?.bring?.length > 0 && (
+            <div className="yh-bring">
+              <h4>가지고 계시면 도움이 되는 것</h4>
+              <ul>
+                {intake.bring.map((x) => (
+                  <li key={x}>{x}</li>
+                ))}
+              </ul>
+              <p className="yh-bring-note">
+                지금 없으셔도 괜찮습니다. 상담 후에 보내주셔도 됩니다.
+              </p>
+            </div>
+          )}
+
           <p className="yh-src">더 여쭤보고 싶은 점은 상담에서 편하게 말씀해 주세요.</p>
-          <ReportNext onClick={onCounsel} />
+          {onPrevious ? (
+            <div className="counsel-page-links">
+              <ReportNext onClick={onPrevious} label="말씀하신 내용으로" previous />
+              <ReportNext onClick={onCounsel} />
+            </div>
+          ) : <ReportNext onClick={onCounsel} />}
         </div>
       </div>
     </section>

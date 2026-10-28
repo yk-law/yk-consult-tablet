@@ -14,7 +14,7 @@ const SCREENS = [
   ["seniors", "전문 인력"],
 ];
 /** 장면 딥링크용. 상단 세그에는 안 넣고 URL·흐름에서만 쓴다. */
-const DEEP = new Set(["film", "counsel-video", ...SCREENS.map(([id]) => id)]);
+const DEEP = new Set(["film", "counsel-video", "topics", ...SCREENS.map(([id]) => id)]);
 const VIEWS = [["tab", "고객 태블릿"], ["os", "상담실장 YK-OS"], ["both", "나란히"]];
 
 export default function App() {
@@ -31,6 +31,10 @@ export default function App() {
   /** 화면 공유 때 실장이 고른 상담 변호사. 예약의 지정 변호사 대신 고객 화면에 나온다. */
   const [pick, setPick] = useState(q.get("l") || "");
   const [pickData, setPickData] = useState(null);
+  /** 사건 요약 1뎁스에서 고객이 고른 맞아요/아니요. 문장 순서 → "yes" | "no". 실장 화면에 그대로 보인다. */
+  const [answers, setAnswers] = useState({});
+  const answer = useCallback((i, v) => setAnswers((a) => ({ ...a, [i]: v })), []);
+  useEffect(() => { setAnswers({}); }, [cid]);
 
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [controlsOpen, setControlsOpen] = useState(false);
@@ -145,6 +149,7 @@ export default function App() {
   const unshare = useCallback(() => {
     setConnected(false);
     setPick("");
+    setAnswers({});
     setScreen("wait");
   }, []);
 
@@ -215,14 +220,14 @@ export default function App() {
             {SCREENS.map(([id, l]) => (
               <button
                 key={id}
-                className={screen === id || (id === "counsel" && screen === "counsel-video") ? "on" : ""}
-                aria-pressed={screen === id || (id === "counsel" && screen === "counsel-video")}
+                className={screen === id || (id === "counsel" && screen === "counsel-video") || (id === "report" && screen === "topics") ? "on" : ""}
+                aria-pressed={screen === id || (id === "counsel" && screen === "counsel-video") || (id === "report" && screen === "topics")}
                 onClick={() => setScreen(id)}
               >{l}</button>
             ))}
           </div>
         )}
-        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "counsel", "seniors"].includes(screen))) && (
+        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "topics", "counsel", "seniors"].includes(screen))) && (
           fullscreen ? <div className="theme-controls drawer-theme-row">
             <h3 className="drawer-section-label">화면 테마</h3>
             <div className="drawer-theme-setting">
@@ -285,11 +290,11 @@ export default function App() {
           <div className={`tabwrap binder-theme theme-${theme}`}>
             {theme === "dark" && darkDesign === "legacy"
               ? <LegacyPreview data={shown} screen={screen} onScreen={setScreen} />
-              : <Tablet data={shown} screen={screen} onScreen={setScreen} />}
+              : <Tablet data={shown} screen={screen} onScreen={setScreen} answers={answers} onAnswer={answer} />}
           </div>
         )}
         {displayView !== "tab" && (
-          <YKOS cat={cat} data={shown} booking={booking} connected={connected} screen={screen} act={act} />
+          <YKOS cat={cat} data={shown} booking={booking} connected={connected} screen={screen} act={act} answers={answers} />
         )}
       </div>
     </div>
