@@ -679,6 +679,6 @@ def visit_for(bid: str | None = None) -> dict:
         "NEAR": c["NEAR"],
         "counts": c["counts"],
         "portraits": {n: portraits[n] for n in names if n and n in portraits},
-        "bookings": [{"id": x["id"], "name": x["name"], "at": x["at"], "cat2": x["cat2"]} for x in c["bookings"]],
+        "bookings": [{"id": x["id"], "name": x["name"], "at": x["at"], "cat2": x["cat2"], "depth": 1 if x.get("summary") else 2} for x in c["bookings"]],
     }
 
