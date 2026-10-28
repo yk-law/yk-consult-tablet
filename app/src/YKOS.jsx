@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
 import Tablet from "./Tablet.jsx";
 import SignForm from "./SignForm.jsx";
@@ -40,6 +40,22 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
   }, [cat, vq, want]);
 
   const sign = signId ? (cat?.bookings || []).find((b) => b.id === signId) : null;
+  const summary = (connected && data?.helper?.summary) || [];
+  const yesCount = summary.filter((_, i) => answers[i] === "yes").length;
+  const noCount = summary.filter((_, i) => answers[i] === "no").length;
+  // 고객이 방금 고른 답을 잠깐 띄운다. 아니요는 실장이 바로 알아야 한다.
+  const [toast, setToast] = useState(null);
+  const prevAnswers = useRef(answers);
+  useEffect(() => {
+    const prev = prevAnswers.current;
+    prevAnswers.current = answers;
+    if (!connected) return;
+    const i = Object.keys(answers).find((k) => answers[k] && answers[k] !== prev[k]);
+    if (i == null) return;
+    setToast({ v: answers[i], t: summary[i] || "" });
+    const id = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(id);
+  }, [answers]); // eslint-disable-line react-hooks/exhaustive-deps
   const watch = WATCH[screen === "report" && !data?.helper?.summary?.length ? "topics" : screen] || ["—", ""];
   const rst = connected ? `${booking?.branch} · ${booking?.name}(가명) 님` : "미연결";
 
@@ -66,6 +82,12 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
           <div className="split">
             {/* 좌 — 상담실장이 보는 화면 */}
             <section className="lft">
+              {toast && (
+                <div className={`ctoast ${toast.v}`} role="status">
+                  <b>고객이 {toast.v === "no" ? "‘아니요’" : "‘맞아요’"}를 골랐습니다</b>
+                  <span>{toast.t}</span>
+                </div>
+              )}
               {sign ? <SignForm booking={sign} onBack={() => setSignId(null)} /> : <>
               <div className="vhd">
                 <h3>방문 예정 목록</h3>
@@ -94,6 +116,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                       <span className="vt">{x.tel}</span>
                       <span className="vg">{x.cat1}&gt;{x.cat2}</span>
                       {/* 10-28 미팅: 방문 전 상담 내용 퀄리티로 사건 요약 뎁스를 나눈다. */}
+                      {on && noCount > 0 && <span className="vno">아니요 {noCount}</span>}
                       <span className={`vdepth${x.summary ? " d1" : ""}`} title={x.summary ? "요약을 고객에게 보여 주고 맞아요/아니요를 받습니다" : x.summaryOff || ""}>
                         {x.summary ? "요약 1·2뎁스" : "요약 2뎁스만"}
                       </span>
@@ -148,6 +171,29 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
 
+                  {/* 10-28: 사건 요약 1뎁스에서 고객이 고른 맞아요/아니요. 실장이 놓치지 않게 연결 배너 바로 아래 둔다. */}
+                  {summary.length > 0 && (
+                    <div className={`ccheck${noCount ? " has-no" : ""}`}>
+                      <div className="ccheck-h">
+                        <span className="l">고객 확인 · 사건 요약</span>
+                        <span className="cnt">
+                          <b className="yes">맞아요 {yesCount}</b>
+                          <b className="no">아니요 {noCount}</b>
+                          <b className="none">미응답 {summary.length - yesCount - noCount}</b>
+                        </span>
+                      </div>
+                      <ul className="conn-check">
+                        {summary.map((t, i) => (
+                          <li key={t} className={answers[i] || "none"}>
+                            <b className={answers[i] || "none"}>{answers[i] === "yes" ? "맞아요" : answers[i] === "no" ? "아니요" : "미응답"}</b>
+                            <span>{t}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {noCount > 0 && <p className="ccheck-note">아니요로 고른 내용은 상담 시작 때 다시 여쭤봐 주세요.</p>}
+                    </div>
+                  )}
+
                   {/* 09-28 회의: 화면 제어를 세분화하지 않는다. 고객이 태블릿에서 직접 움직이고,
                       실장은 지금 어디를 보는지만 확인한다. 조작은 연결·해제뿐. */}
                   <div className="watch">
@@ -157,20 +203,6 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                       <div className="d">{watch[1]}</div>
                     </div>
                   </div>
-
-                  {data?.helper?.summary?.length > 0 && (
-                    <div>
-                      <h4>고객 확인 <em>사건 요약 · 맞아요/아니요</em></h4>
-                      <ul className="conn-check">
-                        {data.helper.summary.map((t, i) => (
-                          <li key={t}>
-                            <b className={answers[i] || "none"}>{answers[i] === "yes" ? "맞아요" : answers[i] === "no" ? "아니요" : "미응답"}</b>
-                            <span>{t}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
 
                   <div>
                     <h4>예약 정보 <em>콜 탭 · eng_id {booking.id}</em></h4>
@@ -215,12 +247,23 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                   <p className="w">연결 가능한 태블릿이 없습니다. 상담 태블릿 앱에서 먼저 입장해 주세요.</p>
                 </div>
               ) : (
+                <>
+                {summary.length > 0 && (
+                  <div className={`rcheck${noCount ? " has-no" : ""}`}>
+                    <span className="l">고객 확인</span>
+                    <b className="yes">맞아요 {yesCount}</b>
+                    <b className="no">아니요 {noCount}</b>
+                    <b className="none">미응답 {summary.length - yesCount - noCount}</b>
+                    {summary.map((t, i) => answers[i] === "no" && <span className="rno" key={t}>아니요 · {t}</span>)}
+                  </div>
+                )}
                 <div className="mirror">
                   <div className="mfr"><div className="mscale"><div className="mclone">
                     {data ? <Tablet data={data} screen={screen} onScreen={() => {}} answers={answers} /> : null}
                   </div></div></div>
                   <div className="mfoot"><span>{watch[0]}</span><span className="ml">실시간 미러링 · 보기 전용</span></div>
                 </div>
+                </>
               )}
             </section>
           </div>
