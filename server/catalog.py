@@ -31,6 +31,7 @@ def catalog() -> dict:
         "fee": load("fee.json"),
         "scenarios": load("scenarios.json"),
         "intake": load("intake.json"),
+        "topics": load("topics.json"),
         "firm": load("firm.json"),
         "firmIntro": load("firm_intro.json"),
         "sign": load("sign.json"),
@@ -402,35 +403,35 @@ def pitch_of(l: dict) -> str:
     return "내 일처럼 진심을 다하겠습니다."
 
 
-def helper_view(b: dict) -> dict:
-    """고객 태블릿 사건요약. 상담 주제와 오늘 확인하고 싶은 점만 보여 준다.
+def topic_template(b: dict) -> dict | None:
+    """사건 종류별 2뎁스 템플릿. 소분류 → 별칭 → 없음."""
+    table = catalog()["topics"]
+    key = b.get("cat2") or ""
+    key = table["_alias"].get(key, key)
+    return table.get(key)
 
-    당사자·경과·입장 서술(overview)은 고객 화면에 띄우지 않는다(2026-10-28).
-    검수 부담이 크고, 판결·형량·상대방 정황처럼 논란이 될 문장이 섞인다.
+
+def helper_view(b: dict) -> dict:
+    """고객 태블릿 사건 요약. 10-28 미팅으로 2뎁스가 기본이다.
+
+    1뎁스(summary): 방문 전 상담 내용이 고객에게 보여도 되는 수준일 때만 짧은 요약을 띄우고
+    문장마다 맞아요/아니요를 받는다. 자세할수록 사전 스크리닝 부담이 커서 3~4문장으로 줄인다.
+    노출이 어려운 예약은 summary를 두지 않고 1뎁스를 건너뛴다.
+    2뎁스(topics): 개인화는 사건 종류까지만. 같은 종류 상담에서 많이 확인하는 내용을 보여 준다.
     """
-    role = f"{b['role']} · {b['rel']}" if b.get("rel") else b.get("role") or ""
-    agenda = b.get("agenda") or []
-    # 확인할 점을 받지 못한 예약은 요약 대신 '오늘 이렇게 여쭤볼게요'를 띄운다.
+    template = topic_template(b)
     intake = None
-    if not agenda:
+    if not template:
         table = catalog()["intake"]
         intake = table.get(b.get("cat2")) or table.get(b.get("cat1")) or table["__default"]
     return {
         "engId": b["id"],
-        "title": "오늘 상담에서 확인하실 내용입니다",
         # 세부 죄명(준강제추행 등)은 옆 사람 눈에도 띄므로 대분류만 쓴다.
         "topic": b.get("cat1") or "",
-        "agenda": agenda,
+        "summary": b.get("summary") or [],
+        "topics": template["steps"] if template else [],
         "intake": intake,
         "emptyNote": b.get("memoNote") or "",
-        "rows": [
-            ["사건 종류", f"{b['cat1']} > {b['cat2']}"],
-            ["관할", b.get("court") or ""],
-            ["고객 유형", b.get("type") or ""],
-            ["고객 역할", role],
-            ["방문", b.get("at") or ""],
-            ["상담실", b.get("branch") or ""],
-        ],
     }
 
 

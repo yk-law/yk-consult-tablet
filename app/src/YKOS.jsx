@@ -9,7 +9,8 @@ const WATCH = {
   wait: ["대기 화면", "예약자 확인을 기다리는 중"],
   film: ["브랜드 영상", "무음 반복 재생 중"],
   firm: ["YK 소개", "센터·구성원 소개 보는 중"],
-  report: ["사건요약", "오늘 확인하실 내용 보는 중"],
+  report: ["사건 요약", "말씀하신 내용 확인 중"],
+  topics: ["사건 요약", "사건 종류별 상담 내용 보는 중"],
   counsel: ["상담 변호사", "담당 변호사 프로필"],
   "counsel-video": ["상담 변호사", "소개 영상 재생 중"],
   seniors: ["전문인력", "고문·전문위원 둘러보는 중"],
@@ -18,7 +19,7 @@ const WATCH = {
 /** 방문 예정일 이동. 실제 YK-OS는 화살표 하나에 라벨 하나다. */
 const DAY_LABEL = { "-1": "어제", 0: "오늘", 1: "내일" };
 
-export default function YKOS({ cat, data, booking, connected, screen, act }) {
+export default function YKOS({ cat, data, booking, connected, screen, act, answers = {} }) {
   const [vq, setVq] = useState("");
   const [off, setOff] = useState(0);
   const [signId, setSignId] = useState(null);
@@ -39,7 +40,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
   }, [cat, vq, want]);
 
   const sign = signId ? (cat?.bookings || []).find((b) => b.id === signId) : null;
-  const watch = WATCH[screen] || ["—", ""];
+  const watch = WATCH[screen === "report" && !data?.helper?.summary?.length ? "topics" : screen] || ["—", ""];
   const rst = connected ? `${booking?.branch} · ${booking?.name}(가명) 님` : "미연결";
 
   return (
@@ -137,7 +138,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                     <div>
                       <span className="l">연결됨</span>
                       <span className="t">{booking.name}(가명) · {booking.branch}</span>
-                      <span className="cl">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
+                      <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
@@ -151,6 +152,20 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                       <div className="d">{watch[1]}</div>
                     </div>
                   </div>
+
+                  {data?.helper?.summary?.length > 0 && (
+                    <div>
+                      <h4>고객 확인 <em>사건 요약 · 맞아요/아니요</em></h4>
+                      <ul className="conn-check">
+                        {data.helper.summary.map((t, i) => (
+                          <li key={t}>
+                            <b className={answers[i] || "none"}>{answers[i] === "yes" ? "맞아요" : answers[i] === "no" ? "아니요" : "미응답"}</b>
+                            <span>{t}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   <div>
                     <h4>예약 정보 <em>콜 탭 · eng_id {booking.id}</em></h4>
@@ -197,7 +212,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
               ) : (
                 <div className="mirror">
                   <div className="mfr"><div className="mscale"><div className="mclone">
-                    {data ? <Tablet data={data} screen={screen} onScreen={() => {}} /> : null}
+                    {data ? <Tablet data={data} screen={screen} onScreen={() => {}} answers={answers} /> : null}
                   </div></div></div>
                   <div className="mfoot"><span>{watch[0]}</span><span className="ml">실시간 미러링 · 보기 전용</span></div>
                 </div>

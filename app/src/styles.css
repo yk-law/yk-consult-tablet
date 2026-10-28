@@ -2520,7 +2520,35 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .cpick-a{display:flex; justify-content:flex-end; gap:8px;}
 .cpick-a .vb{cursor:pointer;}
 .cpick-a .vb:disabled{opacity:.4; cursor:default;}
-.conn .cl{font-size:12px; font-weight:500; color:var(--ink2); margin-top:3px; display:block;}
+.conn .conn-counsel{font-size:12px; font-weight:500; color:var(--ink2); margin-top:3px; display:block;}
 .vcard .vb.counsel{cursor:pointer;}
 .vcard .vb.counsel:hover{border-color:var(--nv); color:var(--nv); background:var(--nv-s);}
 .vcard .vb.counsel.need{border-color:var(--nv); color:var(--nv); font-weight:700;}
+
+/* 사건 요약 1뎁스: 말씀하신 내용 + 맞아요/아니요 (2026-10-28 미팅) */
+.reportpane .yh-check {margin:0;padding:0;list-style:none;display:flex;flex-direction:column;}
+.reportpane .yh-check li {
+  display:flex;align-items:center;gap:24px;padding:20px 0;border-bottom:1px solid var(--bt-line);
+}
+.reportpane .yh-check li:first-child {border-top:1px solid var(--bt-line);}
+.reportpane .yh-check p {
+  flex:1;min-width:0;margin:0;font-size:18px;font-weight:400;line-height:30px;color:var(--bt-text);word-break:keep-all;
+}
+.reportpane .yh-check-a {display:flex;gap:8px;flex:none;}
+.reportpane .yh-check-a button {
+  min-width:88px;min-height:48px;padding:0 16px;border-radius:8px;
+  border:1px solid var(--bt-line);background:var(--bt-surface);color:var(--bt-text);
+  font:inherit;font-size:16px;font-weight:600;line-height:24px;cursor:pointer;
+}
+.reportpane .yh-check-a button.on.yes {background:var(--bt-active);border-color:var(--bt-active);color:var(--bt-surface);}
+.reportpane .yh-check-a button.on.no {background:var(--bt-tint);border-color:var(--bt-text);color:var(--bt-text);}
+@container tablet (max-width:720px) {
+  .reportpane .yh-check li {flex-direction:column;align-items:stretch;gap:12px;}
+  .reportpane .yh-check-a button {flex:1;}
+}
+.conn-check {display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;}
+.conn-check li {display:flex;gap:10px;font-size:12px;line-height:20px;color:var(--ink2);word-break:keep-all;}
+.conn-check b {flex:none;width:44px;font-weight:700;}
+.conn-check b.yes {color:#2F7A50;}
+.conn-check b.no {color:var(--acc);}
+.conn-check b.none {color:var(--mut);font-weight:500;}
