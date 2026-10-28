@@ -430,6 +430,11 @@ def helper_view(b: dict) -> dict:
         "topic": b.get("cat1") or "",
         "summary": b.get("summary") or [],
         "topics": template["steps"] if template else [],
+        # 2뎁스를 채우는 일반 정보. 사건 종류가 같으면 모든 고객에게 같다.
+        "flow": template.get("flow", []) if template else [],
+        "ask": template.get("ask", []) if template else [],
+        "bring": template.get("bring", []) if template else [],
+        "cases": template.get("cases", []) if template else [],
         "intake": intake,
         "emptyNote": b.get("memoNote") or "",
     }

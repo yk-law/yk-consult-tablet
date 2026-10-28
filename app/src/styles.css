@@ -2552,3 +2552,42 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .conn-check b.yes {color:#2F7A50;}
 .conn-check b.no {color:var(--acc);}
 .conn-check b.none {color:var(--mut);font-weight:500;}
+
+/* 사건 요약 2뎁스 보강: 진행 순서 · 여쭤볼 내용 · 자료 · 비슷한 사례 (2026-10-28) */
+.reportpane .yh-sec-t {margin:0 0 20px;font-family:var(--font);font-size:24px;font-weight:700;line-height:32px;color:var(--bt-text);word-break:keep-all;}
+.reportpane .yh-topic + .yh-sec-t {margin-top:40px;}
+.reportpane .yh-more {margin-top:56px;}
+.reportpane .yh-flow {margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;counter-reset:none;}
+.reportpane .yh-flow li {position:relative;padding:20px;border-radius:8px;background:var(--bt-tint);display:flex;flex-direction:column;gap:8px;}
+.reportpane .yh-flow li:not(:last-child)::after {
+  content:"";position:absolute;top:34px;right:-16px;width:16px;height:1px;background:var(--bt-line);
+}
+.reportpane .yh-flow .n {
+  width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--bt-active);color:var(--bt-surface);font-size:14px;font-weight:600;line-height:20px;
+}
+.reportpane .yh-flow strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);}
+.reportpane .yh-flow p {margin:0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;}
+.reportpane .yh-pair {margin-top:56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;}
+.reportpane .yh-pair section {padding:24px;border:1px solid var(--bt-line);border-radius:8px;background:var(--bt-surface);}
+.reportpane .yh-pair .yh-sec-t {font-size:20px;line-height:28px;margin-bottom:16px;}
+.reportpane .yh-pair ul {margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+.reportpane .yh-pair li {position:relative;padding-left:16px;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-text);word-break:keep-all;}
+.reportpane .yh-pair li::before {content:"";position:absolute;left:0;top:12px;width:6px;height:2px;background:var(--bt-accent);}
+.reportpane .yh-pair-note {margin:16px 0 0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;}
+.reportpane .yh-cases {margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.reportpane .yh-cases li {padding:24px;border:1px solid var(--bt-line);border-radius:8px;background:var(--bt-surface);display:flex;flex-direction:column;gap:8px;}
+.reportpane .yh-case-tag {font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
+.reportpane .yh-cases strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);word-break:keep-all;}
+.reportpane .yh-cases p {margin:0;flex:1;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);word-break:keep-all;}
+.reportpane .yh-case-r {
+  align-self:flex-start;margin-top:4px;padding:2px 10px;border-radius:999px;
+  border:1px solid var(--bt-active);color:var(--bt-active);font-size:14px;font-weight:600;line-height:20px;
+}
+@container tablet (max-width:900px) {
+  .reportpane .yh-flow {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .reportpane .yh-flow li::after {display:none;}
+}
+@container tablet (max-width:720px) {
+  .reportpane .yh-pair,.reportpane .yh-cases {grid-template-columns:1fr;}
+}
