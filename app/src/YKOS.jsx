@@ -91,7 +91,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                       {/* 실제 YK-OS 규칙. 상담 내용을 작성해야 선임 계약이 열린다. */}
                       <span className="vb">{x.wrote ? "상담 내용 보기" : "상담 내용 작성"}</span>
                       {x.wrote
-                        ? <button className="vb sign" onClick={() => setSignId(x.id)}>선임 계약</button>
+                        ? <button className="vb sign" onClick={() => { setPickFor(null); setSignId(x.id); }}>선임 계약</button>
                         : <span className="vb off">선임 계약</span>}
                       <button
                         className={`vb share${on ? " on" : ""}`}
