@@ -22,6 +22,8 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
   const [vq, setVq] = useState("");
   const [off, setOff] = useState(0);
   const [signId, setSignId] = useState(null);
+  /** 화면 공유를 누른 예약. 공유 전에 상담 변호사를 고른다. */
+  const [pickFor, setPickFor] = useState(null);
 
   const want = addDays(DEMO_TODAY, off);
   const rows = useMemo(() => {
@@ -93,10 +95,19 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                         : <span className="vb off">선임 계약</span>}
                       <button
                         className={`vb share${on ? " on" : ""}`}
-                        onClick={() => (on ? act.unshare() : act.share(x.id))}
+                        onClick={() => (on ? act.unshare() : setPickFor(pickFor === x.id ? null : x.id))}
                       >
                         {on ? "공유 중 · 해제" : "화면 공유"}
                       </button>
+                      {pickFor === x.id && !on && (
+                        <CounselPick
+                          lawyers={cat.lawyers}
+                          booked={x.counsel}
+                          FIELD={cat.FIELD}
+                          onCancel={() => setPickFor(null)}
+                          onShare={(name) => { setPickFor(null); act.share(x.id, name); }}
+                        />
+                      )}
                     </div>
                   );
                 })}
@@ -109,6 +120,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                     <div>
                       <span className="l">연결됨</span>
                       <span className="t">{booking.name}(가명) · {booking.branch}</span>
+                      <span className="cl">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
@@ -140,7 +152,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                 </div>
               ) : (
                 <p className="sub" style={{ fontSize: 10, marginTop: 12 }}>
-                  행의 <b>화면 공유</b>를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
+                  행의 <b>화면 공유</b>를 누르고 상담 변호사를 고르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
                 </p>
               )}
               </>}
@@ -176,6 +188,56 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
             </section>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** 화면 공유 직전에 상담 변호사를 고른다. 이상엽 CPO 10-27 피드백: 상담 후에 넣는 경우가 많아,
+ *  고객 화면을 띄우는 이 순간에 정하게 한다. 예약에 지정된 변호사가 있으면 먼저 채워 둔다. */
+function CounselPick({ lawyers, booked, FIELD, onCancel, onShare }) {
+  const [q, setQ] = useState("");
+  const [name, setName] = useState(booked || "");
+  const hits = useMemo(() => {
+    const t = q.trim();
+    if (!t) return [];
+    const label = (l) => l.f.map((k) => FIELD?.[k]?.[0] || "").join(" ");
+    return lawyers.filter((l) => l.n.includes(t) || label(l).includes(t)).slice(0, 6);
+  }, [lawyers, q, FIELD]);
+  const chosen = lawyers.find((l) => l.n === name);
+
+  return (
+    <div className="cpick">
+      <div className="cpick-h">
+        <span className="l">상담 변호사</span>
+        <span className="d">고객 태블릿의 ‘상담 변호사’ 화면에 이 변호사가 나옵니다.</span>
+      </div>
+      {chosen ? (
+        <div className="cpick-cur">
+          <b>{chosen.n}</b> <span>{chosen.pos}</span>
+          {chosen.n === booked && <em>예약 지정</em>}
+        </div>
+      ) : <div className="cpick-cur none">아직 고르지 않았습니다.</div>}
+      <div className="vsearch">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6" /><path d="M13.5 13.5 18 18" /></svg>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="변호사 이름이나 분야로 검색" aria-label="상담 변호사 검색" autoFocus />
+      </div>
+      {hits.length > 0 && (
+        <ul className="cpick-list">
+          {hits.map((l) => (
+            <li key={l.n}>
+              <button className={l.n === name ? "on" : ""} onClick={() => { setName(l.n); setQ(""); }}>
+                <b>{l.n}</b> <span>{l.pos}</span>
+                <span className="cpick-f">{l.f.slice(0, 3).map((k) => FIELD?.[k]?.[0] || k).join(" · ")}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {q.trim() && !hits.length && <p className="cpick-none">검색 결과가 없습니다.</p>}
+      <div className="cpick-a">
+        <button className="vb" onClick={onCancel}>취소</button>
+        <button className="vb share on" disabled={!chosen} onClick={() => onShare(chosen.n)}>이 변호사로 화면 공유</button>
       </div>
     </div>
   );
