@@ -171,7 +171,7 @@ export default function App() {
     : data;
   const booking = cat.bookings.find((b) => b.id === data.booking.id) || data.booking;
   const displayView = fullscreen ? "tab" : view;
-  const act = { share, unshare, screen: setScreen, pushLawyer };
+  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick };
 
   return (
     <div className={`shell ${fullscreen ? "customer-fullscreen" : ""} ${controlsOpen ? "controls-open" : ""}`} onClickCapture={handleCornerTap}>

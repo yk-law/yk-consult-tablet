@@ -352,6 +352,7 @@
       "서울가정법원에서의 진행 방법"
     ],
     "counsel": "김택형",
+    "counselAssigned": false,
     "seniors": [
       "김택형",
       "배인구",
@@ -444,6 +445,7 @@
     "overview": [],
     "memoNote": "전화로는 말씀하기 어려우니 방문해서 직접 이야기하겠다고 하셨습니다.",
     "counsel": "한상진",
+    "counselAssigned": false,
     "seniors": [
       "한상진",
       "유병두",
