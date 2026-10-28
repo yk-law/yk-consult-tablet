@@ -2593,3 +2593,29 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 }
 .vcard .vdepth{font-size:12px; font-weight:500; line-height:20px; color:var(--ink2); background:var(--ivory2); border-radius:6px; padding:4px 10px; flex:0 0 auto;}
 .vcard .vdepth.d1{color:#2F7A50; background:#E6F2EA; font-weight:700;}
+/* YK-OS 고객 확인(맞아요/아니요) 강조 (2026-10-28) */
+.ccheck{background:var(--sf); border:1px solid var(--hair2); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;}
+.ccheck.has-no{border-color:var(--acc); box-shadow:0 0 0 1px var(--acc) inset;}
+.ccheck-h{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+.ccheck-h .l{font-size:12px; font-weight:700; color:var(--nv);}
+.ccheck-h .cnt{display:flex; gap:6px;}
+.ccheck-h .cnt b{font-size:12px; line-height:20px; padding:0 8px; border-radius:5px; font-weight:700;}
+.ccheck-h .cnt b.yes{color:#2F7A50; background:#E6F2EA;}
+.ccheck-h .cnt b.no{color:#fff; background:var(--acc);}
+.ccheck-h .cnt b.none{color:var(--mut); background:var(--ivory2); font-weight:500;}
+.conn-check li.no span{color:var(--ink); font-weight:700;}
+.ccheck-note{margin:0; font-size:12px; line-height:20px; color:var(--acc); font-weight:500;}
+.ctoast{position:sticky; top:0; z-index:5; margin:0 0 12px; padding:10px 14px; border-radius:8px; display:flex; flex-direction:column; gap:2px;
+  background:#2F7A50; color:#fff; box-shadow:0 6px 18px rgba(0,0,0,.18);}
+.ctoast.no{background:var(--acc);}
+.ctoast b{font-size:14px; line-height:20px;}
+.ctoast span{font-size:12px; line-height:20px; opacity:.9;}
+.vcard .vno{font-size:12px; font-weight:700; line-height:20px; color:#fff; background:var(--acc); border-radius:6px; padding:4px 10px; flex:0 0 auto;}
+.rcheck{display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:10px 16px; border-bottom:1px solid var(--hair); background:var(--sf);}
+.rcheck.has-no{background:var(--acc-s);}
+.rcheck .l{font-size:12px; font-weight:700; color:var(--nv); margin-right:4px;}
+.rcheck b{font-size:12px; line-height:20px; padding:0 8px; border-radius:5px; font-weight:700;}
+.rcheck b.yes{color:#2F7A50; background:#E6F2EA;}
+.rcheck b.no{color:#fff; background:var(--acc);}
+.rcheck b.none{color:var(--mut); background:var(--ivory2); font-weight:500;}
+.rcheck .rno{flex:1 0 100%; font-size:12px; line-height:20px; color:var(--acc); font-weight:500; word-break:keep-all;}
