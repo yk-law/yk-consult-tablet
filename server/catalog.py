@@ -495,12 +495,12 @@ BENCH_ORDER = ["대법관", "부장판사", "판사"]
 PROSECUTION_ORDER = ["고검장", "차장검사", "부장검사"]
 
 
-def firm_view(b: dict) -> dict:
+def firm_view() -> dict:
     """YK 소개. 센터 구성과 구성원(법원·검찰 근무 이력, 고문, 경찰 경력 전문위원)을 보여 준다.
-    수치는 홈페이지에 적힌 것만 쓴다. 승패소율·수임 건수는 넣지 않는다."""
+    수치는 홈페이지에 적힌 것만 쓴다. 승패소율·수임 건수는 넣지 않는다.
+    10-28 미팅: 고객마다 바꾸지 않는 공통 포맷이다."""
     cat = catalog()
     intro = cat["firmIntro"]
-    field = b.get("field") or ""
 
     bench, prosecution = [], []
     for l in cat["lawyers"]:
@@ -526,7 +526,7 @@ def firm_view(b: dict) -> dict:
     return {
         **{k: intro[k] for k in ("slogan", "sloganEn", "stats", "statsNote")},
         "centerGroups": [
-            {"t": g["t"], "centers": [{"n": n, "f": f, "hit": bool(f) and f == field} for n, f in g["centers"]]}
+            {"t": g["t"], "centers": [{"n": n, "f": f} for n, f in g["centers"]]}
             for g in intro["centerGroups"]
         ],
         "bench": bench,
@@ -659,7 +659,7 @@ def visit_for(bid: str | None = None) -> dict:
         roster=b.get("seniors"),
     )
     portraits = c["portraits"]
-    firm = firm_view(b)
+    firm = firm_view()
     names = {b.get("counsel")} | {s["n"] for s in senior_rows} | {x["n"] for x in firm["bench"] + firm["prosecution"]}
     return {
         "booking": b,

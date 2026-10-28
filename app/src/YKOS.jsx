@@ -22,8 +22,12 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
   const [vq, setVq] = useState("");
   const [off, setOff] = useState(0);
   const [signId, setSignId] = useState(null);
-  /** 화면 공유를 누른 예약. 공유 전에 상담 변호사를 고른다. */
+  /** 상담 변호사를 지정 중인 예약. */
   const [pickFor, setPickFor] = useState(null);
+  /** 10-28 미팅: 실장이 내방 전에 상담 변호사를 지정해야 태블릿 연동(화면 공유)이 열린다. */
+  const [assigned, setAssigned] = useState(() => Object.fromEntries(
+    (cat?.bookings || []).filter((b) => b.counsel && b.counselAssigned !== false).map((b) => [b.id, b.counsel]),
+  ));
 
   const want = addDays(DEMO_TODAY, off);
   const rows = useMemo(() => {
@@ -94,18 +98,31 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                         ? <button className="vb sign" onClick={() => { setPickFor(null); setSignId(x.id); }}>선임 계약</button>
                         : <span className="vb off">선임 계약</span>}
                       <button
-                        className={`vb share${on ? " on" : ""}`}
-                        onClick={() => (on ? act.unshare() : setPickFor(pickFor === x.id ? null : x.id))}
+                        className={`vb counsel${assigned[x.id] ? "" : " need"}`}
+                        onClick={() => setPickFor(pickFor === x.id ? null : x.id)}
                       >
-                        {on ? "공유 중 · 해제" : "화면 공유"}
+                        {assigned[x.id] ? `상담 변호사 ${assigned[x.id]}` : "상담 변호사 지정"}
                       </button>
-                      {pickFor === x.id && !on && (
+                      {assigned[x.id] || on ? (
+                        <button
+                          className={`vb share${on ? " on" : ""}`}
+                          onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id]))}
+                        >
+                          {on ? "공유 중 · 해제" : "화면 공유"}
+                        </button>
+                      ) : <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">화면 공유</span>}
+                      {pickFor === x.id && (
                         <CounselPick
                           lawyers={cat.lawyers}
+                          current={assigned[x.id] || ""}
                           booked={x.counsel}
                           FIELD={cat.FIELD}
                           onCancel={() => setPickFor(null)}
-                          onShare={(name) => { setPickFor(null); act.share(x.id, name); }}
+                          onSave={(name) => {
+                            setPickFor(null);
+                            setAssigned({ ...assigned, [x.id]: name });
+                            if (on) act.counsel(name);
+                          }}
                         />
                       )}
                     </div>
@@ -152,7 +169,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                 </div>
               ) : (
                 <p className="sub" style={{ fontSize: 10, marginTop: 12 }}>
-                  행의 <b>화면 공유</b>를 누르고 상담 변호사를 고르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
+                  내방 전에 행마다 <b>상담 변호사</b>를 지정하면 <b>화면 공유</b>가 열립니다. 화면 공유를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
                 </p>
               )}
               </>}
@@ -193,11 +210,11 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
   );
 }
 
-/** 화면 공유 직전에 상담 변호사를 고른다. 이상엽 CPO 10-27 피드백: 상담 후에 넣는 경우가 많아,
- *  고객 화면을 띄우는 이 순간에 정하게 한다. 예약에 지정된 변호사가 있으면 먼저 채워 둔다. */
-function CounselPick({ lawyers, booked, FIELD, onCancel, onShare }) {
+/** 내방 전에 상담 변호사를 지정한다. 이상엽 CPO 10-27 피드백(상담 후에 넣는 경우가 많음)과
+ *  10-28 미팅(지정 후 태블릿 연동). 콜 단계에서 정해 둔 변호사가 있으면 후보로 채워 둔다. */
+function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
   const [q, setQ] = useState("");
-  const [name, setName] = useState(booked || "");
+  const [name, setName] = useState(current || booked || "");
   const hits = useMemo(() => {
     const t = q.trim();
     if (!t) return [];
@@ -210,12 +227,12 @@ function CounselPick({ lawyers, booked, FIELD, onCancel, onShare }) {
     <div className="cpick">
       <div className="cpick-h">
         <span className="l">상담 변호사</span>
-        <span className="d">고객 태블릿의 ‘상담 변호사’ 화면에 이 변호사가 나옵니다.</span>
+        <span className="d">지정해야 화면 공유가 열리고, 고객 태블릿의 ‘상담 변호사’ 화면에 이 변호사가 나옵니다.</span>
       </div>
       {chosen ? (
         <div className="cpick-cur">
           <b>{chosen.n}</b> <span>{chosen.pos}</span>
-          {chosen.n === booked && <em>예약 지정</em>}
+          {chosen.n === booked && <em>콜 단계 메모</em>}
         </div>
       ) : <div className="cpick-cur none">아직 고르지 않았습니다.</div>}
       <div className="vsearch">
@@ -237,7 +254,7 @@ function CounselPick({ lawyers, booked, FIELD, onCancel, onShare }) {
       {q.trim() && !hits.length && <p className="cpick-none">검색 결과가 없습니다.</p>}
       <div className="cpick-a">
         <button className="vb" onClick={onCancel}>취소</button>
-        <button className="vb share on" disabled={!chosen} onClick={() => onShare(chosen.n)}>이 변호사로 화면 공유</button>
+        <button className="vb share on" disabled={!chosen} onClick={() => onSave(chosen.n)}>지정</button>
       </div>
     </div>
   );

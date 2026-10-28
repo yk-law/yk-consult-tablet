@@ -397,10 +397,9 @@ function FirmIntro({ firm, portraits, FIELD, onNext }) {
                   <p className="firm-group-t">{g.t}</p>
                   <ul>
                     {g.centers.map((c) => (
-                      <li key={c.n} className={c.hit ? "hit" : undefined}>
+                      <li key={c.n}>
                         <span className="firm-center-n">{c.n}</span>
                         {c.f && FIELD[c.f] && <span className="firm-center-d">{FIELD[c.f][1]}</span>}
-                        {c.hit && <span className="firm-center-hit">고객님 상담 분야</span>}
                       </li>
                     ))}
                   </ul>
