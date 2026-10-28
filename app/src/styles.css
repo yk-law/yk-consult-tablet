@@ -2429,63 +2429,75 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 
 
 /* 사건 요약: 상담 분야 + 확인하실 점 목록 (2026-10-28) */
-.reportpane .yh-topic {display:flex;align-items:baseline;gap:16px;margin:0 0 24px;padding:16px 0;border-top:1px solid var(--bt-line);border-bottom:1px solid var(--bt-line);}
-.reportpane .yh-topic-l {flex:none;font-size:14px;font-weight:500;line-height:22px;color:var(--bt-muted);}
-.reportpane .yh-topic strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);}
+.reportpane .yh-topic {word-break:keep-all;display:flex;align-items:baseline;gap:16px;margin:0 0 24px;padding:16px 0;border-top:1px solid var(--bt-line);border-bottom:1px solid var(--bt-line);}
+.reportpane .yh-topic-l {flex:none;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-muted);}
+.reportpane .yh-topic strong {font-size:18px;font-weight:600;line-height:26px;letter-spacing:-.01em;color:var(--bt-text);}
 .reportpane .yh-agenda {gap:0;}
 .reportpane .yh-agenda li {padding:12px 0;}
 .reportpane .yh-agenda li:last-child {padding-bottom:12px;}
 .reportpane .yh-agenda .yh-sec-h {margin:0;align-items:flex-start;}
-.reportpane .yh-agenda .yh-sec-h h4 {font-weight:500;word-break:keep-all;}
+.reportpane .yh-agenda .yh-sec-h h4 {font-size:18px;font-weight:600;line-height:28px;letter-spacing:-.01em;word-break:keep-all;}
+.reportpane .yh-agenda .yh-sec-h .n {height:28px;padding-top:4px;font-size:14px;line-height:20px;word-break:keep-all;}
 
-/* YK 소개 (2026-10-28): 숫자와 이름으로 규모를 보여 준다. 박스·그림자 없이 헤어라인과 세리프로 위계. */
-.firmpane .firm-body {max-width:880px;}
-.firm-hero {padding:8px 0 40px;border-bottom:1px solid var(--bt-line);}
-.firm-eyebrow {margin:0 0 12px;font-size:14px;font-weight:500;line-height:22px;letter-spacing:.24em;color:var(--bt-accent);}
-.reportpane .firm-hero h3 {margin:0;font-size:40px;line-height:52px;}
-.firm-en {margin:8px 0 0;font-family:var(--font-serif);font-size:16px;line-height:24px;font-style:italic;color:var(--bt-muted);}
-.firm-stats {display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));margin:40px 0 0;border-top:1px solid var(--bt-line);}
-.firm-stats > div {padding:20px 0 0 20px;border-left:1px solid var(--bt-line);}
+/* YK 소개 (2026-10-28): YK 타이포그래피(typography.md) 역할값을 따른다.
+   브랜드 메시지만 마루부리, 나머지는 SUIT. 박스·그림자 없이 헤어라인으로 위계. */
+.firmpane .firm-body {max-width:880px;word-break:keep-all;overflow-wrap:anywhere;}
+.firm-hero {padding:0 0 40px;border-bottom:1px solid var(--bt-line);}
+/* Label */
+.firm-eyebrow {margin:0 0 16px;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
+/* Brand(마루부리) 40/400/56 */
+.reportpane .firm-hero h3 {margin:0;font-family:var(--font-serif);font-size:40px;font-weight:400;line-height:56px;letter-spacing:0;}
+/* Body */
+.firm-en {margin:8px 0 0;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);}
+.firm-stats {display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));margin:32px 0 0;border-top:1px solid var(--bt-line);}
+.firm-stats > div {padding:16px 0 0 24px;border-left:1px solid var(--bt-line);}
 .firm-stats > div:first-child {padding-left:0;border-left:0;}
-.firm-stats dt {font-size:14px;font-weight:500;line-height:22px;color:var(--bt-muted);}
+/* Label */
+.firm-stats dt {font-size:14px;font-weight:500;line-height:20px;color:var(--bt-muted);}
 .firm-stats dd {margin:8px 0 0;display:flex;align-items:baseline;gap:4px;color:var(--bt-text);}
-.firm-stats dd strong {font-family:var(--font-serif);font-size:48px;font-weight:400;line-height:56px;letter-spacing:-.02em;}
-.firm-stats dd span {font-size:16px;line-height:24px;color:var(--bt-muted);}
-.firm-note {margin:16px 0 0;font-size:13px;line-height:20px;color:var(--bt-muted);}
+/* Display 48/700/60 */
+.firm-stats dd strong {font-size:48px;font-weight:700;line-height:60px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+.firm-stats dd span {font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);}
+/* Caption */
+.firm-note {margin:8px 0 0;font-size:14px;font-weight:400;line-height:20px;color:var(--bt-muted);}
 
-.firm-sec {padding:40px 0;border-bottom:1px solid var(--bt-line);}
-.firm-sec h4 {margin:0;font-family:var(--font-serif);font-size:28px;font-weight:400;line-height:40px;letter-spacing:-.01em;color:var(--bt-text);}
-.firm-sec-lead {margin:8px 0 0;font-size:16px;line-height:26px;color:var(--bt-muted);word-break:keep-all;}
+.firm-sec {padding:32px 0;border-bottom:1px solid var(--bt-line);}
+/* Heading 섹션 24/700/32 */
+.firm-sec h4 {margin:0;font-family:var(--font);font-size:24px;font-weight:700;line-height:32px;letter-spacing:-.01em;color:var(--bt-text);}
+.firm-sec-lead {margin:16px 0 0;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);}
 
-.firm-centers {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:32px 40px;margin-top:32px;}
-.firm-group-t {margin:0 0 8px;font-size:13px;font-weight:600;line-height:20px;letter-spacing:.16em;color:var(--bt-accent);}
+.firm-centers {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:24px 40px;margin-top:24px;}
+.firm-group-t {margin:0 0 8px;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
 .firm-center-group ul {list-style:none;margin:0;padding:0;border-top:1px solid var(--bt-line);}
 .firm-center-group li {display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--bt-line);}
-.firm-center-n {font-size:18px;font-weight:500;line-height:28px;color:var(--bt-text);}
-.firm-center-d {font-size:14px;line-height:22px;color:var(--bt-muted);}
-.firm-center-hit {margin-left:auto;font-size:13px;font-weight:600;line-height:20px;color:var(--bt-active);}
-.firm-center-group li.hit .firm-center-n {color:var(--bt-active);font-weight:600;}
+/* Title 18/600/26 */
+.firm-center-n {font-size:18px;font-weight:600;line-height:26px;letter-spacing:-.01em;color:var(--bt-text);}
+/* Body 보조 14/400/24 */
+.firm-center-d {font-size:14px;font-weight:400;line-height:24px;color:var(--bt-muted);}
+.firm-center-hit {margin-left:auto;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-active);}
+.firm-center-group li.hit .firm-center-n {color:var(--bt-active);}
 
-.firm-people {list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill, minmax(132px, 1fr));gap:28px 20px;}
+.firm-people {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill, minmax(132px, 1fr));gap:24px 20px;}
 .firm-people li {display:flex;flex-direction:column;min-width:0;}
-.firm-ph {display:block;aspect-ratio:3 / 4;margin:0 0 12px;overflow:hidden;background:var(--bt-tint);}
+.firm-ph {display:block;aspect-ratio:3 / 4;max-width:100%;margin:0 0 12px;overflow:hidden;background:var(--bt-tint);}
 .firm-ph img {display:block;width:100%;height:100%;object-fit:cover;object-position:50% 12%;}
-.firm-ph > span {display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:32px;color:var(--bt-muted);}
-.firm-people strong {font-family:var(--font-serif);font-size:20px;font-weight:400;line-height:28px;color:var(--bt-text);}
-.firm-people-pos {font-size:13px;line-height:20px;color:var(--bt-muted);}
-.firm-people-t {margin-top:4px;font-size:14px;font-weight:500;line-height:22px;color:var(--bt-accent);}
+.firm-ph > span {display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-size:32px;color:var(--bt-muted);}
+.firm-people strong {font-size:18px;font-weight:600;line-height:26px;letter-spacing:-.01em;color:var(--bt-text);}
+.firm-people-pos {font-size:14px;font-weight:400;line-height:20px;color:var(--bt-muted);}
+.firm-people-t {margin-top:4px;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
 
-.firm-names {list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));border-top:1px solid var(--bt-line);}
-.firm-names li {display:flex;flex-direction:column;gap:2px;padding:12px 12px 12px 0;border-bottom:1px solid var(--bt-line);min-width:0;}
-.firm-names strong {font-family:var(--font-serif);font-size:18px;font-weight:400;line-height:26px;color:var(--bt-text);}
-.firm-names span {font-size:13px;line-height:20px;color:var(--bt-muted);word-break:keep-all;}
+.firm-names {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));border-top:1px solid var(--bt-line);}
+.firm-names li {display:flex;flex-direction:column;gap:4px;padding:12px 12px 12px 0;border-bottom:1px solid var(--bt-line);min-width:0;}
+/* Title 소형 16/600/24 */
+.firm-names strong {font-size:16px;font-weight:600;line-height:24px;letter-spacing:-.01em;color:var(--bt-text);}
+.firm-names span {font-size:14px;font-weight:400;line-height:20px;color:var(--bt-muted);}
 .firm-names.compact {grid-template-columns:repeat(5, minmax(0, 1fr));}
 
 .firmpane .report-next {margin-top:32px;}
 
 @container tablet (max-width:720px) {
   .reportpane .firm-hero h3 {font-size:32px;line-height:44px;}
-  .firm-stats dd strong {font-size:36px;line-height:44px;}
+  .firm-stats dd strong {font-size:40px;line-height:50px;}
   .firm-centers {grid-template-columns:minmax(0, 1fr);}
   .firm-names, .firm-names.compact {grid-template-columns:repeat(3, minmax(0, 1fr));}
 }
