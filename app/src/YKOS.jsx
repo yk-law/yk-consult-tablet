@@ -93,6 +93,10 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                       <span className="vn">{x.name}</span><span className="alias">가명</span>
                       <span className="vt">{x.tel}</span>
                       <span className="vg">{x.cat1}&gt;{x.cat2}</span>
+                      {/* 10-28 미팅: 방문 전 상담 내용 퀄리티로 사건 요약 뎁스를 나눈다. */}
+                      <span className={`vdepth${x.summary ? " d1" : ""}`} title={x.summary ? "요약을 고객에게 보여 주고 맞아요/아니요를 받습니다" : x.summaryOff || ""}>
+                        {x.summary ? "요약 1·2뎁스" : "요약 2뎁스만"}
+                      </span>
                       {/* 실제 YK-OS 규칙. 상담 내용을 작성해야 선임 계약이 열린다. */}
                       <span className="vb">{x.wrote ? "상담 내용 보기" : "상담 내용 작성"}</span>
                       {x.wrote
@@ -138,6 +142,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                     <div>
                       <span className="l">연결됨</span>
                       <span className="t">{booking.name}(가명) · {booking.branch}</span>
+                      <span className="conn-counsel">사건 요약 {booking.summary ? "1·2뎁스" : `2뎁스만 · ${booking.summaryOff || ""}`}</span>
                       <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>

@@ -2591,3 +2591,5 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 @container tablet (max-width:720px) {
   .reportpane .yh-pair,.reportpane .yh-cases {grid-template-columns:1fr;}
 }
+.vcard .vdepth{font-size:12px; font-weight:500; line-height:20px; color:var(--ink2); background:var(--ivory2); border-radius:6px; padding:4px 10px; flex:0 0 auto;}
+.vcard .vdepth.d1{color:#2F7A50; background:#E6F2EA; font-weight:700;}

@@ -267,7 +267,7 @@ export default function App() {
         )}
         </div>
         <select className="dpick" value={data.booking.id} onChange={(e) => { setCid(e.target.value); setPick(""); }} aria-label="시연 예약">
-          {data.bookings.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.cat2}</option>)}
+          {data.bookings.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.cat2} · {b.depth === 1 ? "요약 1·2뎁스" : "요약 2뎁스만"}</option>)}
         </select>
         <button type="button" className="fullscreen-toggle" aria-pressed={fullscreen} onClick={toggleFullscreen}>
           {fullscreen && (
