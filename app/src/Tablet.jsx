@@ -18,6 +18,7 @@ const SHOW_RESERVATION_QR = false;
 
 /** 고객이 태블릿 안에서 자유 이동하는 퍼널 장면. */
 const JOURNEY = [
+  ["firm", "YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문 인력"],
@@ -72,8 +73,11 @@ export default function Tablet({ data, screen, onScreen }) {
             step={screen === "film" ? "film" : screen === "prep" ? "prep" : waitStep}
             autoAdvance={screen !== "prep" && screen !== "film"}
             onStep={setWaitStep}
-            onDone={() => onScreen("report")}
+            onDone={() => onScreen("firm")}
           />
+        )}
+        {screen === "firm" && (
+          <FirmIntro firm={data.firm} portraits={data.portraits} FIELD={FIELD} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && (
           <Report helper={data.helper} onCounsel={() => onScreen("counsel")} />
@@ -231,7 +235,7 @@ function Film({ onDone, autoAdvance = true }) {
         className={`film-skip brand-film-skip on${failed ? " fail" : ""}`}
         onClick={onDone}
       >
-        <span>{failed ? "영상을 불러오지 못했습니다 · 사건 요약으로" : "영상 건너뛰기"}</span>
+        <span>{failed ? "영상을 불러오지 못했습니다 · YK 소개로" : "영상 건너뛰기"}</span>
         <svg className="lucide lucide-arrow-right" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
           <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
         </svg>
@@ -357,6 +361,103 @@ function CounselVideo({ l, onDone }) {
   );
 }
 
+/** YK 소개 — 센터 구성과 구성원 면면. 고객이 이 로펌의 규모와 경력을 한 화면에서 본다(2026-10-28).
+ *  수치는 홈페이지 기준만 쓰고, 법원·검찰 근무는 「역임」 사실로만 적는다. */
+function FirmIntro({ firm, portraits, FIELD, onNext }) {
+  if (!firm) return null;
+  const people = [
+    ["법원 출신 변호사", firm.bench],
+    ["검찰 출신 변호사", firm.prosecution],
+  ];
+  return (
+    <section className="pane on reportpane firmpane">
+      <div className="ykhelper">
+        <div className="yh-body firm-body">
+          <header className="firm-hero">
+            <p className="firm-eyebrow">법무법인 YK</p>
+            <h3>{firm.slogan}</h3>
+            <p className="firm-en">{firm.sloganEn}</p>
+            <dl className="firm-stats">
+              {firm.stats.map((x) => (
+                <div key={x.label}>
+                  <dt>{x.label}</dt>
+                  <dd><strong>{x.n}</strong><span>{x.unit}</span></dd>
+                </div>
+              ))}
+            </dl>
+            <p className="firm-note">{firm.statsNote}</p>
+          </header>
+
+          <section className="firm-sec" aria-labelledby="firm-centers">
+            <h4 id="firm-centers">분야별 전문 센터</h4>
+            <p className="firm-sec-lead">사건 분야마다 전담 센터를 두고 있습니다.</p>
+            <div className="firm-centers">
+              {firm.centerGroups.map((g) => (
+                <div className="firm-center-group" key={g.t}>
+                  <p className="firm-group-t">{g.t}</p>
+                  <ul>
+                    {g.centers.map((c) => (
+                      <li key={c.n} className={c.hit ? "hit" : undefined}>
+                        <span className="firm-center-n">{c.n}</span>
+                        {c.f && FIELD[c.f] && <span className="firm-center-d">{FIELD[c.f][1]}</span>}
+                        {c.hit && <span className="firm-center-hit">고객님 상담 분야</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {people.map(([title, rows]) => rows?.length > 0 && (
+            <section className="firm-sec" key={title} aria-label={title}>
+              <h4>{title}</h4>
+              <ul className="firm-people">
+                {rows.map((l) => (
+                  <li key={l.n}>
+                    <span className="firm-ph">
+                      {portraits?.[l.n] ? <img src={portraits[l.n]} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
+                    </span>
+                    <strong>{l.n}</strong>
+                    <span className="firm-people-pos">{l.pos}</span>
+                    <span className="firm-people-t">{l.title}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+
+          {firm.advisors?.length > 0 && (
+            <section className="firm-sec" aria-labelledby="firm-advisors">
+              <h4 id="firm-advisors">고문 {firm.advisors.length}명</h4>
+              <p className="firm-sec-lead">정부기관·경찰·입법 분야에서 일한 고문들이 함께합니다.</p>
+              <ul className="firm-names">
+                {firm.advisors.map((a) => (
+                  <li key={a.n}><strong>{a.n}</strong>{a.c && <span>{a.c}</span>}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {firm.police?.length > 0 && (
+            <section className="firm-sec" aria-labelledby="firm-police">
+              <h4 id="firm-police">경찰 경력 전문위원 {firm.police.length}명</h4>
+              <p className="firm-sec-lead">전문위원 {firm.expertCount}명 가운데 경찰에서 일했던 분들입니다.</p>
+              <ul className="firm-names compact">
+                {firm.police.map((a) => (
+                  <li key={a.n}><strong>{a.n}</strong></li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          <ReportNext onClick={onNext} label="사건 요약 보기" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ReportNext({ onClick, label = "상담 변호사 확인하기", previous = false }) {
   return (
     <div className={`report-next${previous ? " report-previous" : ""}`}>
@@ -371,13 +472,13 @@ function ReportNext({ onClick, label = "상담 변호사 확인하기", previous
 }
 
 function Report({ helper, onCounsel }) {
-  const sections = helper?.sections || [];
+  const agenda = helper?.agenda || [];
   const intake = helper?.intake;
-  const none = !sections.length;
+  const none = !agenda.length;
 
   // 콜에서 사건 내용을 전혀 받지 못한 예약 — 요약할 게 없으니 '오늘 이렇게 여쭤볼게요'를 대신 띄운다.
   // 빈 화면이나 사과문을 보여주면 고객이 준비가 덜 된 기분이 든다. 대기 시간에 생각을 정리하도록 돕는 편이 낫다.
-  if (none && intake) {
+  if (none) {
     return (
       <section className="pane on reportpane">
         <div className="ykhelper">
@@ -391,7 +492,7 @@ function Report({ helper, onCounsel }) {
             </p>
 
             <ol className="yh-steps">
-              {intake.steps.map(([t, d], i) => (
+              {(intake?.steps || []).map(([t, d], i) => (
                 <li key={t}>
                   <span className="n">{String(i + 1).padStart(2, "0")}</span>
                   <div>
@@ -402,7 +503,7 @@ function Report({ helper, onCounsel }) {
               ))}
             </ol>
 
-            {intake.bring?.length > 0 && (
+            {intake?.bring?.length > 0 && (
               <div className="yh-bring">
                 <h4>가지고 계시면 도움이 되는 것</h4>
                 <ul>
@@ -424,38 +525,34 @@ function Report({ helper, onCounsel }) {
     );
   }
 
+  // 사실관계 서술은 띄우지 않는다(2026-10-28). 상담 주제와 고객이 확인하고 싶은 점만 둔다.
   return (
     <section className="pane on reportpane">
       <div className="ykhelper">
         <div className="yh-body">
-          <h3>말씀하신 내용을 정리했습니다.</h3>
+          <h3>오늘 상담에서 확인하실 내용입니다.</h3>
           <p className="yh-lead">
-            예약 시 말씀해 주신 내용입니다.<br />
-            다르거나 덧붙이고 싶은 내용은 상담에서 편하게 말씀해 주세요.
+            예약하실 때 궁금하다고 하신 점을 상담 순서대로 적었습니다.<br />
+            사건 내용은 상담에서 변호사가 직접 듣고 정리해 드립니다.
           </p>
-          {none ? (
-            <p className="yh-empty">
-              예약하실 때에는 자세한 사건 내용을 미리 남겨 두지 않으셨습니다.
-              {helper?.emptyNote ? ` ${helper.emptyNote}` : ""}
-              {" "}오늘은 편하게 이야기해 주시면, 그 자리에서 함께 정리하겠습니다.
-            </p>
-          ) : (
-            <ol className="yh-secs">
-              {sections.map((s, i) => (
-                <li key={s.title}>
-                  <div className="yh-sec-h">
-                    <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                    <h4>{s.title}</h4>
-                  </div>
-                  {(s.body || "").split("\n").map((p, j) => (
-                    <p key={j}>{p}</p>
-                  ))}
-                </li>
-              ))}
-            </ol>
+          {helper?.topic && (
+            <div className="yh-topic">
+              <span className="yh-topic-l">상담 분야</span>
+              <strong>{helper.topic}</strong>
+            </div>
           )}
-          <p className="yh-src">예약 상담 때 말씀하신 내용을 바탕으로 정리했습니다. 글에 나오는 이름은 가명입니다.</p>
-            <ReportNext onClick={onCounsel} />
+          <ol className="yh-secs yh-agenda">
+            {agenda.map((t, i) => (
+              <li key={t}>
+                <div className="yh-sec-h">
+                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                  <h4>{t}</h4>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="yh-src">더 여쭤보고 싶은 점은 상담에서 편하게 말씀해 주세요.</p>
+          <ReportNext onClick={onCounsel} />
         </div>
       </div>
     </section>

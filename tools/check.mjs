@@ -32,7 +32,8 @@ ok("전문가 명단", cat.advisors.length === EXPECT.advisors, cat.advisors.len
 ok("예약 목록", cat.bookings.length === EXPECT.bookings, cat.bookings.length);
 
 const visit = await fetch(`${API}/api/visit?id=228271`).then((r) => r.json());
-ok("visit helper", Array.isArray(visit.helper && visit.helper.sections) && visit.helper.sections.length === 4, JSON.stringify(visit.helper && { eng: visit.helper.engId, n: (visit.helper.sections || []).length }));
+ok("visit helper", Array.isArray(visit.helper && visit.helper.agenda) && visit.helper.agenda.length >= 2 && !("sections" in visit.helper), JSON.stringify(visit.helper && { eng: visit.helper.engId, n: (visit.helper.agenda || []).length }));
+ok("YK 소개 구성", (visit.firm?.advisors || []).length === 28 && (visit.firm?.police || []).length === 25 && (visit.firm?.bench || []).length > 0 && (visit.firm?.prosecution || []).length > 0, JSON.stringify(visit.firm && { a: visit.firm.advisors?.length, p: visit.firm.police?.length }));
 const lawyers = (visit.seniors || []).filter((s) => s.kind !== "advisor");
 ok("전문인력 변호사 5명 이하", lawyers.length > 0 && lawyers.length <= 5, lawyers.length);
 ok("전문인력 분야 매칭", lawyers.every((s) => s.match === "field" || s.match === "near" || s.match === "court" || s.match === "roster"));
@@ -227,22 +228,29 @@ ok("초기화면 MYK hero", await page.locator(".confirmpane .myk-hero .myk-qr")
 await page.screenshot({ path: `${SHOT}/1-confirm.png` });
 
 await page.goto(`${WEB}/?c=228271&s=report`);
-await page.waitForSelector(".yh-secs, .yh-empty");
-ok("사건개요 섹션", await page.locator(".yh-secs li").count() === 4);
+await page.waitForSelector(".yh-agenda, .yh-steps");
+ok("사건요약 확인하실 점", await page.locator(".yh-agenda li").count() >= 2);
 const reportCopy = await page.locator(".reportpane").innerText();
-ok("사건요약 고객향 제목", reportCopy.includes("말씀하신 내용을 이렇게 정리했습니다"));
+ok("사건요약 고객향 제목", reportCopy.includes("오늘 상담에서 확인하실 내용입니다"));
 ok("사건요약 보고체 없음", !reportCopy.includes("의뢰인") && !reportCopy.includes("콜 단계") && !reportCopy.includes("진술") && !reportCopy.includes("YK-OS"));
-ok("사건요약 고객 호칭", reportCopy.includes("고객님께서는"));
 await page.screenshot({ path: `${SHOT}/2-report.png` });
 
 await page.goto(`${WEB}/?c=윤서준&s=report`);
-await page.waitForSelector(".yh-secs");
+await page.waitForSelector(".yh-agenda");
 const yoon = await page.locator(".reportpane").innerText();
-ok("윤서준 사건요약 고객향", yoon.includes("고객님께서는") && !yoon.includes("의뢰인") && !yoon.includes("진술"));
-await page.goto(`${WEB}/?c=김서준&s=report`);
-await page.waitForSelector(".yh-empty");
+ok("윤서준 사건요약 민감 서술 없음", !["유죄", "징역", "피해자", "준강제추행"].some((w) => yoon.includes(w)));
+await page.goto(`${WEB}/?c=서지호&s=report`);
+await page.waitForSelector(".yh-steps");
 const emptyR = await page.locator(".reportpane").innerText();
-ok("빈 사건요약 안내", emptyR.includes("편하게 이야기해 주시면") && !emptyR.includes("콜 단계"));
+ok("빈 사건요약 안내", emptyR.includes("편하게 말씀해 주세요") && !emptyR.includes("콜 단계"));
+
+await page.goto(`${WEB}/?c=윤서준&s=firm`);
+await page.waitForSelector(".firmpane");
+const firmCopy = await page.locator(".firmpane").innerText();
+ok("YK 소개 고문·경찰 경력", firmCopy.includes("고문 28명") && firmCopy.includes("경찰 경력 전문위원 25명"));
+ok("YK 소개 전관 카피 없음", !firmCopy.includes("전관"));
+ok("YK 소개 상담 분야 센터", await page.locator(".firm-center-group li.hit").count() === 1);
+await page.screenshot({ path: `${SHOT}/2-firm.png` });
 
 await page.goto(`${WEB}/?c=228271&s=counsel`);
 await page.waitForSelector(".counselpane .profile");

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from functools import lru_cache
 from pathlib import Path
 
@@ -31,6 +32,7 @@ def catalog() -> dict:
         "scenarios": load("scenarios.json"),
         "intake": load("intake.json"),
         "firm": load("firm.json"),
+        "firmIntro": load("firm_intro.json"),
         "sign": load("sign.json"),
         "cases": load("cases.json"),
         "reviews": load("reviews.json"),
@@ -401,19 +403,24 @@ def pitch_of(l: dict) -> str:
 
 
 def helper_view(b: dict) -> dict:
-    """고객 태블릿 사건요약. 네 칸 구조(관계·경과·입장·확인하고 싶은 점)는 유지하되 어체는 고객향."""
+    """고객 태블릿 사건요약. 상담 주제와 오늘 확인하고 싶은 점만 보여 준다.
+
+    당사자·경과·입장 서술(overview)은 고객 화면에 띄우지 않는다(2026-10-28).
+    검수 부담이 크고, 판결·형량·상대방 정황처럼 논란이 될 문장이 섞인다.
+    """
     role = f"{b['role']} · {b['rel']}" if b.get("rel") else b.get("role") or ""
-    sections = b.get("overview") or []
-    # 콜에서 사건 내용을 전혀 받지 못한 예약은 요약 대신 '오늘 이렇게 여쭤볼게요'를 띄운다.
+    agenda = b.get("agenda") or []
+    # 확인할 점을 받지 못한 예약은 요약 대신 '오늘 이렇게 여쭤볼게요'를 띄운다.
     intake = None
-    if not sections:
+    if not agenda:
         table = catalog()["intake"]
         intake = table.get(b.get("cat2")) or table.get(b.get("cat1")) or table["__default"]
     return {
         "engId": b["id"],
-        "title": "말씀하신 내용을 이렇게 정리했습니다",
-        "facts": b.get("memo") or [],
-        "sections": sections,
+        "title": "오늘 상담에서 확인하실 내용입니다",
+        # 세부 죄명(준강제추행 등)은 옆 사람 눈에도 띄므로 대분류만 쓴다.
+        "topic": b.get("cat1") or "",
+        "agenda": agenda,
         "intake": intake,
         "emptyNote": b.get("memoNote") or "",
         "rows": [
@@ -481,6 +488,53 @@ def advisor_cards() -> list[dict]:
         if len(by_role) == len(ADVISOR_ROLE_ORDER):
             break
     return [by_role[r] for r in ADVISOR_ROLE_ORDER if r in by_role]
+
+
+# 법원·검찰 근무 이력은 사실 서술로만 쓴다. 「전관」이라는 말은 고객 화면에 두지 않는다.
+BENCH_ORDER = ["대법관", "부장판사", "판사"]
+PROSECUTION_ORDER = ["고검장", "차장검사", "부장검사"]
+
+
+def firm_view(b: dict) -> dict:
+    """YK 소개. 센터 구성과 구성원(법원·검찰 근무 이력, 고문, 경찰 경력 전문위원)을 보여 준다.
+    수치는 홈페이지에 적힌 것만 쓴다. 승패소율·수임 건수는 넣지 않는다."""
+    cat = catalog()
+    intro = cat["firmIntro"]
+    field = b.get("field") or ""
+
+    bench, prosecution = [], []
+    for l in cat["lawyers"]:
+        p = public_profile(l)
+        title = next((t for t in (p.get("titles") or []) if str(t).endswith("역임")), "")
+        role = title.removesuffix("역임").strip()
+        if role in BENCH_ORDER:
+            bench.append({"n": p["n"], "pos": p["pos"], "title": title, "_o": BENCH_ORDER.index(role)})
+        elif role in PROSECUTION_ORDER:
+            prosecution.append({"n": p["n"], "pos": p["pos"], "title": title, "_o": PROSECUTION_ORDER.index(role)})
+    for rows in (bench, prosecution):
+        rows.sort(key=lambda x: (x["_o"], x["n"]))
+        for x in rows:
+            x.pop("_o")
+
+    advisors = [a for a in cat["advisors"] if a.get("r") == "고문"]
+    experts = [a for a in cat["advisors"] if a.get("r") == "전문위원"]
+    police = [a for a in experts if "경찰" in (a.get("c") or "")]
+    # 많은 경력 라벨부터(정부기관 → 경찰 → …), 라벨 없는 고문은 뒤에. 같은 라벨끼리 이름순.
+    label_n = Counter(a.get("c") or "" for a in advisors)
+    advisors.sort(key=lambda a: (0 if a.get("c") else 1, -label_n[a.get("c") or ""], a.get("c") or "", a["n"]))
+
+    return {
+        **{k: intro[k] for k in ("slogan", "sloganEn", "stats", "statsNote")},
+        "centerGroups": [
+            {"t": g["t"], "centers": [{"n": n, "f": f, "hit": bool(f) and f == field} for n, f in g["centers"]]}
+            for g in intro["centerGroups"]
+        ],
+        "bench": bench,
+        "prosecution": prosecution,
+        "advisors": [{"n": a["n"], "c": a.get("c") or ""} for a in advisors],
+        "police": [{"n": a["n"]} for a in sorted(police, key=lambda a: a["n"])],
+        "expertCount": len(experts),
+    }
 
 
 def bar_seniority(p: dict) -> tuple[int, str]:
@@ -605,10 +659,12 @@ def visit_for(bid: str | None = None) -> dict:
         roster=b.get("seniors"),
     )
     portraits = c["portraits"]
-    names = {b.get("counsel")} | {s["n"] for s in senior_rows}
+    firm = firm_view(b)
+    names = {b.get("counsel")} | {s["n"] for s in senior_rows} | {x["n"] for x in firm["bench"] + firm["prosecution"]}
     return {
         "booking": b,
         "helper": helper_view(b),
+        "firm": firm,
         "counsel": public_profile(counsel) if counsel else None,
         "seniors": senior_rows,
         "seniorHeadline": senior_headline,
