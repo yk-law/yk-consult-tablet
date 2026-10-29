@@ -2617,3 +2617,7 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .rcheck b.no{color:#fff; background:var(--acc);}
 .rcheck b.none{color:var(--mut); background:var(--ivory2); font-weight:500;}
 .rcheck .rno{flex:1 0 100%; font-size:12px; line-height:20px; color:var(--acc); font-weight:500; word-break:keep-all;}
+.vcard .vb.check{cursor:pointer; border-color:var(--nv); color:var(--nv); font-weight:700;}
+.vcard .vb.check.open{background:var(--nv-s);}
+.vcard .vb.check.no{background:var(--acc); border-color:var(--acc); color:#fff;}
+.vcard .ccheck{flex:1 0 100%; margin-top:4px;}

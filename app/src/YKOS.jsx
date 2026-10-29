@@ -25,6 +25,8 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
   const [signId, setSignId] = useState(null);
   /** 상담 변호사를 지정 중인 예약. */
   const [pickFor, setPickFor] = useState(null);
+  /** 내방자 체크리스트를 펼친 예약. */
+  const [checkFor, setCheckFor] = useState(null);
   /** 10-28 미팅: 실장이 내방 전에 상담 변호사를 지정해야 태블릿 연동(화면 공유)이 열린다. */
   const [assigned, setAssigned] = useState(() => Object.fromEntries(
     (cat?.bookings || []).filter((b) => b.counsel && b.counselAssigned !== false).map((b) => [b.id, b.counsel]),
@@ -134,6 +136,18 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                           {on ? "공유 중 · 해제" : "화면 공유"}
                         </button>
                       ) : <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">화면 공유</span>}
+                      {/* 10-29: 사건 요약 1뎁스가 있는 예약만 내방자 체크리스트(맞아요/아니요)를 연다. */}
+                      {x.summary?.length ? (
+                        <button
+                          className={`vb check${checkFor === x.id ? " open" : ""}${on && noCount ? " no" : ""}`}
+                          onClick={() => setCheckFor(checkFor === x.id ? null : x.id)}
+                        >
+                          체크리스트 확인{on && yesCount + noCount > 0 ? ` · ${yesCount + noCount}/${summary.length}` : ""}
+                        </button>
+                      ) : <span className="vb off" title="이 예약은 사건 요약을 고객에게 보여 주지 않습니다">체크리스트 확인</span>}
+                      {checkFor === x.id && x.summary?.length > 0 && (
+                        <VisitorCheck rows={x.summary} answers={on ? answers : {}} live={on} />
+                      )}
                       {pickFor === x.id && (
                         <CounselPick
                           lawyers={cat.lawyers}
@@ -164,29 +178,6 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
-
-                  {/* 10-28: 사건 요약 1뎁스에서 고객이 고른 맞아요/아니요. 실장이 놓치지 않게 연결 배너 바로 아래 둔다. */}
-                  {summary.length > 0 && (
-                    <div className={`ccheck${noCount ? " has-no" : ""}`}>
-                      <div className="ccheck-h">
-                        <span className="l">고객 확인 · 사건 요약</span>
-                        <span className="cnt">
-                          <b className="yes">맞아요 {yesCount}</b>
-                          <b className="no">아니요 {noCount}</b>
-                          <b className="none">미응답 {summary.length - yesCount - noCount}</b>
-                        </span>
-                      </div>
-                      <ul className="conn-check">
-                        {summary.map((t, i) => (
-                          <li key={t} className={answers[i] || "none"}>
-                            <b className={answers[i] || "none"}>{answers[i] === "yes" ? "맞아요" : answers[i] === "no" ? "아니요" : "미응답"}</b>
-                            <span>{t}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      {noCount > 0 && <p className="ccheck-note">아니요로 고른 내용은 상담 시작 때 다시 여쭤봐 주세요.</p>}
-                    </div>
-                  )}
 
                   {/* 09-28 회의: 화면 제어를 세분화하지 않는다. 고객이 태블릿에서 직접 움직이고,
                       실장은 지금 어디를 보는지만 확인한다. 조작은 연결·해제뿐. */}
@@ -313,6 +304,36 @@ function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
         <button className="vb" onClick={onCancel}>취소</button>
         <button className="vb share on" disabled={!chosen} onClick={() => onSave(chosen.n)}>지정</button>
       </div>
+    </div>
+  );
+}
+
+/** 내방자 체크리스트. 고객이 태블릿 사건 요약 1뎁스에서 고른 맞아요/아니요를 실장이 본다.
+ *  연결 전에는 고객에게 보일 문장만 미리 보여 준다. */
+function VisitorCheck({ rows, answers, live }) {
+  const yes = rows.filter((_, i) => answers[i] === "yes").length;
+  const no = rows.filter((_, i) => answers[i] === "no").length;
+  return (
+    <div className={`ccheck${no ? " has-no" : ""}`}>
+      <div className="ccheck-h">
+        <span className="l">내방자 체크리스트 · 사건 요약</span>
+        {live ? (
+          <span className="cnt">
+            <b className="yes">맞아요 {yes}</b>
+            <b className="no">아니요 {no}</b>
+            <b className="none">미응답 {rows.length - yes - no}</b>
+          </span>
+        ) : <span className="cnt"><b className="none">화면 공유 전 · 고객에게 보일 문장</b></span>}
+      </div>
+      <ul className="conn-check">
+        {rows.map((t, i) => (
+          <li key={t} className={answers[i] || "none"}>
+            <b className={answers[i] || "none"}>{answers[i] === "yes" ? "맞아요" : answers[i] === "no" ? "아니요" : "미응답"}</b>
+            <span>{t}</span>
+          </li>
+        ))}
+      </ul>
+      {no > 0 && <p className="ccheck-note">아니요로 고른 내용은 상담 시작 때 다시 여쭤봐 주세요.</p>}
     </div>
   );
 }
