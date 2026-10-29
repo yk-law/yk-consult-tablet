@@ -2621,3 +2621,4 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .vcard .vb.check.open{background:var(--nv-s);}
 .vcard .vb.check.no{background:var(--acc); border-color:var(--acc); color:#fff;}
 .vcard .ccheck{flex:1 0 100%; margin-top:4px;}
+.ccheck-reset{border:0; background:none; font:inherit; font-size:12px; line-height:20px; color:var(--mut); text-decoration:underline; cursor:pointer; padding:0 4px;}

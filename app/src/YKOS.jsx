@@ -19,7 +19,7 @@ const WATCH = {
 /** 방문 예정일 이동. 실제 YK-OS는 화살표 하나에 라벨 하나다. */
 const DAY_LABEL = { "-1": "어제", 0: "오늘", 1: "내일" };
 
-export default function YKOS({ cat, data, booking, connected, screen, act, answers = {} }) {
+export default function YKOS({ cat, data, booking, connected, screen, act, answers = {}, answersBy = {}, onResetAnswers = () => {} }) {
   const [vq, setVq] = useState("");
   const [off, setOff] = useState(0);
   const [signId, setSignId] = useState(null);
@@ -42,22 +42,25 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
   }, [cat, vq, want]);
 
   const sign = signId ? (cat?.bookings || []).find((b) => b.id === signId) : null;
-  const summary = (connected && data?.helper?.summary) || [];
+  // 지금 태블릿에 떠 있는 예약 기준. 화면 공유 전에 태블릿에서 답해도 그대로 보인다.
+  const summary = data?.helper?.summary || [];
   const yesCount = summary.filter((_, i) => answers[i] === "yes").length;
   const noCount = summary.filter((_, i) => answers[i] === "no").length;
   // 고객이 방금 고른 답을 잠깐 띄운다. 아니요는 실장이 바로 알아야 한다.
   const [toast, setToast] = useState(null);
-  const prevAnswers = useRef(answers);
+  const prevAnswers = useRef({ id: data?.booking?.id, a: answers });
   useEffect(() => {
-    const prev = prevAnswers.current;
-    prevAnswers.current = answers;
-    if (!connected) return;
+    const { id: prevId, a: prev } = prevAnswers.current;
+    prevAnswers.current = { id: data?.booking?.id, a: answers };
+    if (prevId !== data?.booking?.id) return; // 예약을 바꾼 것은 알리지 않는다.
     const i = Object.keys(answers).find((k) => answers[k] && answers[k] !== prev[k]);
     if (i == null) return;
     setToast({ v: answers[i], t: summary[i] || "" });
     const id = setTimeout(() => setToast(null), 6000);
     return () => clearTimeout(id);
   }, [answers]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rowAnswered = (x) => Object.values(answersBy[x.id] || {}).filter(Boolean).length;
+  const rowNo = (x) => Object.values(answersBy[x.id] || {}).filter((v) => v === "no").length;
   const watch = WATCH[screen === "report" && !data?.helper?.summary?.length ? "topics" : screen] || ["—", ""];
   const rst = connected ? `${booking?.branch} · ${booking?.name}(가명) 님` : "미연결";
 
@@ -139,14 +142,14 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                       {/* 10-29: 사건 요약 1뎁스가 있는 예약만 내방자 체크리스트(맞아요/아니요)를 연다. */}
                       {x.summary?.length ? (
                         <button
-                          className={`vb check${checkFor === x.id ? " open" : ""}${on && noCount ? " no" : ""}`}
+                          className={`vb check${checkFor === x.id ? " open" : ""}${rowNo(x) ? " no" : ""}`}
                           onClick={() => setCheckFor(checkFor === x.id ? null : x.id)}
                         >
-                          체크리스트 확인{on && yesCount + noCount > 0 ? ` · ${yesCount + noCount}/${summary.length}` : ""}
+                          체크리스트 확인{rowAnswered(x) ? ` · ${rowAnswered(x)}/${x.summary.length}` : ""}
                         </button>
                       ) : <span className="vb off" title="이 예약은 사건 요약을 고객에게 보여 주지 않습니다">체크리스트 확인</span>}
                       {checkFor === x.id && x.summary?.length > 0 && (
-                        <VisitorCheck rows={x.summary} answers={on ? answers : {}} live={on} />
+                        <VisitorCheck rows={x.summary} answers={answersBy[x.id] || {}} onReset={() => onResetAnswers(x.id)} />
                       )}
                       {pickFor === x.id && (
                         <CounselPick
@@ -310,20 +313,19 @@ function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
 
 /** 내방자 체크리스트. 고객이 태블릿 사건 요약 1뎁스에서 고른 맞아요/아니요를 실장이 본다.
  *  연결 전에는 고객에게 보일 문장만 미리 보여 준다. */
-function VisitorCheck({ rows, answers, live }) {
+function VisitorCheck({ rows, answers, onReset }) {
   const yes = rows.filter((_, i) => answers[i] === "yes").length;
   const no = rows.filter((_, i) => answers[i] === "no").length;
   return (
     <div className={`ccheck${no ? " has-no" : ""}`}>
       <div className="ccheck-h">
         <span className="l">내방자 체크리스트 · 사건 요약</span>
-        {live ? (
-          <span className="cnt">
-            <b className="yes">맞아요 {yes}</b>
-            <b className="no">아니요 {no}</b>
-            <b className="none">미응답 {rows.length - yes - no}</b>
-          </span>
-        ) : <span className="cnt"><b className="none">화면 공유 전 · 고객에게 보일 문장</b></span>}
+        <span className="cnt">
+          <b className="yes">맞아요 {yes}</b>
+          <b className="no">아니요 {no}</b>
+          <b className="none">미응답 {rows.length - yes - no}</b>
+          {yes + no > 0 && <button type="button" className="ccheck-reset" onClick={onReset}>초기화</button>}
+        </span>
       </div>
       <ul className="conn-check">
         {rows.map((t, i) => (
