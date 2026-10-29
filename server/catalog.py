@@ -38,6 +38,8 @@ def catalog() -> dict:
         "cases": load("cases.json"),
         "reviews": load("reviews.json"),
         "portraits": load("portraits.json"),
+        # YK 소개용. 얼굴 크기를 맞춰 자른 사진(tools/firm_faces.py).
+        "portraitsFirm": load("portraits_firm.json"),
         "videos": load("videos.json"),
         "profileExtra": load("profile_extra.json"),
         "FIELD": fields["FIELD"],
@@ -100,7 +102,7 @@ def reasons(l: dict, field: str, court: str) -> list[dict]:
     if sc["near"]:
         out.append({"t": "관련 " + " · ".join(cat["FIELD"][c][0] for c in sc["near"][:2]), "k": "s"})
     if l.get("o"):
-        out.append({"t": l["o"] + " 출신", "k": "s"})
+        out.append({"t": l["o"] + " 역임", "k": "s"})
     return out[:3]
 
 
@@ -537,6 +539,7 @@ def firm_view() -> dict:
         ],
         "bench": bench,
         "prosecution": prosecution,
+        "photos": {x["n"]: cat["portraitsFirm"][x["n"]] for x in bench + prosecution if x["n"] in cat["portraitsFirm"]},
         "advisors": [{"n": a["n"], "c": a.get("c") or ""} for a in advisors],
         "police": [{"n": a["n"]} for a in sorted(police, key=lambda a: a["n"])],
         "expertCount": len(experts),

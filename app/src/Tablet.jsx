@@ -375,8 +375,9 @@ function CounselVideo({ l, onDone }) {
 function FirmIntro({ firm, portraits, FIELD, onNext }) {
   if (!firm) return null;
   const people = [
-    ["법원 출신 변호사", firm.bench],
-    ["검찰 출신 변호사", firm.prosecution],
+    // 10-29 김윤창: '출신'이 아니라 '역임'으로 쓴다.
+    ["법관 역임 변호사", firm.bench],
+    ["검사 역임 변호사", firm.prosecution],
   ];
   return (
     <section className="pane on reportpane firmpane">
@@ -424,7 +425,7 @@ function FirmIntro({ firm, portraits, FIELD, onNext }) {
                 {rows.map((l) => (
                   <li key={l.n}>
                     <span className="firm-ph">
-                      {portraits?.[l.n] ? <img src={portraits[l.n]} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
+                      {(firm.photos?.[l.n] || portraits?.[l.n]) ? <img src={firm.photos?.[l.n] || portraits[l.n]} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
                     </span>
                     <strong>{l.n}</strong>
                     <span className="firm-people-pos">{l.pos}</span>
@@ -832,7 +833,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     return () => observer.disconnect();
   }, [counselHero, l]);
   const edu = [l.edu, l.exam, l.tr].filter(Boolean).join(" · ");
-  const pos = [l.pos, l.o ? `${l.o} 출신` : ""].filter(Boolean).join(" · ");
+  const pos = [l.pos, l.o ? `${l.o} 역임` : ""].filter(Boolean).join(" · ");
   const heroInfo = specialist ? specialistHero(l) : { greeting: l.pitch, titles: l.titles };
   const hasFields = !!(l.areas?.length || l.f?.length || l.tags?.length);
   return (
