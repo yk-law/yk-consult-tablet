@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
 import Tablet from "./Tablet.jsx";
 import SignForm from "./SignForm.jsx";
@@ -8,7 +8,9 @@ import { DEMO_TODAY, ST_CLS, addDays, visitWhen } from "./util.jsx";
 const WATCH = {
   wait: ["대기 화면", "예약자 확인을 기다리는 중"],
   film: ["브랜드 영상", "무음 반복 재생 중"],
-  report: ["사건요약", "예약 때 말씀하신 내용 확인 중"],
+  firm: ["YK 소개", "센터·구성원 소개 보는 중"],
+  report: ["사건 요약", "말씀하신 내용 확인 중"],
+  topics: ["사건 요약", "사건 종류별 상담 내용 보는 중"],
   counsel: ["상담 변호사", "담당 변호사 프로필"],
   "counsel-video": ["상담 변호사", "소개 영상 재생 중"],
   seniors: ["전문인력", "고문·전문위원 둘러보는 중"],
@@ -17,10 +19,18 @@ const WATCH = {
 /** 방문 예정일 이동. 실제 YK-OS는 화살표 하나에 라벨 하나다. */
 const DAY_LABEL = { "-1": "어제", 0: "오늘", 1: "내일" };
 
-export default function YKOS({ cat, data, booking, connected, screen, act }) {
+export default function YKOS({ cat, data, booking, connected, screen, act, answers = {}, answersBy = {}, onResetAnswers = () => {} }) {
   const [vq, setVq] = useState("");
   const [off, setOff] = useState(0);
   const [signId, setSignId] = useState(null);
+  /** 상담 변호사를 지정 중인 예약. */
+  const [pickFor, setPickFor] = useState(null);
+  /** 내방자 체크리스트를 펼친 예약. */
+  const [checkFor, setCheckFor] = useState(null);
+  /** 10-28 미팅: 실장이 내방 전에 상담 변호사를 지정해야 태블릿 연동(화면 공유)이 열린다. */
+  const [assigned, setAssigned] = useState(() => Object.fromEntries(
+    (cat?.bookings || []).filter((b) => b.counsel && b.counselAssigned !== false).map((b) => [b.id, b.counsel]),
+  ));
 
   const want = addDays(DEMO_TODAY, off);
   const rows = useMemo(() => {
@@ -32,7 +42,26 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
   }, [cat, vq, want]);
 
   const sign = signId ? (cat?.bookings || []).find((b) => b.id === signId) : null;
-  const watch = WATCH[screen] || ["—", ""];
+  // 지금 태블릿에 떠 있는 예약 기준. 화면 공유 전에 태블릿에서 답해도 그대로 보인다.
+  const summary = data?.helper?.summary || [];
+  const yesCount = summary.filter((_, i) => answers[i] === "yes").length;
+  const noCount = summary.filter((_, i) => answers[i] === "no").length;
+  // 고객이 방금 고른 답을 잠깐 띄운다. 아니요는 실장이 바로 알아야 한다.
+  const [toast, setToast] = useState(null);
+  const prevAnswers = useRef({ id: data?.booking?.id, a: answers });
+  useEffect(() => {
+    const { id: prevId, a: prev } = prevAnswers.current;
+    prevAnswers.current = { id: data?.booking?.id, a: answers };
+    if (prevId !== data?.booking?.id) return; // 예약을 바꾼 것은 알리지 않는다.
+    const i = Object.keys(answers).find((k) => answers[k] && answers[k] !== prev[k]);
+    if (i == null) return;
+    setToast({ v: answers[i], t: summary[i] || "" });
+    const id = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(id);
+  }, [answers]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rowAnswered = (x) => Object.values(answersBy[x.id] || {}).filter(Boolean).length;
+  const rowNo = (x) => Object.values(answersBy[x.id] || {}).filter((v) => v === "no").length;
+  const watch = WATCH[screen === "report" && !data?.helper?.summary?.length ? "topics" : screen] || ["—", ""];
   const rst = connected ? `${booking?.branch} · ${booking?.name}(가명) 님` : "미연결";
 
   return (
@@ -58,6 +87,12 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
           <div className="split">
             {/* 좌 — 상담실장이 보는 화면 */}
             <section className="lft">
+              {toast && (
+                <div className={`ctoast ${toast.v}`} role="status">
+                  <b>고객이 {toast.v === "no" ? "‘아니요’" : "‘맞아요’"}를 골랐습니다</b>
+                  <span>{toast.t}</span>
+                </div>
+              )}
               {sign ? <SignForm booking={sign} onBack={() => setSignId(null)} /> : <>
               <div className="vhd">
                 <h3>방문 예정 목록</h3>
@@ -88,14 +123,48 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                       {/* 실제 YK-OS 규칙. 상담 내용을 작성해야 선임 계약이 열린다. */}
                       <span className="vb">{x.wrote ? "상담 내용 보기" : "상담 내용 작성"}</span>
                       {x.wrote
-                        ? <button className="vb sign" onClick={() => setSignId(x.id)}>선임 계약</button>
+                        ? <button className="vb sign" onClick={() => { setPickFor(null); setSignId(x.id); }}>선임 계약</button>
                         : <span className="vb off">선임 계약</span>}
                       <button
-                        className={`vb share${on ? " on" : ""}`}
-                        onClick={() => (on ? act.unshare() : act.share(x.id))}
+                        className={`vb counsel${assigned[x.id] ? "" : " need"}`}
+                        onClick={() => setPickFor(pickFor === x.id ? null : x.id)}
                       >
-                        {on ? "공유 중 · 해제" : "화면 공유"}
+                        {assigned[x.id] ? `상담 변호사 ${assigned[x.id]}` : "상담 변호사 지정"}
                       </button>
+                      {assigned[x.id] || on ? (
+                        <button
+                          className={`vb share${on ? " on" : ""}`}
+                          onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id]))}
+                        >
+                          {on ? "공유 중 · 해제" : "화면 공유"}
+                        </button>
+                      ) : <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">화면 공유</span>}
+                      {/* 10-29: 사건 요약 1뎁스가 있는 예약만 내방자 체크리스트(맞아요/아니요)를 연다. */}
+                      {x.summary?.length ? (
+                        <button
+                          className={`vb check${checkFor === x.id ? " open" : ""}${rowNo(x) ? " no" : ""}`}
+                          onClick={() => setCheckFor(checkFor === x.id ? null : x.id)}
+                        >
+                          체크리스트 확인{rowAnswered(x) ? ` · ${rowAnswered(x)}/${x.summary.length}` : ""}
+                        </button>
+                      ) : <span className="vb off" title="이 예약은 사건 요약을 고객에게 보여 주지 않습니다">체크리스트 확인</span>}
+                      {checkFor === x.id && x.summary?.length > 0 && (
+                        <VisitorCheck rows={x.summary} answers={answersBy[x.id] || {}} onReset={() => onResetAnswers(x.id)} />
+                      )}
+                      {pickFor === x.id && (
+                        <CounselPick
+                          lawyers={cat.lawyers}
+                          current={assigned[x.id] || ""}
+                          booked={x.counsel}
+                          FIELD={cat.FIELD}
+                          onCancel={() => setPickFor(null)}
+                          onSave={(name) => {
+                            setPickFor(null);
+                            setAssigned({ ...assigned, [x.id]: name });
+                            if (on) act.counsel(name);
+                          }}
+                        />
+                      )}
                     </div>
                   );
                 })}
@@ -108,6 +177,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                     <div>
                       <span className="l">연결됨</span>
                       <span className="t">{booking.name}(가명) · {booking.branch}</span>
+                      <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
@@ -139,7 +209,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                 </div>
               ) : (
                 <p className="sub" style={{ fontSize: 10, marginTop: 12 }}>
-                  행의 <b>화면 공유</b>를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
+                  내방 전에 행마다 <b>상담 변호사</b>를 지정하면 <b>화면 공유</b>가 열립니다. 화면 공유를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
                 </p>
               )}
               </>}
@@ -165,17 +235,107 @@ export default function YKOS({ cat, data, booking, connected, screen, act }) {
                   <p className="w">연결 가능한 태블릿이 없습니다. 상담 태블릿 앱에서 먼저 입장해 주세요.</p>
                 </div>
               ) : (
+                <>
+                {summary.length > 0 && (
+                  <div className={`rcheck${noCount ? " has-no" : ""}`}>
+                    <span className="l">고객 확인</span>
+                    <b className="yes">맞아요 {yesCount}</b>
+                    <b className="no">아니요 {noCount}</b>
+                    <b className="none">미응답 {summary.length - yesCount - noCount}</b>
+                    {summary.map((t, i) => answers[i] === "no" && <span className="rno" key={t}>아니요 · {t}</span>)}
+                  </div>
+                )}
                 <div className="mirror">
                   <div className="mfr"><div className="mscale"><div className="mclone">
-                    {data ? <Tablet data={data} screen={screen} onScreen={() => {}} /> : null}
+                    {data ? <Tablet data={data} screen={screen} onScreen={() => {}} answers={answers} /> : null}
                   </div></div></div>
                   <div className="mfoot"><span>{watch[0]}</span><span className="ml">실시간 미러링 · 보기 전용</span></div>
                 </div>
+                </>
               )}
             </section>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** 내방 전에 상담 변호사를 지정한다. 이상엽 CPO 10-27 피드백(상담 후에 넣는 경우가 많음)과
+ *  10-28 미팅(지정 후 태블릿 연동). 콜 단계에서 정해 둔 변호사가 있으면 후보로 채워 둔다. */
+function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
+  const [q, setQ] = useState("");
+  const [name, setName] = useState(current || booked || "");
+  const hits = useMemo(() => {
+    const t = q.trim();
+    if (!t) return [];
+    const label = (l) => l.f.map((k) => FIELD?.[k]?.[0] || "").join(" ");
+    return lawyers.filter((l) => l.n.includes(t) || label(l).includes(t)).slice(0, 6);
+  }, [lawyers, q, FIELD]);
+  const chosen = lawyers.find((l) => l.n === name);
+
+  return (
+    <div className="cpick">
+      <div className="cpick-h">
+        <span className="l">상담 변호사</span>
+        <span className="d">지정해야 화면 공유가 열리고, 고객 태블릿의 ‘상담 변호사’ 화면에 이 변호사가 나옵니다.</span>
+      </div>
+      {chosen ? (
+        <div className="cpick-cur">
+          <b>{chosen.n}</b> <span>{chosen.pos}</span>
+          {chosen.n === booked && <em>콜 단계 메모</em>}
+        </div>
+      ) : <div className="cpick-cur none">아직 고르지 않았습니다.</div>}
+      <div className="vsearch">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6" /><path d="M13.5 13.5 18 18" /></svg>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="변호사 이름이나 분야로 검색" aria-label="상담 변호사 검색" autoFocus />
+      </div>
+      {hits.length > 0 && (
+        <ul className="cpick-list">
+          {hits.map((l) => (
+            <li key={l.n}>
+              <button className={l.n === name ? "on" : ""} onClick={() => { setName(l.n); setQ(""); }}>
+                <b>{l.n}</b> <span>{l.pos}</span>
+                <span className="cpick-f">{l.f.slice(0, 3).map((k) => FIELD?.[k]?.[0] || k).join(" · ")}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {q.trim() && !hits.length && <p className="cpick-none">검색 결과가 없습니다.</p>}
+      <div className="cpick-a">
+        <button className="vb" onClick={onCancel}>취소</button>
+        <button className="vb share on" disabled={!chosen} onClick={() => onSave(chosen.n)}>지정</button>
+      </div>
+    </div>
+  );
+}
+
+/** 내방자 체크리스트. 고객이 태블릿 사건 요약 1뎁스에서 고른 맞아요/아니요를 실장이 본다.
+ *  연결 전에는 고객에게 보일 문장만 미리 보여 준다. */
+function VisitorCheck({ rows, answers, onReset }) {
+  const yes = rows.filter((_, i) => answers[i] === "yes").length;
+  const no = rows.filter((_, i) => answers[i] === "no").length;
+  return (
+    <div className={`ccheck${no ? " has-no" : ""}`}>
+      <div className="ccheck-h">
+        <span className="l">내방자 체크리스트 · 사건 요약</span>
+        <span className="cnt">
+          <b className="yes">맞아요 {yes}</b>
+          <b className="no">아니요 {no}</b>
+          <b className="none">미응답 {rows.length - yes - no}</b>
+          {yes + no > 0 && <button type="button" className="ccheck-reset" onClick={onReset}>초기화</button>}
+        </span>
+      </div>
+      <ul className="conn-check">
+        {rows.map((t, i) => (
+          <li key={t} className={answers[i] || "none"}>
+            <b className={answers[i] || "none"}>{answers[i] === "yes" ? "맞아요" : answers[i] === "no" ? "아니요" : "미응답"}</b>
+            <span>{t}</span>
+          </li>
+        ))}
+      </ul>
+      {no > 0 && <p className="ccheck-note">아니요로 고른 내용은 상담 시작 때 다시 여쭤봐 주세요.</p>}
     </div>
   );
 }

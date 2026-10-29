@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from functools import lru_cache
 from pathlib import Path
 
@@ -30,11 +31,15 @@ def catalog() -> dict:
         "fee": load("fee.json"),
         "scenarios": load("scenarios.json"),
         "intake": load("intake.json"),
+        "topics": load("topics.json"),
         "firm": load("firm.json"),
+        "firmIntro": load("firm_intro.json"),
         "sign": load("sign.json"),
         "cases": load("cases.json"),
         "reviews": load("reviews.json"),
         "portraits": load("portraits.json"),
+        # YK 소개용. 얼굴 크기를 맞춰 자른 사진(tools/firm_faces.py).
+        "portraitsFirm": load("portraits_firm.json"),
         "videos": load("videos.json"),
         "profileExtra": load("profile_extra.json"),
         "FIELD": fields["FIELD"],
@@ -97,7 +102,7 @@ def reasons(l: dict, field: str, court: str) -> list[dict]:
     if sc["near"]:
         out.append({"t": "관련 " + " · ".join(cat["FIELD"][c][0] for c in sc["near"][:2]), "k": "s"})
     if l.get("o"):
-        out.append({"t": l["o"] + " 출신", "k": "s"})
+        out.append({"t": l["o"] + " 역임", "k": "s"})
     return out[:3]
 
 
@@ -400,30 +405,40 @@ def pitch_of(l: dict) -> str:
     return "내 일처럼 진심을 다하겠습니다."
 
 
+def topic_template(b: dict) -> dict | None:
+    """사건 종류별 2뎁스 템플릿. 소분류 → 별칭 → 없음."""
+    table = catalog()["topics"]
+    key = b.get("cat2") or ""
+    key = table["_alias"].get(key, key)
+    return table.get(key)
+
+
 def helper_view(b: dict) -> dict:
-    """고객 태블릿 사건요약. 네 칸 구조(관계·경과·입장·확인하고 싶은 점)는 유지하되 어체는 고객향."""
-    role = f"{b['role']} · {b['rel']}" if b.get("rel") else b.get("role") or ""
-    sections = b.get("overview") or []
-    # 콜에서 사건 내용을 전혀 받지 못한 예약은 요약 대신 '오늘 이렇게 여쭤볼게요'를 띄운다.
+    """고객 태블릿 사건 요약. 10-28 미팅으로 2뎁스가 기본이다.
+
+    1뎁스(summary): 방문 전 상담 내용이 고객에게 보여도 되는 수준일 때만 짧은 요약을 띄우고
+    문장마다 맞아요/아니요를 받는다. 자세할수록 사전 스크리닝 부담이 커서 3~4문장으로 줄인다.
+    노출이 어려운 예약은 summary를 두지 않고 1뎁스를 건너뛴다.
+    2뎁스(topics): 개인화는 사건 종류까지만. 같은 종류 상담에서 많이 확인하는 내용을 보여 준다.
+    """
+    template = topic_template(b)
     intake = None
-    if not sections:
+    if not template:
         table = catalog()["intake"]
         intake = table.get(b.get("cat2")) or table.get(b.get("cat1")) or table["__default"]
     return {
         "engId": b["id"],
-        "title": "말씀하신 내용을 이렇게 정리했습니다",
-        "facts": b.get("memo") or [],
-        "sections": sections,
+        # 세부 죄명(준강제추행 등)은 옆 사람 눈에도 띄므로 대분류만 쓴다.
+        "topic": b.get("cat1") or "",
+        "summary": b.get("summary") or [],
+        "topics": template["steps"] if template else [],
+        # 2뎁스를 채우는 일반 정보. 사건 종류가 같으면 모든 고객에게 같다.
+        "flow": template.get("flow", []) if template else [],
+        "ask": template.get("ask", []) if template else [],
+        "bring": template.get("bring", []) if template else [],
+        "cases": template.get("cases", []) if template else [],
         "intake": intake,
         "emptyNote": b.get("memoNote") or "",
-        "rows": [
-            ["사건 종류", f"{b['cat1']} > {b['cat2']}"],
-            ["관할", b.get("court") or ""],
-            ["고객 유형", b.get("type") or ""],
-            ["고객 역할", role],
-            ["방문", b.get("at") or ""],
-            ["상담실", b.get("branch") or ""],
-        ],
     }
 
 
@@ -481,6 +496,54 @@ def advisor_cards() -> list[dict]:
         if len(by_role) == len(ADVISOR_ROLE_ORDER):
             break
     return [by_role[r] for r in ADVISOR_ROLE_ORDER if r in by_role]
+
+
+# 법원·검찰 근무 이력은 사실 서술로만 쓴다. 「전관」이라는 말은 고객 화면에 두지 않는다.
+BENCH_ORDER = ["대법관", "부장판사", "판사"]
+PROSECUTION_ORDER = ["고검장", "차장검사", "부장검사"]
+
+
+def firm_view() -> dict:
+    """YK 소개. 센터 구성과 구성원(법원·검찰 근무 이력, 고문, 경찰 경력 전문위원)을 보여 준다.
+    수치는 홈페이지에 적힌 것만 쓴다. 승패소율·수임 건수는 넣지 않는다.
+    10-28 미팅: 고객마다 바꾸지 않는 공통 포맷이다."""
+    cat = catalog()
+    intro = cat["firmIntro"]
+
+    bench, prosecution = [], []
+    for l in cat["lawyers"]:
+        p = public_profile(l)
+        title = next((t for t in (p.get("titles") or []) if str(t).endswith("역임")), "")
+        role = title.removesuffix("역임").strip()
+        if role in BENCH_ORDER:
+            bench.append({"n": p["n"], "pos": p["pos"], "title": title, "_o": BENCH_ORDER.index(role)})
+        elif role in PROSECUTION_ORDER:
+            prosecution.append({"n": p["n"], "pos": p["pos"], "title": title, "_o": PROSECUTION_ORDER.index(role)})
+    for rows in (bench, prosecution):
+        rows.sort(key=lambda x: (x["_o"], x["n"]))
+        for x in rows:
+            x.pop("_o")
+
+    advisors = [a for a in cat["advisors"] if a.get("r") == "고문"]
+    experts = [a for a in cat["advisors"] if a.get("r") == "전문위원"]
+    police = [a for a in experts if "경찰" in (a.get("c") or "")]
+    # 많은 경력 라벨부터(정부기관 → 경찰 → …), 라벨 없는 고문은 뒤에. 같은 라벨끼리 이름순.
+    label_n = Counter(a.get("c") or "" for a in advisors)
+    advisors.sort(key=lambda a: (0 if a.get("c") else 1, -label_n[a.get("c") or ""], a.get("c") or "", a["n"]))
+
+    return {
+        **{k: intro[k] for k in ("slogan", "sloganEn", "stats", "statsNote")},
+        "centerGroups": [
+            {"t": g["t"], "centers": [{"n": n, "f": f} for n, f in g["centers"]]}
+            for g in intro["centerGroups"]
+        ],
+        "bench": bench,
+        "prosecution": prosecution,
+        "photos": {x["n"]: cat["portraitsFirm"][x["n"]] for x in bench + prosecution if x["n"] in cat["portraitsFirm"]},
+        "advisors": [{"n": a["n"], "c": a.get("c") or ""} for a in advisors],
+        "police": [{"n": a["n"]} for a in sorted(police, key=lambda a: a["n"])],
+        "expertCount": len(experts),
+    }
 
 
 def bar_seniority(p: dict) -> tuple[int, str]:
@@ -605,10 +668,12 @@ def visit_for(bid: str | None = None) -> dict:
         roster=b.get("seniors"),
     )
     portraits = c["portraits"]
-    names = {b.get("counsel")} | {s["n"] for s in senior_rows}
+    firm = firm_view()
+    names = {b.get("counsel")} | {s["n"] for s in senior_rows} | {x["n"] for x in firm["bench"] + firm["prosecution"]}
     return {
         "booking": b,
         "helper": helper_view(b),
+        "firm": firm,
         "counsel": public_profile(counsel) if counsel else None,
         "seniors": senior_rows,
         "seniorHeadline": senior_headline,
@@ -617,6 +682,6 @@ def visit_for(bid: str | None = None) -> dict:
         "NEAR": c["NEAR"],
         "counts": c["counts"],
         "portraits": {n: portraits[n] for n in names if n and n in portraits},
-        "bookings": [{"id": x["id"], "name": x["name"], "at": x["at"], "cat2": x["cat2"]} for x in c["bookings"]],
+        "bookings": [{"id": x["id"], "name": x["name"], "at": x["at"], "cat2": x["cat2"], "depth": 1 if x.get("summary") else 2} for x in c["bookings"]],
     }
 

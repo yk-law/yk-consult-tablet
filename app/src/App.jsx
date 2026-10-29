@@ -8,12 +8,14 @@ const SCREENS = [
   ["wait", "내방"],
   ["prep", "상담 준비"],
   ["film", "소개 영상"],
+  ["firm", "YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문 인력"],
 ];
 /** 장면 딥링크용. 상단 세그에는 안 넣고 URL·흐름에서만 쓴다. */
-const DEEP = new Set(["film", "counsel-video", ...SCREENS.map(([id]) => id)]);
+const DEEP = new Set(["film", "counsel-video", "topics", ...SCREENS.map(([id]) => id)]);
+const ANSWER_KEY = "ykct.answers.v1";
 const VIEWS = [["tab", "고객 태블릿"], ["os", "상담실장 YK-OS"], ["both", "나란히"]];
 
 export default function App() {
@@ -27,6 +29,27 @@ export default function App() {
   const [view, setView] = useState(VIEWS.some(([v]) => v === q.get("v")) ? q.get("v") : "tab");
   /** YK-OS에서 화면 공유를 눌렀는지. 누르기 전 태블릿은 대기 화면만 보여준다. */
   const [connected, setConnected] = useState(false);
+  /** 화면 공유 때 실장이 고른 상담 변호사. 예약의 지정 변호사 대신 고객 화면에 나온다. */
+  const [pick, setPick] = useState(q.get("l") || "");
+  const [pickData, setPickData] = useState(null);
+  /** 사건 요약 1뎁스에서 고객이 고른 맞아요/아니요. 문장 순서 → "yes" | "no". 실장 화면에 그대로 보인다. */
+  // 예약별로 따로 둔다. 화면 공유를 다시 누르거나 예약을 바꿔도 지우지 않는다.
+  // 시연에서 태블릿·YK-OS를 다른 탭(기기)으로 띄워도 같은 값을 보도록 localStorage로 맞춘다.
+  const [answersBy, setAnswersBy] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(ANSWER_KEY) || "{}"); } catch { return {}; }
+  });
+  useEffect(() => {
+    const sync = (e) => {
+      if (e.key !== ANSWER_KEY) return;
+      try { setAnswersBy(JSON.parse(e.newValue || "{}")); } catch { /* 무시 */ }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
+  const saveAnswers = useCallback((next) => {
+    setAnswersBy(next);
+    try { localStorage.setItem(ANSWER_KEY, JSON.stringify(next)); } catch { /* 저장 못 해도 이 탭에서는 보인다 */ }
+  }, []);
 
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [controlsOpen, setControlsOpen] = useState(false);
@@ -113,25 +136,34 @@ export default function App() {
 
   useEffect(() => { api.catalog().then(setCat); }, []);
   useEffect(() => { api.visit(cid).then(setData); }, [cid]);
+  useEffect(() => {
+    if (!pick) { setPickData(null); return; }
+    let live = true;
+    api.counsel(pick).then((p) => live && setPickData(p));
+    return () => { live = false; };
+  }, [pick]);
 
   useEffect(() => {
     const u = new URL(location.href);
     if (screen && screen !== "wait") u.searchParams.set("s", screen); else u.searchParams.delete("s");
     if (cid) u.searchParams.set("c", cid); else u.searchParams.delete("c");
+    if (pick) u.searchParams.set("l", pick); else u.searchParams.delete("l");
     if (view !== "tab") u.searchParams.set("v", view); else u.searchParams.delete("v");
     u.searchParams.set("theme", theme);
     if (darkDesign === "current") u.searchParams.set("design", "current"); else u.searchParams.delete("design");
     history.replaceState(null, "", u);
-  }, [screen, cid, view, theme, darkDesign]);
+  }, [screen, cid, view, theme, darkDesign, pick]);
 
-  const share = useCallback((id) => {
+  const share = useCallback((id, counselName = "") => {
     setCid(id);
+    setPick(counselName);
     setConnected(true);
     setScreen("wait");
   }, []);
 
   const unshare = useCallback(() => {
     setConnected(false);
+    setPick("");
     setScreen("wait");
   }, []);
 
@@ -147,9 +179,21 @@ export default function App() {
     );
   }
 
+  // 실장이 고른 상담 변호사로 바꿔 끼운다. 전문 인력 목록에서는 그 사람을 뺀다.
+  const shown = pickData && pickData.counsel.n !== data.counsel?.n
+    ? {
+        ...data,
+        counsel: pickData.counsel,
+        portraits: { ...data.portraits, ...pickData.portraits },
+        seniors: data.seniors.filter((s) => s.n !== pickData.counsel.n),
+      }
+    : data;
+  const answers = answersBy[data.booking.id] || {};
+  const answer = (i, v) => saveAnswers({ ...answersBy, [data.booking.id]: { ...answers, [i]: v } });
+  const resetAnswers = (bid) => { const next = { ...answersBy }; delete next[bid]; saveAnswers(next); };
   const booking = cat.bookings.find((b) => b.id === data.booking.id) || data.booking;
   const displayView = fullscreen ? "tab" : view;
-  const act = { share, unshare, screen: setScreen, pushLawyer };
+  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick };
 
   return (
     <div className={`shell ${fullscreen ? "customer-fullscreen" : ""} ${controlsOpen ? "controls-open" : ""}`} onClickCapture={handleCornerTap}>
@@ -193,14 +237,14 @@ export default function App() {
             {SCREENS.map(([id, l]) => (
               <button
                 key={id}
-                className={screen === id || (id === "counsel" && screen === "counsel-video") ? "on" : ""}
-                aria-pressed={screen === id || (id === "counsel" && screen === "counsel-video")}
+                className={screen === id || (id === "counsel" && screen === "counsel-video") || (id === "report" && screen === "topics") ? "on" : ""}
+                aria-pressed={screen === id || (id === "counsel" && screen === "counsel-video") || (id === "report" && screen === "topics")}
                 onClick={() => setScreen(id)}
               >{l}</button>
             ))}
           </div>
         )}
-        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "report", "counsel", "seniors"].includes(screen))) && (
+        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "topics", "counsel", "seniors"].includes(screen))) && (
           fullscreen ? <div className="theme-controls drawer-theme-row">
             <h3 className="drawer-section-label">화면 테마</h3>
             <div className="drawer-theme-setting">
@@ -239,8 +283,8 @@ export default function App() {
           </label>
         )}
         </div>
-        <select className="dpick" value={data.booking.id} onChange={(e) => setCid(e.target.value)} aria-label="시연 예약">
-          {data.bookings.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.cat2}</option>)}
+        <select className="dpick" value={data.booking.id} onChange={(e) => { setCid(e.target.value); setPick(""); }} aria-label="시연 예약">
+          {data.bookings.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.cat2} · {b.depth === 1 ? "요약 1·2뎁스" : "요약 2뎁스만"}</option>)}
         </select>
         <button type="button" className="fullscreen-toggle" aria-pressed={fullscreen} onClick={toggleFullscreen}>
           {fullscreen && (
@@ -262,12 +306,12 @@ export default function App() {
         {displayView !== "os" && (
           <div className={`tabwrap binder-theme theme-${theme}`}>
             {theme === "dark" && darkDesign === "legacy"
-              ? <LegacyPreview data={data} screen={screen} onScreen={setScreen} />
-              : <Tablet data={data} screen={screen} onScreen={setScreen} />}
+              ? <LegacyPreview data={shown} screen={screen} onScreen={setScreen} />
+              : <Tablet data={shown} screen={screen} onScreen={setScreen} answers={answers} onAnswer={answer} />}
           </div>
         )}
         {displayView !== "tab" && (
-          <YKOS cat={cat} data={data} booking={booking} connected={connected} screen={screen} act={act} />
+          <YKOS cat={cat} data={shown} booking={booking} connected={connected} screen={screen} act={act} answers={answers} answersBy={answersBy} onResetAnswers={resetAnswers} />
         )}
       </div>
     </div>
