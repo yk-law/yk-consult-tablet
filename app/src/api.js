@@ -23,8 +23,51 @@ async function counselProfile(name) {
   return res.ok ? res.json() : null;
 }
 
+let topicsCache = null;
+const norm = (s) => (s || "").replace(/[^\p{L}\p{N}]/gu, "");
+
+/** 사건 종류별 2뎁스 템플릿. server/catalog.py topic_by_kind 와 같은 규칙: 소분류 → 별칭 → 중분류 폴백 → 기본. */
+async function topicByKind(small, middle = "") {
+  if (!topicsCache) {
+    const base = import.meta.env.BASE_URL;
+    topicsCache = await fetch(`${base}data/topics.json?v=${__BUILD__}`).then(j);
+  }
+  const t = topicsCache;
+  const key = t._alias?.[small] || small;
+  if (key && !key.startsWith("_") && t[key]) return { kind: key, ...t[key] };
+  const mid = t._middle_alias?.[middle] || middle;
+  const hit = Object.entries(t._middle || {}).find(([k]) => norm(k) === norm(mid));
+  if (hit) return { kind: hit[0], ...hit[1] };
+  return t._default ? { kind: "_default", ...t._default } : null;
+}
+
+/** 템플릿 검토용 딥링크 `k=<사건종류>`(+ `m=<중분류>`). 예약은 그대로 두고 사건 요약 2뎁스만 그 종류로 바꿔 끼운다. */
+async function withKind(data) {
+  const q = new URLSearchParams(location.search);
+  const small = q.get("k");
+  if (!small || !data?.helper) return data;
+  const tpl = await topicByKind(small, q.get("m") || "");
+  if (!tpl) return data;
+  return {
+    ...data,
+    helper: {
+      ...data.helper,
+      topic: tpl.label || q.get("m") || data.helper.topic,
+      summary: [],
+      topics: tpl.steps || [],
+      flow: tpl.flow || [],
+      ask: tpl.ask || [],
+      bring: tpl.bring || [],
+      cases: tpl.cases || [],
+      intake: null,
+    },
+  };
+}
+
 export const api = {
-  visit: (id, options) => snapshotVisit(id, options),
+  visit: (id, options) => snapshotVisit(id, options).then(withKind),
+
+  topicByKind,
 
   /** 방문 예정 목록 등 YK-OS 쪽에서 쓰는 전체 데이터 */
   catalog: (options) => catalog(options),

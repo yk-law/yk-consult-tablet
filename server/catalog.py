@@ -405,12 +405,28 @@ def pitch_of(l: dict) -> str:
     return "내 일처럼 진심을 다하겠습니다."
 
 
+def _norm(s: str) -> str:
+    """YK-OS 중분류 표기 차이(고소, 고발 / 고소·고발 / 노동/산재)를 맞춘다."""
+    return "".join(ch for ch in (s or "") if ch.isalnum())
+
+
 def topic_template(b: dict) -> dict | None:
-    """사건 종류별 2뎁스 템플릿. 소분류 → 별칭 → 없음."""
+    """사건 종류별 2뎁스 템플릿. YK-OS 콜 영역 분류를 따른다.
+
+    소분류(cat2) → 별칭 → 중분류(cat1) 폴백 → 기본(_default).
+    소분류 키는 YK-OS `incident_category.small_category` 와 같은 글자다.
+    """
+    return topic_by_kind(b.get("cat2") or "", b.get("cat1") or "")
+
+
+def topic_by_kind(small: str, middle: str = "") -> dict | None:
     table = catalog()["topics"]
-    key = b.get("cat2") or ""
-    key = table["_alias"].get(key, key)
-    return table.get(key)
+    key = table.get("_alias", {}).get(small, small)
+    if key and not key.startswith("_") and key in table:
+        return table[key]
+    mids = {_norm(k): v for k, v in table.get("_middle", {}).items()}
+    mid = table.get("_middle_alias", {}).get(middle, middle)
+    return mids.get(_norm(mid)) or table.get("_default")
 
 
 def helper_view(b: dict) -> dict:
