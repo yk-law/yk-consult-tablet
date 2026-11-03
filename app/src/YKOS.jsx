@@ -3,6 +3,7 @@ import Logo from "./Logo.jsx";
 import Tablet from "./Tablet.jsx";
 import SignForm from "./SignForm.jsx";
 import { DEMO_TODAY, ST_CLS, addDays, visitWhen } from "./util.jsx";
+import { api } from "./api.js";
 
 /** 고객 태블릿이 지금 어느 장면에 있는지. 실장이 한눈에 보는 문구. */
 const WATCH = {
@@ -30,6 +31,12 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
   /** 10-28 미팅: 실장이 내방 전에 상담 변호사를 지정해야 태블릿 연동(화면 공유)이 열린다. */
   const [assigned, setAssigned] = useState(() => Object.fromEntries(
     (cat?.bookings || []).filter((b) => b.counsel && b.counselAssigned !== false).map((b) => [b.id, b.counsel]),
+  ));
+
+  /** 11-03 재완님: 고객 지위. 사건 종류만으로는 가해·피해를 알 수 없어(성범죄 피해자 등) 실장이 화면 공유 전에 확인한다.
+   *  콜 단계 값(party)이나 사건 종류 기본값으로 미리 채워 두고, 다를 때만 바꾼다. */
+  const [assignedParty, setAssignedParty] = useState(() => Object.fromEntries(
+    (cat?.bookings || []).filter((b) => b.party).map((b) => [b.id, b.party]),
   ));
 
   const want = addDays(DEMO_TODAY, off);
@@ -129,12 +136,12 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                         className={`vb counsel${assigned[x.id] ? "" : " need"}`}
                         onClick={() => setPickFor(pickFor === x.id ? null : x.id)}
                       >
-                        {assigned[x.id] ? `상담 변호사 ${assigned[x.id]}` : "상담 변호사 지정"}
+                        {assigned[x.id] ? `상담 변호사 ${assigned[x.id]}${assignedParty[x.id] ? ` · ${assignedParty[x.id]}` : ""}` : "상담 변호사 지정"}
                       </button>
                       {assigned[x.id] || on ? (
                         <button
                           className={`vb share${on ? " on" : ""}`}
-                          onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id]))}
+                          onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id], assignedParty[x.id] || ""))}
                         >
                           {on ? "공유 중 · 해제" : "화면 공유"}
                         </button>
@@ -156,12 +163,15 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                           lawyers={cat.lawyers}
                           current={assigned[x.id] || ""}
                           booked={x.counsel}
+                          booking={x}
+                          party={assignedParty[x.id] || ""}
                           FIELD={cat.FIELD}
                           onCancel={() => setPickFor(null)}
-                          onSave={(name) => {
+                          onSave={(name, p) => {
                             setPickFor(null);
                             setAssigned({ ...assigned, [x.id]: name });
-                            if (on) act.counsel(name);
+                            setAssignedParty({ ...assignedParty, [x.id]: p });
+                            if (on) { act.counsel(name); act.party(p); }
                           }}
                         />
                       )}
@@ -177,7 +187,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                     <div>
                       <span className="l">연결됨</span>
                       <span className="t">{booking.name}(가명) · {booking.branch}</span>
-                      <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
+                      <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}{data?.helper?.party ? ` · 고객 ${data.helper.party}` : ""}</span>
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
@@ -263,9 +273,21 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
 
 /** 내방 전에 상담 변호사를 지정한다. 이상엽 CPO 10-27 피드백(상담 후에 넣는 경우가 많음)과
  *  10-28 미팅(지정 후 태블릿 연동). 콜 단계에서 정해 둔 변호사가 있으면 후보로 채워 둔다. */
-function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
+function CounselPick({ lawyers, current, booked, booking, party, FIELD, onCancel, onSave }) {
   const [q, setQ] = useState("");
   const [name, setName] = useState(current || booked || "");
+  /** 고를 수 있는 지위. 첫째가 사건 종류의 기본값. 나누지 않는 종류(상속포기 등)는 비어 있다. */
+  const [parties, setParties] = useState([]);
+  const [p, setP] = useState(party);
+  useEffect(() => {
+    let live = true;
+    api.partiesFor(booking.cat2, booking.cat1).then((list) => {
+      if (!live) return;
+      setParties(list);
+      setP((cur) => cur || list[0] || "");
+    });
+    return () => { live = false; };
+  }, [booking.cat2, booking.cat1]);
   const hits = useMemo(() => {
     const t = q.trim();
     if (!t) return [];
@@ -290,6 +312,7 @@ function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="6" /><path d="M13.5 13.5 18 18" /></svg>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="변호사 이름이나 분야로 검색" aria-label="상담 변호사 검색" autoFocus />
       </div>
+      {parties.length > 1 && <PartyPick parties={parties} value={p} onChange={setP} booked={booking.party} />}
       {hits.length > 0 && (
         <ul className="cpick-list">
           {hits.map((l) => (
@@ -305,7 +328,29 @@ function CounselPick({ lawyers, current, booked, FIELD, onCancel, onSave }) {
       {q.trim() && !hits.length && <p className="cpick-none">검색 결과가 없습니다.</p>}
       <div className="cpick-a">
         <button className="vb" onClick={onCancel}>취소</button>
-        <button className="vb share on" disabled={!chosen} onClick={() => onSave(chosen.n)}>지정</button>
+        <button className="vb share on" disabled={!chosen} onClick={() => onSave(chosen.n, p)}>지정</button>
+      </div>
+    </div>
+  );
+}
+
+/** 고객 지위. 같은 사건 종류라도 피의자·피고인·피해자(원고·피고)에 따라 고객 태블릿의 사건 요약 2뎁스 내용이 바뀐다.
+ *  고객 화면에는 지위를 띄우지 않는다. */
+function PartyPick({ parties, value, onChange, booked }) {
+  const HINT = { 피의자: "수사 단계", 피고인: "기소·재판 중", 피해자: "고소인·피해자", 원고: "청구하는 쪽", 피고: "소장 받은 쪽" };
+  return (
+    <div className="cparty">
+      <div className="cpick-h">
+        <span className="l">고객 지위</span>
+        <span className="d">고객 태블릿의 ‘사건 요약’이 이 지위에 맞는 내용으로 바뀝니다. 고객 화면에는 지위가 보이지 않습니다.</span>
+      </div>
+      <div className="cparty-o" role="radiogroup" aria-label="고객 지위">
+        {parties.map((x, i) => (
+          <button key={x} type="button" role="radio" aria-checked={x === value} className={x === value ? "on" : ""} onClick={() => onChange(x)}>
+            <b>{x}</b><span>{HINT[x] || ""}</span>
+            {x === booked ? <em>콜 단계</em> : i === 0 && !booked ? <em>기본</em> : null}
+          </button>
+        ))}
       </div>
     </div>
   );

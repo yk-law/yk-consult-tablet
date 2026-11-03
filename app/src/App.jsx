@@ -32,6 +32,9 @@ export default function App() {
   /** 화면 공유 때 실장이 고른 상담 변호사. 예약의 지정 변호사 대신 고객 화면에 나온다. */
   const [pick, setPick] = useState(q.get("l") || "");
   const [pickData, setPickData] = useState(null);
+  /** 화면 공유 때 실장이 고른 고객 지위(피의자·피고인·피해자 / 원고·피고). 비면 예약 기본값. */
+  const [party, setParty] = useState(q.get("k") ? "" : q.get("r") || "");
+  const [partyData, setPartyData] = useState(null);
   /** 사건 요약 1뎁스에서 고객이 고른 맞아요/아니요. 문장 순서 → "yes" | "no". 실장 화면에 그대로 보인다. */
   // 예약별로 따로 둔다. 화면 공유를 다시 누르거나 예약을 바꿔도 지우지 않는다.
   // 시연에서 태블릿·YK-OS를 다른 탭(기기)으로 띄워도 같은 값을 보도록 localStorage로 맞춘다.
@@ -144,19 +147,29 @@ export default function App() {
   }, [pick]);
 
   useEffect(() => {
+    if (!data || !party || party === data.helper?.party) { setPartyData(null); return; }
+    let live = true;
+    const b = data.booking;
+    api.retopic(data, { small: b.cat2, middle: b.cat1, party }).then((d) => live && setPartyData(d));
+    return () => { live = false; };
+  }, [data, party]);
+
+  useEffect(() => {
     const u = new URL(location.href);
     if (screen && screen !== "wait") u.searchParams.set("s", screen); else u.searchParams.delete("s");
     if (cid) u.searchParams.set("c", cid); else u.searchParams.delete("c");
     if (pick) u.searchParams.set("l", pick); else u.searchParams.delete("l");
+    if (!u.searchParams.get("k")) { if (party) u.searchParams.set("r", party); else u.searchParams.delete("r"); }
     if (view !== "tab") u.searchParams.set("v", view); else u.searchParams.delete("v");
     u.searchParams.set("theme", theme);
     if (darkDesign === "current") u.searchParams.set("design", "current"); else u.searchParams.delete("design");
     history.replaceState(null, "", u);
-  }, [screen, cid, view, theme, darkDesign, pick]);
+  }, [screen, cid, view, theme, darkDesign, pick, party]);
 
-  const share = useCallback((id, counselName = "") => {
+  const share = useCallback((id, counselName = "", partyName = "") => {
     setCid(id);
     setPick(counselName);
+    setParty(partyName);
     setConnected(true);
     setScreen("wait");
   }, []);
@@ -164,6 +177,7 @@ export default function App() {
   const unshare = useCallback(() => {
     setConnected(false);
     setPick("");
+    setParty("");
     setScreen("wait");
   }, []);
 
@@ -180,20 +194,22 @@ export default function App() {
   }
 
   // 실장이 고른 상담 변호사로 바꿔 끼운다. 전문 인력 목록에서는 그 사람을 뺀다.
+  // 실장이 고른 지위로 사건 요약 2뎁스를 바꿔 끼운다.
+  const base = partyData && partyData.booking.id === data.booking.id ? partyData : data;
   const shown = pickData && pickData.counsel.n !== data.counsel?.n
     ? {
-        ...data,
+        ...base,
         counsel: pickData.counsel,
         portraits: { ...data.portraits, ...pickData.portraits },
         seniors: data.seniors.filter((s) => s.n !== pickData.counsel.n),
       }
-    : data;
+    : base;
   const answers = answersBy[data.booking.id] || {};
   const answer = (i, v) => saveAnswers({ ...answersBy, [data.booking.id]: { ...answers, [i]: v } });
   const resetAnswers = (bid) => { const next = { ...answersBy }; delete next[bid]; saveAnswers(next); };
   const booking = cat.bookings.find((b) => b.id === data.booking.id) || data.booking;
   const displayView = fullscreen ? "tab" : view;
-  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick };
+  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick, party: setParty };
 
   return (
     <div className={`shell ${fullscreen ? "customer-fullscreen" : ""} ${controlsOpen ? "controls-open" : ""}`} onClickCapture={handleCornerTap}>
@@ -283,7 +299,7 @@ export default function App() {
           </label>
         )}
         </div>
-        <select className="dpick" value={data.booking.id} onChange={(e) => { setCid(e.target.value); setPick(""); }} aria-label="시연 예약">
+        <select className="dpick" value={data.booking.id} onChange={(e) => { setCid(e.target.value); setPick(""); setParty(""); }} aria-label="시연 예약">
           {data.bookings.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.cat2} · {b.depth === 1 ? "요약 1·2뎁스" : "요약 2뎁스만"}</option>)}
         </select>
         <button type="button" className="fullscreen-toggle" aria-pressed={fullscreen} onClick={toggleFullscreen}>

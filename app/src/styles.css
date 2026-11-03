@@ -2622,3 +2622,12 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .vcard .vb.check.no{background:var(--acc); border-color:var(--acc); color:#fff;}
 .vcard .ccheck{flex:1 0 100%; margin-top:4px;}
 .ccheck-reset{border:0; background:none; font:inherit; font-size:12px; line-height:20px; color:var(--mut); text-decoration:underline; cursor:pointer; padding:0 4px;}
+
+/* 11-03 고객 지위 고르기(화면 공유 전 상담 변호사 지정 칸 안) */
+.cparty{display:flex; flex-direction:column; gap:8px;}
+.cparty-o{display:flex; flex-wrap:wrap; gap:6px;}
+.cparty-o button{display:flex; align-items:baseline; gap:6px; border:1px solid var(--hair); background:var(--sf); border-radius:6px; padding:7px 10px; cursor:pointer; font:inherit; color:var(--ink);}
+.cparty-o button b{font-size:13px; font-weight:700;}
+.cparty-o button span{font-size:12px; color:var(--ink2);}
+.cparty-o button em{font-style:normal; font-size:11px; font-weight:700; color:var(--acc);}
+.cparty-o button:hover,.cparty-o button.on{border-color:var(--acc); background:var(--acc-s);}
