@@ -85,7 +85,7 @@ export function reasons(c, l, field, court) {
   if (sc.near.length) {
     out.push({ t: `관련 ${sc.near.slice(0, 2).map((x) => c.FIELD[x][0]).join(" · ")}`, k: "s" });
   }
-  if (l.o) out.push({ t: `${l.o} 출신`, k: "s" });
+  if (l.o) out.push({ t: `${l.o} 역임`, k: "s" });
   return out.slice(0, 3);
 }
 

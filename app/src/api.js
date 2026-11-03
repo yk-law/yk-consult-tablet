@@ -16,6 +16,13 @@ async function snapshotVisit(id, { refresh = false } = {}) {
   return fetch(`${base}snapshot/${encodeURIComponent(key)}.json?v=${__BUILD__}`, options).then(j);
 }
 
+/** YK-OS에서 고른 상담 변호사의 고객용 프로필(사진 포함). 스냅샷에 한 명씩 뽑아 둔다. */
+async function counselProfile(name) {
+  const base = import.meta.env.BASE_URL;
+  const res = await fetch(`${base}snapshot/counsel/${encodeURIComponent(name)}.json?v=${__BUILD__}`);
+  return res.ok ? res.json() : null;
+}
+
 export const api = {
   visit: (id, options) => snapshotVisit(id, options),
 
@@ -33,6 +40,8 @@ export const api = {
     const c = await catalog();
     return lawyer(c, name);
   },
+
+  counsel: (name) => counselProfile(name),
 
   fee: async (key) => feeFor(await catalog(), key),
   booking: async (bid) => booking(await catalog(), bid),
