@@ -24,7 +24,7 @@ const JOURNEY = [
   ["seniors", "전문 인력"],
 ];
 
-export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer = () => {} }) {
+export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer = () => {}, onParty = null }) {
   const b = data.booking;
   const roomLabel = b.location != null && b.room != null
     ? `${b.location} ${b.room} 상담실`
@@ -82,13 +82,15 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           <FirmIntro firm={data.firm} portraits={data.portraits} FIELD={FIELD} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && hasSummary && (
-          <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} />
+          <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} onPrevious={() => onScreen("firm")} />
         )}
         {(screen === "topics" || (screen === "report" && !hasSummary)) && (
           <Report
             helper={data.helper}
+            onParty={onParty}
             onCounsel={() => onScreen("counsel")}
-            onPrevious={screen === "topics" ? () => onScreen("report") : null}
+            onPrevious={screen === "topics" ? () => onScreen("report") : () => onScreen("firm")}
+            previousLabel={screen === "topics" ? "말씀하신 내용으로" : "YK 소개로"}
           />
         )}
         {counselVideo && (
@@ -482,7 +484,7 @@ function ReportNext({ onClick, label = "상담 변호사 확인하기", previous
 
 /** 사건 요약 1뎁스(10-28 미팅). 노출 가능한 예약에만 짧은 요약을 띄우고 문장마다 맞아요/아니요를 받는다.
  *  고객이 고른 값은 상담실장 YK-OS에 그대로 보인다. 아니요는 상담에서 다시 여쭤본다. */
-function Summary({ helper, answers, onAnswer, onNext }) {
+function Summary({ helper, answers, onAnswer, onNext, onPrevious }) {
   const rows = helper.summary;
   return (
     <section className="pane on reportpane">
@@ -511,8 +513,12 @@ function Summary({ helper, answers, onAnswer, onNext }) {
               </li>
             ))}
           </ol>
-          <p className="yh-src">모두 고르지 않으셔도 괜찮습니다.</p>
-          <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
+          <p className="yh-src">모두 고르지 않으셔도 괜찮습니다. 고르신 답은 다시 누르면 바뀝니다.</p>
+          {/* 11-03 재완님: 1뎁스에서 돌아갈 길이 없었다. 2뎁스와 같은 앞/뒤 버튼 줄을 둔다. */}
+          <div className="counsel-page-links">
+            <ReportNext onClick={onPrevious} label="YK 소개로" previous />
+            <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
+          </div>
         </div>
       </div>
     </section>
@@ -520,7 +526,46 @@ function Summary({ helper, answers, onAnswer, onNext }) {
 }
 
 /** 사건 요약 2뎁스. 개인화는 사건 종류까지만 하고, 같은 종류 상담에서 많이 확인하는 내용을 보여 준다. */
-function Report({ helper, onCounsel, onPrevious }) {
+/** 고객 지위를 고객 말로 묻는다. 법률용어(피의자·원고)는 화면에 쓰지 않는다. */
+const PARTY_ASK = {
+  피의자: "수사를 받고 있거나 연락을 받았어요",
+  피고인: "재판을 받고 있어요",
+  피해자: "피해를 입었어요",
+  원고: "상대방에게 청구하려고 해요",
+  피고: "소장이나 청구를 받았어요",
+};
+
+function PartyAsk({ helper, onParty }) {
+  const [again, setAgain] = useState(false);
+  const parties = helper?.parties || [];
+  if (!onParty || parties.length < 2) return null;
+  if (helper.partyKnown && !again) {
+    return (
+      <p className="yh-party-now">
+        <span>{helper.party === "공통" ? "모든 경우에 맞는 내용으로 보여드리고 있습니다." : `‘${PARTY_ASK[helper.party] || helper.party}’에 맞춰 보여드리고 있습니다.`}</span>
+        <button type="button" onClick={() => setAgain(true)}>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5" /><path d="M4 3.5V6.5H7" /></svg>
+          다시 고르기
+        </button>
+      </p>
+    );
+  }
+  const pick = (p) => { setAgain(false); onParty(p); };
+  return (
+    <section className="yh-party" aria-labelledby="yh-party-t">
+      <h4 id="yh-party-t">어떤 경우에 해당하시나요?</h4>
+      <p>고르시면 그에 맞는 내용으로 보여드립니다. 모르시면 넘어가셔도 됩니다.</p>
+      <div className="yh-party-o">
+        {parties.map((p) => (
+          <button key={p} type="button" onClick={() => pick(p)}>{PARTY_ASK[p] || p}</button>
+        ))}
+        <button type="button" className="skip" onClick={() => pick("공통")}>잘 모르겠어요</button>
+      </div>
+    </section>
+  );
+}
+
+function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말씀하신 내용으로" }) {
   const topics = helper?.topics || [];
   const intake = helper?.intake;
   const steps = topics.length ? topics : intake?.steps || [];
@@ -541,6 +586,7 @@ function Report({ helper, onCounsel, onPrevious }) {
               <strong>{helper.topic}</strong>
             </div>
           )}
+          <PartyAsk helper={helper} onParty={onParty} />
           {topics.length > 0 && <h4 className="yh-sec-t">상담에서 함께 볼 내용</h4>}
           <ol className="yh-steps">
             {steps.map(([t, d], i) => (
@@ -621,7 +667,7 @@ function Report({ helper, onCounsel, onPrevious }) {
           <p className="yh-src">더 여쭤보고 싶은 점은 상담에서 편하게 말씀해 주세요.</p>
           {onPrevious ? (
             <div className="counsel-page-links">
-              <ReportNext onClick={onPrevious} label="말씀하신 내용으로" previous />
+              <ReportNext onClick={onPrevious} label={previousLabel} previous />
               <ReportNext onClick={onCounsel} />
             </div>
           ) : <ReportNext onClick={onCounsel} />}

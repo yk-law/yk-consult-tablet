@@ -2,8 +2,11 @@
 /* 전 화면 스모크 — FastAPI + Vite 가 켜져 있어야 한다.
    실행:  node tools/dev.mjs   (다른 터미널)
          node tools/check.mjs */
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const API = process.env.API_URL || "http://127.0.0.1:8000";
 const WEB = process.env.WEB_URL || "http://localhost:5173";
 const SHOT = ".check";
@@ -206,6 +209,75 @@ ok("윤서준 전자서명 없음", !unsigned.booking?.modusign);
 ok("정하윤 전자서명", visit.booking?.modusign === true);
 ok("음성녹취 문항 없음", true); // 화면 점검은 아래 survey 장면에서 한다.
 
+// ── 2뎁스 템플릿(topics.json) 데이터 무결성 ─────────────────────────────
+const topicsServerPath = join(ROOT, "server", "data", "topics.json");
+const topicsAppPath = join(ROOT, "app", "public", "data", "topics.json");
+const topicsServerRaw = await readFile(topicsServerPath, "utf8");
+const topicsAppRaw = await readFile(topicsAppPath, "utf8");
+const topics = JSON.parse(topicsServerRaw);
+const smallKeys = Object.keys(topics).filter((k) => !k.startsWith("_"));
+const tplOk = (t) =>
+  t
+  && Array.isArray(t.steps) && t.steps.length >= 3
+  && Array.isArray(t.flow) && t.flow.length > 0
+  && Array.isArray(t.ask) && t.ask.length > 0
+  && Array.isArray(t.bring) && t.bring.length > 0;
+const badSmall = smallKeys.filter((k) => !tplOk(topics[k]));
+const middleEntries = Object.entries(topics._middle || {});
+const badMiddle = middleEntries.filter(([, t]) => !tplOk(t)).map(([k]) => k);
+ok("2뎁스 _default 존재", !!topics._default && tplOk(topics._default), topics._default ? "필드 부족" : "없음");
+ok(
+  "2뎁스 소분류 템플릿",
+  badSmall.length === 0,
+  badSmall.length ? badSmall.slice(0, 8).join(",") : `${smallKeys.length}종`,
+);
+ok(
+  "2뎁스 중분류 템플릿",
+  badMiddle.length === 0,
+  badMiddle.length ? badMiddle.join(",") : `${middleEntries.length}종`,
+);
+const aliasBroken = Object.entries(topics._alias || {}).filter(([, v]) => !(v in topics) || String(v).startsWith("_"));
+ok(
+  "2뎁스 별칭(_alias)",
+  aliasBroken.length === 0,
+  aliasBroken.length ? aliasBroken.map(([k, v]) => `${k}→${v}`).join(",") : Object.keys(topics._alias || {}).length,
+);
+const midAliasBroken = Object.entries(topics._middle_alias || {}).filter(
+  ([, v]) => !(v in (topics._middle || {})),
+);
+ok(
+  "2뎁스 중분류 별칭",
+  midAliasBroken.length === 0,
+  midAliasBroken.length ? midAliasBroken.map(([k, v]) => `${k}→${v}`).join(",") : Object.keys(topics._middle_alias || {}).length,
+);
+ok("2뎁스 topics.json 일치", topicsServerRaw === topicsAppRaw, topicsServerRaw === topicsAppRaw ? "동일" : "server≠app/public");
+const caseBad = [];
+for (const [scope, bag] of [
+  ["소분류", Object.fromEntries(smallKeys.map((k) => [k, topics[k]]))],
+  ["중분류", topics._middle || {}],
+  ["기본", { _default: topics._default }],
+]) {
+  for (const [k, t] of Object.entries(bag)) {
+    if (!t?.cases) continue;
+    for (const [i, c] of (t.cases || []).entries()) {
+      const hrefOk = typeof c?.href === "string" && c.href.startsWith("https://www.yklawfirm.co.kr/");
+      if (!hrefOk || !c?.t || !c?.tag) caseBad.push(`${scope}:${k}[${i}]`);
+    }
+  }
+}
+ok("2뎁스 cases 필드", caseBad.length === 0, caseBad.length ? caseBad.slice(0, 8).join(",") : "ok");
+
+/** app/src/api.js topicByKind 와 같은 조회: 소분류 → _alias → _middle → _default */
+const normTopic = (s) => String(s || "").replace(/[^\p{L}\p{N}]/gu, "");
+const topicByKindChk = (table, small, middle = "") => {
+  const key = table._alias?.[small] || small;
+  if (key && !String(key).startsWith("_") && table[key]) return table[key];
+  const mid = table._middle_alias?.[middle] || middle;
+  const hit = Object.entries(table._middle || {}).find(([k]) => normTopic(k) === normTopic(mid));
+  if (hit) return hit[1];
+  return table._default || null;
+};
+
 let browser;
 try {
   const { chromium } = await import("playwright");
@@ -217,6 +289,30 @@ try {
 }
 
 const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
+
+// ── 2뎁스 템플릿 딥링크 4종 (조회 규칙은 topicByKindChk) ─────────────────
+const topicDeepLinks = [
+  { label: "소분류", k: "음주운전", m: "" },
+  { label: "별칭", k: "이혼소송", m: "" },
+  { label: "중분류 폴백", k: "기타", m: "고소, 고발" },
+  { label: "기본", k: "존재하지않는종류", m: "" },
+];
+for (const d of topicDeepLinks) {
+  const tpl = topicByKindChk(topics, d.k, d.m);
+  const first = tpl?.steps?.[0]?.[0];
+  const qs = new URLSearchParams({ c: "228352", s: "report", k: d.k });
+  if (d.m) qs.set("m", d.m);
+  await page.goto(`${WEB}/?${qs.toString()}`);
+  await page.waitForSelector(".reportpane");
+  await page.waitForSelector(".yh-steps");
+  const body = await page.locator(".reportpane").innerText();
+  ok(`2뎁스 ${d.label} 첫 항목`, !!first && body.includes(first), first || "템플릿 없음");
+  const noHScroll = await page.evaluate(
+    () => document.documentElement.scrollWidth <= window.innerWidth,
+  );
+  ok(`2뎁스 ${d.label} 가로스크롤 없음`, noHScroll, "가로 스크롤");
+}
+
 await page.goto(`${WEB}/?c=윤서준`);
 await page.waitForSelector(".confirmpane, .filmpane, .preppane");
 ok("내방 예약 확인", await page.locator(".confirmpane").count() > 0);

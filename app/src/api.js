@@ -23,8 +23,71 @@ async function counselProfile(name) {
   return res.ok ? res.json() : null;
 }
 
+let topicsCache = null;
+const norm = (s) => (s || "").replace(/[^\p{L}\p{N}]/gu, "");
+
+/** 사건 종류별 2뎁스 템플릿. server/catalog.py topic_by_kind 와 같은 규칙: 소분류 → 별칭 → 중분류 폴백 → 기본. */
+async function topicByKind(small, middle = "") {
+  if (!topicsCache) {
+    const base = import.meta.env.BASE_URL;
+    topicsCache = await fetch(`${base}data/topics.json?v=${__BUILD__}`).then(j);
+  }
+  const t = topicsCache;
+  const key = t._alias?.[small] || small;
+  if (key && !key.startsWith("_") && t[key]) return { kind: key, ...t[key] };
+  const mid = t._middle_alias?.[middle] || middle;
+  const hit = Object.entries(t._middle || {}).find(([k]) => norm(k) === norm(mid));
+  if (hit) return { kind: hit[0], ...hit[1] };
+  return t._default ? { kind: "_default", ...t._default } : null;
+}
+
+/** 고객 지위별로 고를 수 있는 값. 첫째가 그 사건 종류의 기본 지위다. 나누지 않는 종류는 빈 배열. */
+async function partiesFor(small, middle = "") {
+  const t = await topicByKind(small, middle);
+  if (!t?.base_role) return [];
+  return [t.base_role, ...Object.keys(t.roles || {})];
+}
+
+/** 사건 요약 2뎁스를 (사건 종류, 지위) 템플릿으로 바꿔 끼운다. 1뎁스 요약은 그대로 둔다. */
+async function retopic(data, { small, middle = "", party = "", keepSummary = true } = {}) {
+  if (!data?.helper) return data;
+  const base = await topicByKind(small, middle);
+  if (!base) return data;
+  const p = party || base.base_role || "";
+  const v = p !== base.base_role ? base.roles?.[p] : null;
+  const tpl = v ? { ...base, ...v, cases: [] } : base;
+  return {
+    ...data,
+    helper: {
+      ...data.helper,
+      ...(keepSummary ? {} : { topic: tpl.label || middle || data.helper.topic, summary: [] }),
+      party: p,
+      // 고객이 고른 값이면 다시 묻지 않는다. '잘 모르겠어요'(공통)도 고른 것으로 본다.
+      partyKnown: !!party || data.helper.partyKnown,
+      topics: tpl.steps || [],
+      flow: tpl.flow || [],
+      ask: tpl.ask || [],
+      bring: tpl.bring || [],
+      cases: tpl.cases || [],
+      intake: null,
+    },
+  };
+}
+
+/** 템플릿 검토용 딥링크 `k=<사건종류>`(+ `m=<중분류>`, `r=<지위>`). 예약은 그대로 두고 사건 요약 2뎁스만 그 종류로 바꿔 끼운다. */
+async function withKind(data) {
+  const q = new URLSearchParams(location.search);
+  const small = q.get("k");
+  if (!small) return data;
+  return retopic(data, { small, middle: q.get("m") || "", party: q.get("r") || "", keepSummary: false });
+}
+
 export const api = {
-  visit: (id, options) => snapshotVisit(id, options),
+  visit: (id, options) => snapshotVisit(id, options).then(withKind),
+
+  topicByKind,
+  partiesFor,
+  retopic,
 
   /** 방문 예정 목록 등 YK-OS 쪽에서 쓰는 전체 데이터 */
   catalog: (options) => catalog(options),

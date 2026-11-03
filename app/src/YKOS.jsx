@@ -177,7 +177,8 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                     <div>
                       <span className="l">연결됨</span>
                       <span className="t">{booking.name}(가명) · {booking.branch}</span>
-                      <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}</span>
+                      <span className="conn-counsel">상담 변호사 {data?.counsel ? `${data.counsel.n} ${data.counsel.pos}` : "미지정"}{/* 11-03: 지위는 고객이 태블릿에서 고른다. 실장은 결과만 본다. */}
+                        {data?.helper?.parties?.length > 1 ? ` · 고객 지위 ${data.helper.partyKnown ? data.helper.party : "고르기 전"}` : ""}</span>
                     </div>
                     <button className="unshare" onClick={act.unshare}>공유 해제</button>
                   </div>
@@ -247,7 +248,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                 )}
                 <div className="mirror">
                   <div className="mfr"><div className="mscale"><div className="mclone">
-                    {data ? <Tablet data={data} screen={screen} onScreen={() => {}} answers={answers} /> : null}
+                    {data ? <Tablet data={data} screen={screen} onScreen={() => {}} answers={answers} onParty={() => {}} /> : null}
                   </div></div></div>
                   <div className="mfoot"><span>{watch[0]}</span><span className="ml">실시간 미러링 · 보기 전용</span></div>
                 </div>
