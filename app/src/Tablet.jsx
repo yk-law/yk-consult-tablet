@@ -538,7 +538,10 @@ function PartyAsk({ helper, onParty }) {
     return (
       <p className="yh-party-now">
         <span>{helper.party === "공통" ? "모든 경우에 맞는 내용으로 보여드리고 있습니다." : `‘${PARTY_ASK[helper.party] || helper.party}’에 맞춰 보여드리고 있습니다.`}</span>
-        <button type="button" onClick={() => setAgain(true)}>다시 고르기</button>
+        <button type="button" onClick={() => setAgain(true)}>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5" /><path d="M4 3.5V6.5H7" /></svg>
+          다시 고르기
+        </button>
       </p>
     );
   }
