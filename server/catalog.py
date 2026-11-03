@@ -429,6 +429,30 @@ def topic_by_kind(small: str, middle: str = "") -> dict | None:
     return mids.get(_norm(mid)) or table.get("_default")
 
 
+ROLE_ALIAS = {"고소인": "피해자", "피고소인": "피의자", "가해자": "피의자", "청구인": "원고", "피청구인": "피고", "상대방": "피고"}
+
+
+def party_of(b: dict, template: dict | None) -> str:
+    """고객의 지위. 예약에 적힌 값(party)이 먼저, 없으면 YK-OS case_stage로 피의자/피고인을 가른다."""
+    p = ROLE_ALIAS.get(b.get("party") or "", b.get("party") or "")
+    if p:
+        return p
+    base = (template or {}).get("base_role", "")
+    if base == "피의자" and b.get("caseStage") in ("trial", "appeal"):
+        return "피고인"
+    return base
+
+
+def with_role(template: dict | None, party: str) -> dict | None:
+    """지위가 기본과 다르면 그 지위의 내용으로 바꾼다. 사례(cases)는 기본 지위 기준이라 뺀다."""
+    if not template or not party or party == template.get("base_role"):
+        return template
+    v = (template.get("roles") or {}).get(party)
+    if not v:
+        return template
+    return {**template, **v, "cases": []}
+
+
 def helper_view(b: dict) -> dict:
     """고객 태블릿 사건 요약. 10-28 미팅으로 2뎁스가 기본이다.
 
@@ -438,6 +462,8 @@ def helper_view(b: dict) -> dict:
     2뎁스(topics): 개인화는 사건 종류까지만. 같은 종류 상담에서 많이 확인하는 내용을 보여 준다.
     """
     template = topic_template(b)
+    party = party_of(b, template)
+    template = with_role(template, party)
     intake = None
     if not template:
         table = catalog()["intake"]
@@ -446,6 +472,8 @@ def helper_view(b: dict) -> dict:
         "engId": b["id"],
         # 세부 죄명(준강제추행 등)은 옆 사람 눈에도 띄므로 대분류만 쓴다.
         "topic": b.get("cat1") or "",
+        # 지위(피의자·피고인·피해자 / 원고·피고). 고객 화면에는 띄우지 않고 내용 선택에만 쓴다.
+        "party": party,
         "summary": b.get("summary") or [],
         "topics": template["steps"] if template else [],
         # 2뎁스를 채우는 일반 정보. 사건 종류가 같으면 모든 고객에게 같다.

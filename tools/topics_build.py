@@ -1230,12 +1230,143 @@ DEFAULT = T("상담", 0, [
 ])
 
 
+# ── 당사자 지위별 변형 (2026-11-03 재완님) ─────────────────────────
+# 같은 사건 종류라도 고객이 어느 쪽인지에 따라 볼 내용이 다르다.
+# 기본 템플릿이 가장 흔한 지위(형사=피의자, 고소·고발=고소인, 민사·가사=청구하는 쪽)이고,
+# roles 에는 다른 지위의 내용만 둔다. 지위가 없거나 모르면 기본을 쓴다.
+# YK-OS에는 고객 지위 필드가 따로 없다(customers.party_role은 당사자·위임인 구분뿐).
+# 대신 engagement.case_stage(not_reported·police·prosecution·trial)로 피의자/피고인을 가른다.
+
+CRIM = {"성범죄", "경제범죄", "강력범죄", "교통범죄", "마약범죄", "도박", "일반형사", "부패범죄", "군형사", "소년사건"}
+COMPLAINT = {"고소·고발"}
+CIVIL = {"가사", "민사", "부동산/건설", "의료", "노동/산재", "기업", "엔터/스포츠"}
+# 상대방이 없는 절차라 원고·피고로 나누지 않는다.
+NO_SIDES = {"상속포기", "한정승인", "유언", "후견", "법률자문", "민사집행", "행정"}
+
+
+def accused(base):
+    """피고인: 기소되어 재판을 받는 단계."""
+    return {
+        "steps": [
+            # 첫 줄은 사건 종류별 쟁점을 살리되, 수사 단계 이야기면 재판 단계 문장으로 바꾼다.
+            base["steps"][0] if "조사" not in base["steps"][0][0] else
+            ["사건 쟁점", "기소된 혐의에서 다툴 쟁점이 무엇인지 사건 종류에 맞춰 정리합니다."],
+            ["공소사실 검토", "공소장에 적힌 내용 중 인정할 부분과 다툴 부분을 나눕니다."],
+            ["증거기록 확인", "검찰이 낸 증거를 열람해 진술과 다른 점, 다툴 증거를 찾습니다."],
+            ["양형 자료와 합의", "합의·반성·생계 사정 등 형을 줄이는 데 도움이 되는 자료를 준비합니다."],
+        ],
+        "flow": [
+            ["상담", "공소장과 지금까지의 경과를 확인합니다."],
+            ["기록 검토", "증거기록을 열람·복사해 검토합니다."],
+            ["재판 준비", "의견서와 증인·양형 자료를 준비합니다."],
+            ["선고·항소", "선고 결과에 따라 항소 여부를 함께 정합니다."],
+        ],
+        "ask": [
+            "기소된 죄명과 공소장 내용",
+            "첫 재판 날짜",
+            "수사 단계에서 하신 진술",
+            "피해자와 합의 진행 상황",
+            "전과가 있는지",
+        ],
+        "bring": [
+            "공소장",
+            "증거기록(열람·복사한 경우)",
+            "수사 단계 진술서·피의자신문조서",
+            "반성문·탄원서·합의서 등 양형 자료",
+        ],
+    }
+
+
+def victim(base, label):
+    """피해자: 형사 사건에서 피해를 입은 쪽."""
+    return {
+        "steps": [
+            ["고소·신고", f"겪으신 일이 {label} 사건으로 처벌받을 수 있는지, 고소 방법을 확인합니다."],
+            ["증거 보존", "메시지·영상·진단서 등 증거를 지금 어떻게 지킬지 알아봅니다."],
+            ["피해자 보호", "조사 동석, 신변 보호, 가해자 측 연락 대응을 살펴봅니다."],
+            ["합의와 배상", "합의 제안에 어떻게 응할지, 배상명령·민사 청구를 함께 봅니다."],
+        ],
+        "flow": complaint_flow(),
+        "ask": [
+            "피해를 입은 날과 장소",
+            "상대방과의 관계",
+            "신고나 고소를 했는지",
+            "가지고 계신 증거",
+            "원하시는 결과(처벌·배상)",
+        ],
+        "bring": [
+            "피해를 보여 주는 사진·영상·메시지",
+            "진단서·치료비 영수증(다친 경우)",
+            "신고 접수 자료(있는 경우)",
+            "상대방 인적사항을 알 수 있는 자료",
+        ],
+    }
+
+
+def defendant(base):
+    """피고(청구받은 쪽): 소장·심판청구서를 받았거나 받을 예정."""
+    return {
+        "steps": [
+            ["청구 내용 확인", "받으신 소장에서 상대방이 무엇을, 얼마를 요구하는지 정리합니다."],
+            ["답변 기한", "소장을 받은 날부터 30일 안에 답변서를 내야 하는 기한을 확인합니다."],
+            ["반박과 자료", "상대방 주장 중 다툴 부분과 그 근거 자료를 살펴봅니다."],
+            ["합의와 반소", "조정·합의로 줄일 수 있는지, 반대로 청구할 것이 있는지 봅니다."],
+        ],
+        "flow": [
+            ["상담", "받으신 소장과 사실관계를 확인합니다."],
+            ["답변서", "기한 안에 답변서를 냅니다."],
+            ["변론·조정", "재판과 조정에서 주장을 다툽니다."],
+            ["판결·대응", "결과에 따라 항소나 이행을 정합니다."],
+        ],
+        "ask": [
+            "소장을 받은 날",
+            "상대방이 요구하는 내용과 금액",
+            "상대방 주장 중 사실과 다른 부분",
+            "원하시는 결과(다툼·합의)",
+        ],
+        "bring": [
+            "받으신 소장·심판청구서",
+            "상대방 주장을 반박할 자료",
+            "주고받은 메시지",
+            "관련 계약서·송금 내역",
+        ],
+    }
+
+
+# 고소·고발 템플릿에서 '고소당한 쪽'은 해당 형사 템플릿을 쓴다.
+COMPLAINT_ACCUSED = {"경제범죄고소": "일반사기", "성범죄고소": "@성범죄", "@고소, 고발": "@일반형사"}
+
+
+def add_roles(out):
+    def get(ref):
+        return out["_middle"][ref[1:]] if ref.startswith("@") else out[ref]
+
+    items = [(k, v) for k, v in out.items() if not k.startswith("_")]
+    items += [("@" + k, v) for k, v in out["_middle"].items()]
+    for k, t in items:
+        name = k.lstrip("@")
+        if name in NO_SIDES:
+            continue
+        label = t["label"]
+        if label in CRIM:
+            t["base_role"] = "피의자"
+            t["roles"] = {"피고인": accused(t), "피해자": victim(t, name if not k.startswith("@") else label)}
+        elif label in COMPLAINT:
+            t["base_role"] = "피해자"
+            ref = get(COMPLAINT_ACCUSED.get(k, "@일반형사"))
+            t["roles"] = {"피의자": {x: ref[x] for x in ("steps", "flow", "ask", "bring")}, "피고인": accused(ref)}
+        elif label in CIVIL:
+            t["base_role"] = "원고"
+            t["roles"] = {"피고": defendant(t)}
+
+
 def main() -> None:
     cur = json.loads(SRC.read_text(encoding="utf-8"))
     out = {
         "_note": (
             "사건 요약 2뎁스. 키는 YK-OS 콜 영역 사건 분류(/v1/incident_category)의 소분류 이름이다. "
             "소분류 → _alias → _middle(중분류) → _default 순서로 찾는다. "
+            "지위(피의자·피고인·피해자 / 원고·피고)가 base_role과 다르면 roles[지위]가 steps·flow·ask·bring을 덮는다. "
             "소분류 템플릿은 2026-07-01 이후 콜 15건 이상인 종류, basis는 그 콜 건수(2026-11-03 집계). "
             "문장은 종류별 입력 템플릿과 최근 콜 14건의 상담 내용·'변호사 조력원하는 부분'을 일반화해 썼다. "
             "원문·실명은 담지 않는다. 고칠 때는 tools/topics_build.py 를 고치고 다시 돌린다."
@@ -1258,7 +1389,10 @@ def main() -> None:
         out[k] = v
     for a, k in ALIAS.items():
         assert k in out, (a, k)
-    text = json.dumps(out, ensure_ascii=False, indent=2) + "\n"
+    add_roles(out)
+    # 지위별 변형까지 들어가 크므로, 최상위 키마다 한 줄로 쓴다(원본은 이 파일).
+    lines = [f"  {json.dumps(k, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)}" for k, v in out.items()]
+    text = "{\n" + ",\n".join(lines) + "\n}\n"
     for p in (SRC, ROOT / "app" / "public" / "data" / "topics.json"):
         p.write_text(text, encoding="utf-8")
     smalls = [k for k in out if not k.startswith("_")]

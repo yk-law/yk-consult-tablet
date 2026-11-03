@@ -41,19 +41,24 @@ async function topicByKind(small, middle = "") {
   return t._default ? { kind: "_default", ...t._default } : null;
 }
 
-/** 템플릿 검토용 딥링크 `k=<사건종류>`(+ `m=<중분류>`). 예약은 그대로 두고 사건 요약 2뎁스만 그 종류로 바꿔 끼운다. */
+/** 템플릿 검토용 딥링크 `k=<사건종류>`(+ `m=<중분류>`, `r=<지위>`). 예약은 그대로 두고 사건 요약 2뎁스만 그 종류로 바꿔 끼운다. */
 async function withKind(data) {
   const q = new URLSearchParams(location.search);
   const small = q.get("k");
   if (!small || !data?.helper) return data;
-  const tpl = await topicByKind(small, q.get("m") || "");
-  if (!tpl) return data;
+  const base = await topicByKind(small, q.get("m") || "");
+  if (!base) return data;
+  // r=<지위>(피의자·피고인·피해자 / 원고·피고). 기본 지위와 다르면 그 지위의 내용으로 바꾼다.
+  const party = q.get("r") || base.base_role || "";
+  const v = party !== base.base_role ? base.roles?.[party] : null;
+  const tpl = v ? { ...base, ...v, cases: [] } : base;
   return {
     ...data,
     helper: {
       ...data.helper,
       topic: tpl.label || q.get("m") || data.helper.topic,
       summary: [],
+      party,
       topics: tpl.steps || [],
       flow: tpl.flow || [],
       ask: tpl.ask || [],
