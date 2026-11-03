@@ -82,14 +82,15 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           <FirmIntro firm={data.firm} portraits={data.portraits} FIELD={FIELD} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && hasSummary && (
-          <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} />
+          <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} onPrevious={() => onScreen("firm")} />
         )}
         {(screen === "topics" || (screen === "report" && !hasSummary)) && (
           <Report
             helper={data.helper}
             onParty={onParty}
             onCounsel={() => onScreen("counsel")}
-            onPrevious={screen === "topics" ? () => onScreen("report") : null}
+            onPrevious={screen === "topics" ? () => onScreen("report") : () => onScreen("firm")}
+            previousLabel={screen === "topics" ? "말씀하신 내용으로" : "YK 소개로"}
           />
         )}
         {counselVideo && (
@@ -483,7 +484,7 @@ function ReportNext({ onClick, label = "상담 변호사 확인하기", previous
 
 /** 사건 요약 1뎁스(10-28 미팅). 노출 가능한 예약에만 짧은 요약을 띄우고 문장마다 맞아요/아니요를 받는다.
  *  고객이 고른 값은 상담실장 YK-OS에 그대로 보인다. 아니요는 상담에서 다시 여쭤본다. */
-function Summary({ helper, answers, onAnswer, onNext }) {
+function Summary({ helper, answers, onAnswer, onNext, onPrevious }) {
   const rows = helper.summary;
   return (
     <section className="pane on reportpane">
@@ -512,8 +513,12 @@ function Summary({ helper, answers, onAnswer, onNext }) {
               </li>
             ))}
           </ol>
-          <p className="yh-src">모두 고르지 않으셔도 괜찮습니다.</p>
-          <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
+          <p className="yh-src">모두 고르지 않으셔도 괜찮습니다. 고르신 답은 다시 누르면 바뀝니다.</p>
+          {/* 11-03 재완님: 1뎁스에서 돌아갈 길이 없었다. 2뎁스와 같은 앞/뒤 버튼 줄을 둔다. */}
+          <div className="counsel-page-links">
+            <ReportNext onClick={onPrevious} label="YK 소개로" previous />
+            <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
+          </div>
         </div>
       </div>
     </section>
@@ -560,7 +565,7 @@ function PartyAsk({ helper, onParty }) {
   );
 }
 
-function Report({ helper, onParty, onCounsel, onPrevious }) {
+function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말씀하신 내용으로" }) {
   const topics = helper?.topics || [];
   const intake = helper?.intake;
   const steps = topics.length ? topics : intake?.steps || [];
@@ -662,7 +667,7 @@ function Report({ helper, onParty, onCounsel, onPrevious }) {
           <p className="yh-src">더 여쭤보고 싶은 점은 상담에서 편하게 말씀해 주세요.</p>
           {onPrevious ? (
             <div className="counsel-page-links">
-              <ReportNext onClick={onPrevious} label="말씀하신 내용으로" previous />
+              <ReportNext onClick={onPrevious} label={previousLabel} previous />
               <ReportNext onClick={onCounsel} />
             </div>
           ) : <ReportNext onClick={onCounsel} />}
