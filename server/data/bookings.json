@@ -59,9 +59,7 @@
       "강성용",
       "강신선"
     ],
-    "wrote": false,
-    "party": "피고인",
-    "caseStage": "trial"
+    "wrote": false
   },
   {
     "id": "228271",
@@ -130,8 +128,7 @@
       "양동학",
       "박찬"
     ],
-    "wrote": true,
-    "party": "원고"
+    "wrote": true
   },
   {
     "id": "228304",
@@ -199,9 +196,7 @@
       "김경",
       "양호산"
     ],
-    "wrote": false,
-    "party": "피해자",
-    "caseStage": "not_reported"
+    "wrote": false
   },
   {
     "id": "228288",
@@ -265,8 +260,7 @@
       "배인구",
       "김택형"
     ],
-    "wrote": false,
-    "party": "원고"
+    "wrote": false
   },
   {
     "id": "228291",
@@ -324,8 +318,7 @@
       "김윤정",
       "배인구"
     ],
-    "wrote": false,
-    "party": "원고"
+    "wrote": false
   },
   {
     "id": "228310",
@@ -389,8 +382,7 @@
       "배인구",
       "김동진"
     ],
-    "wrote": false,
-    "party": "원고"
+    "wrote": false
   },
   {
     "id": "228318",
@@ -454,8 +446,7 @@
       "박찬",
       "김동진"
     ],
-    "wrote": true,
-    "party": "원고"
+    "wrote": true
   },
   {
     "id": "228352",
@@ -491,8 +482,6 @@
       "최영운",
       "천기홍"
     ],
-    "wrote": false,
-    "party": "피의자",
-    "caseStage": "police"
+    "wrote": false
   }
 ]

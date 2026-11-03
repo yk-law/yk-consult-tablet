@@ -32,7 +32,7 @@ export default function App() {
   /** 화면 공유 때 실장이 고른 상담 변호사. 예약의 지정 변호사 대신 고객 화면에 나온다. */
   const [pick, setPick] = useState(q.get("l") || "");
   const [pickData, setPickData] = useState(null);
-  /** 화면 공유 때 실장이 고른 고객 지위(피의자·피고인·피해자 / 원고·피고). 비면 예약 기본값. */
+  /** 11-03 재완님: 고객이 태블릿 사건 요약에서 고른 지위. 비면 '공통' 내용을 보여 주며 묻는다. */
   const [party, setParty] = useState(q.get("k") ? "" : q.get("r") || "");
   const [partyData, setPartyData] = useState(null);
   /** 사건 요약 1뎁스에서 고객이 고른 맞아요/아니요. 문장 순서 → "yes" | "no". 실장 화면에 그대로 보인다. */
@@ -147,7 +147,7 @@ export default function App() {
   }, [pick]);
 
   useEffect(() => {
-    if (!data || !party || party === data.helper?.party) { setPartyData(null); return; }
+    if (!data || !party) { setPartyData(null); return; }
     let live = true;
     const b = data.booking;
     api.retopic(data, { small: b.cat2, middle: b.cat1, party }).then((d) => live && setPartyData(d));
@@ -166,10 +166,10 @@ export default function App() {
     history.replaceState(null, "", u);
   }, [screen, cid, view, theme, darkDesign, pick, party]);
 
-  const share = useCallback((id, counselName = "", partyName = "") => {
+  const share = useCallback((id, counselName = "") => {
     setCid(id);
     setPick(counselName);
-    setParty(partyName);
+    setParty("");
     setConnected(true);
     setScreen("wait");
   }, []);
@@ -209,7 +209,7 @@ export default function App() {
   const resetAnswers = (bid) => { const next = { ...answersBy }; delete next[bid]; saveAnswers(next); };
   const booking = cat.bookings.find((b) => b.id === data.booking.id) || data.booking;
   const displayView = fullscreen ? "tab" : view;
-  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick, party: setParty };
+  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick };
 
   return (
     <div className={`shell ${fullscreen ? "customer-fullscreen" : ""} ${controlsOpen ? "controls-open" : ""}`} onClickCapture={handleCornerTap}>
@@ -323,7 +323,7 @@ export default function App() {
           <div className={`tabwrap binder-theme theme-${theme}`}>
             {theme === "dark" && darkDesign === "legacy"
               ? <LegacyPreview data={shown} screen={screen} onScreen={setScreen} />
-              : <Tablet data={shown} screen={screen} onScreen={setScreen} answers={answers} onAnswer={answer} />}
+              : <Tablet data={shown} screen={screen} onScreen={setScreen} answers={answers} onAnswer={answer} onParty={setParty} />}
           </div>
         )}
         {displayView !== "tab" && (

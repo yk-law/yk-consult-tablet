@@ -2623,11 +2623,13 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .vcard .ccheck{flex:1 0 100%; margin-top:4px;}
 .ccheck-reset{border:0; background:none; font:inherit; font-size:12px; line-height:20px; color:var(--mut); text-decoration:underline; cursor:pointer; padding:0 4px;}
 
-/* 11-03 고객 지위 고르기(화면 공유 전 상담 변호사 지정 칸 안) */
-.cparty{display:flex; flex-direction:column; gap:8px;}
-.cparty-o{display:flex; flex-wrap:wrap; gap:6px;}
-.cparty-o button{display:flex; align-items:baseline; gap:6px; border:1px solid var(--hair); background:var(--sf); border-radius:6px; padding:7px 10px; cursor:pointer; font:inherit; color:var(--ink);}
-.cparty-o button b{font-size:13px; font-weight:700;}
-.cparty-o button span{font-size:12px; color:var(--ink2);}
-.cparty-o button em{font-style:normal; font-size:11px; font-weight:700; color:var(--acc);}
-.cparty-o button:hover,.cparty-o button.on{border-color:var(--acc); background:var(--acc-s);}
+/* 11-03 고객 지위 묻기(태블릿 사건 요약 2뎁스 위). 실장 손을 빌리지 않고 고객이 쉬운 말로 한 번 고른다. */
+.yh-party{border-bottom:1px solid var(--hair); padding:20px 0; margin:0 0 8px; display:flex; flex-direction:column; gap:12px;}
+.yh-party h4{margin:0; font-size:18px; font-weight:700; color:var(--ink);}
+.yh-party p{margin:0; font-size:14px; color:var(--ink2);}
+.yh-party-o{display:flex; flex-wrap:wrap; gap:8px;}
+.yh-party-o button{border:1px solid var(--hair); background:var(--sf, #fff); border-radius:8px; padding:12px 16px; font:inherit; font-size:15px; color:var(--ink); cursor:pointer;}
+.yh-party-o button:hover{border-color:var(--acc);}
+.yh-party-o button.skip{color:var(--ink2);}
+.yh-party-now{display:flex; gap:10px; align-items:baseline; font-size:14px; color:var(--ink2); margin:0 0 8px;}
+.yh-party-now button{border:0; background:none; padding:0; font:inherit; color:var(--acc); text-decoration:underline; cursor:pointer;}

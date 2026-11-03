@@ -432,15 +432,19 @@ def topic_by_kind(small: str, middle: str = "") -> dict | None:
 ROLE_ALIAS = {"고소인": "피해자", "피고소인": "피의자", "가해자": "피의자", "청구인": "원고", "피청구인": "피고", "상대방": "피고"}
 
 
-def party_of(b: dict, template: dict | None) -> str:
-    """고객의 지위. 예약에 적힌 값(party)이 먼저, 없으면 YK-OS case_stage로 피의자/피고인을 가른다."""
+def party_of(b: dict, template: dict | None) -> tuple[str, bool]:
+    """고객의 지위와, 그 값이 정해졌는지.
+
+    11-03 재완님: 지위는 고객이 태블릿 사건 요약에서 쉬운 말로 한 번 고른다. 실장은 고르지 않는다.
+    YK-OS에는 지위 필드가 없다(customers.party_role은 당사자·위임인 구분뿐). 예약에 party가 적혀 있으면
+    (나중에 콜 내용 자동 판별을 붙일 자리) 그대로 쓰고, 없으면 '공통' 내용을 보여 주며 고객에게 묻는다.
+    """
     p = ROLE_ALIAS.get(b.get("party") or "", b.get("party") or "")
     if p:
-        return p
-    base = (template or {}).get("base_role", "")
-    if base == "피의자" and b.get("caseStage") in ("trial", "appeal"):
-        return "피고인"
-    return base
+        return p, True
+    if template and "공통" in (template.get("roles") or {}):
+        return "공통", False
+    return (template or {}).get("base_role", ""), True
 
 
 def with_role(template: dict | None, party: str) -> dict | None:
@@ -461,9 +465,10 @@ def helper_view(b: dict) -> dict:
     노출이 어려운 예약은 summary를 두지 않고 1뎁스를 건너뛴다.
     2뎁스(topics): 개인화는 사건 종류까지만. 같은 종류 상담에서 많이 확인하는 내용을 보여 준다.
     """
-    template = topic_template(b)
-    party = party_of(b, template)
-    template = with_role(template, party)
+    base = topic_template(b)
+    party, known = party_of(b, base)
+    template = with_role(base, party)
+    parties = [x for x in [base["base_role"], *base.get("roles", {})] if x != "공통"] if base and base.get("base_role") else []
     intake = None
     if not template:
         table = catalog()["intake"]
@@ -474,6 +479,9 @@ def helper_view(b: dict) -> dict:
         "topic": b.get("cat1") or "",
         # 지위(피의자·피고인·피해자 / 원고·피고). 고객 화면에는 띄우지 않고 내용 선택에만 쓴다.
         "party": party,
+        # 고를 수 있는 지위(첫째가 기본). 지위를 모르면(partyKnown=False) 고객이 태블릿에서 한 번 고른다.
+        "parties": parties,
+        "partyKnown": known or len(parties) < 2,
         "summary": b.get("summary") or [],
         "topics": template["steps"] if template else [],
         # 2뎁스를 채우는 일반 정보. 사건 종류가 같으면 모든 고객에게 같다.
