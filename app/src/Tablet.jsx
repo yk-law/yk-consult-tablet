@@ -524,6 +524,11 @@ function Report({ helper, onCounsel, onPrevious }) {
   const topics = helper?.topics || [];
   const intake = helper?.intake;
   const steps = topics.length ? topics : intake?.steps || [];
+  const flow = helper?.flow?.length ? helper.flow : [];
+  const ask = helper?.ask?.length ? helper.ask : [];
+  const bring = helper?.bring?.length ? helper.bring : [];
+  const cases = helper?.cases?.length ? helper.cases : [];
+  const pairCount = (ask.length > 0 ? 1 : 0) + (bring.length > 0 ? 1 : 0);
 
   return (
     <section className="pane on reportpane">
@@ -542,23 +547,29 @@ function Report({ helper, onCounsel, onPrevious }) {
             </div>
           )}
           {topics.length > 0 && <h4 className="yh-sec-t">상담에서 함께 볼 내용</h4>}
-          <ol className="yh-steps">
-            {steps.map(([t, d], i) => (
-              <li key={t}>
-                <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <h4>{t}</h4>
-                  <p>{d}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {steps.length > 0 && (
+            <ol className="yh-steps">
+              {steps.map(([t, d], i) => (
+                <li key={t}>
+                  <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h4>{t}</h4>
+                    <p>{d}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
 
-          {helper?.flow?.length > 0 && (
+          {flow.length > 0 && (
             <section className="yh-more" aria-labelledby="yh-flow">
               <h4 className="yh-sec-t" id="yh-flow">일반적인 진행 순서</h4>
-              <ol className="yh-flow">
-                {helper.flow.map(([t, d], i) => (
+              <ol
+                className="yh-flow"
+                style={{ "--yh-flow-n": flow.length }}
+                data-flow-n={flow.length}
+              >
+                {flow.map(([t, d], i) => (
                   <li key={t}>
                     <span className="n">{i + 1}</span>
                     <strong>{t}</strong>
@@ -569,34 +580,35 @@ function Report({ helper, onCounsel, onPrevious }) {
             </section>
           )}
 
-          {(helper?.ask?.length > 0 || helper?.bring?.length > 0) && (
-            <div className="yh-pair">
-              {helper.ask?.length > 0 && (
+          {pairCount > 0 && (
+            <div className={`yh-pair${pairCount === 1 ? " yh-pair-one" : ""}`}>
+              {ask.length > 0 && (
                 <section aria-labelledby="yh-ask">
                   <h4 className="yh-sec-t" id="yh-ask">상담에서 여쭤볼 내용</h4>
-                  <ul>{helper.ask.map((x) => <li key={x}>{x}</li>)}</ul>
+                  <ul>{ask.map((x) => <li key={x}>{x}</li>)}</ul>
                 </section>
               )}
-              {helper.bring?.length > 0 && (
+              {bring.length > 0 && (
                 <section aria-labelledby="yh-bring2">
                   <h4 className="yh-sec-t" id="yh-bring2">가지고 계시면 도움이 되는 자료</h4>
-                  <ul>{helper.bring.map((x) => <li key={x}>{x}</li>)}</ul>
+                  <ul>{bring.map((x) => <li key={x}>{x}</li>)}</ul>
                   <p className="yh-pair-note">지금 없으셔도 괜찮습니다. 상담 후에 보내주셔도 됩니다.</p>
                 </section>
               )}
             </div>
           )}
 
-          {helper?.cases?.length > 0 && (
+          {/* cases 없을 때 제목·안내·구분선·여백이 남지 않도록 섹션 자체를 렌더하지 않는다 */}
+          {cases.length > 0 && (
             <section className="yh-more" aria-labelledby="yh-cases">
               <h4 className="yh-sec-t" id="yh-cases">YK가 함께한 비슷한 사례</h4>
-              <ul className="yh-cases">
-                {helper.cases.map((c) => (
-                  <li key={c.href}>
-                    <span className="yh-case-tag">{c.tag}</span>
-                    <strong>{c.t}</strong>
-                    <p>{c.s}</p>
-                    <span className="yh-case-r">{c.r}</span>
+              <ul className={`yh-cases${cases.length === 1 ? " yh-cases-one" : ""}`}>
+                {cases.map((c) => (
+                  <li key={c.href || c.t}>
+                    {c.tag ? <span className="yh-case-tag">{c.tag}</span> : null}
+                    {c.t ? <strong>{c.t}</strong> : null}
+                    {c.s ? <p>{c.s}</p> : null}
+                    {c.r ? <span className="yh-case-r">{c.r}</span> : null}
                   </li>
                 ))}
               </ul>
