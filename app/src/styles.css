@@ -1022,7 +1022,9 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
   .legendgrid .xcard .xtags .f{font-size:11.5px; padding:3px 10px 3px 7px;}
   .profile .xlead{gap:12px 18px;}
   .profile .xsec.xcareer .clist{gap:0 20px;}
+  /* 상담변호사 등 가로 스크롤 허용. 2뎁스 reportpane은 아래 overflow-x:hidden 이 이긴다. */
   .yh-body{overflow-x:auto;}
+  .reportpane .yh-body{overflow-x:hidden;}
   .scale{flex-wrap:wrap; gap:6px;}
 }
 @container tablet (max-width: 720px){
@@ -2553,43 +2555,79 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .conn-check b.no {color:var(--acc);}
 .conn-check b.none {color:var(--mut);font-weight:500;}
 
-/* 사건 요약 2뎁스 보강: 진행 순서 · 여쭤볼 내용 · 자료 · 비슷한 사례 (2026-10-28) */
-.reportpane .yh-sec-t {margin:0 0 20px;font-family:var(--font);font-size:24px;font-weight:700;line-height:32px;color:var(--bt-text);word-break:keep-all;}
+/* 사건 요약 2뎁스 보강: 진행 순서 · 여쭤볼 내용 · 자료 · 비슷한 사례 (2026-10-28)
+   46종 템플릿·폴백: cases/ask/bring 유무·flow 3~5단에 맞춰 빈 칸·가로 스크롤 없이 (2026-11-03) */
+.reportpane .ykhelper {overflow-x:hidden;min-width:0;}
+.reportpane .yh-body {overflow-x:hidden;min-width:0;max-width:min(800px,100%);}
+.reportpane .yh-sec-t {margin:0 0 20px;font-family:var(--font);font-size:24px;font-weight:700;line-height:32px;color:var(--bt-text);word-break:keep-all;overflow-wrap:anywhere;}
 .reportpane .yh-topic + .yh-sec-t {margin-top:40px;}
-.reportpane .yh-more {margin-top:56px;}
-.reportpane .yh-flow {margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;counter-reset:none;}
-.reportpane .yh-flow li {position:relative;padding:20px;border-radius:8px;background:var(--bt-tint);display:flex;flex-direction:column;gap:8px;}
+.reportpane .yh-more {margin-top:56px;min-width:0;}
+.reportpane .yh-flow {
+  --yh-flow-n:4;
+  margin:0;padding:0;list-style:none;display:grid;
+  grid-template-columns:repeat(var(--yh-flow-n),minmax(0,1fr));
+  gap:16px;counter-reset:none;min-width:0;width:100%;
+}
+/* 5단은 본문 800px 안에서 한 줄이 너무 좁아져 3+2로 접는다 */
+.reportpane .yh-flow[data-flow-n="5"] {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.reportpane .yh-flow[data-flow-n="5"] li:nth-child(3)::after {display:none;}
+.reportpane .yh-flow[data-flow-n="3"] {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.reportpane .yh-flow li {position:relative;padding:20px;border-radius:8px;background:var(--bt-tint);display:flex;flex-direction:column;gap:8px;min-width:0;}
 .reportpane .yh-flow li:not(:last-child)::after {
-  content:"";position:absolute;top:34px;right:-16px;width:16px;height:1px;background:var(--bt-line);
+  content:"";position:absolute;top:34px;right:-16px;width:16px;height:1px;background:var(--bt-line);pointer-events:none;
 }
 .reportpane .yh-flow .n {
-  width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  flex:none;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
   background:var(--bt-active);color:var(--bt-surface);font-size:14px;font-weight:600;line-height:20px;
 }
-.reportpane .yh-flow strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);}
-.reportpane .yh-flow p {margin:0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;}
-.reportpane .yh-pair {margin-top:56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;}
-.reportpane .yh-pair section {padding:24px;border:1px solid var(--bt-line);border-radius:8px;background:var(--bt-surface);}
+.reportpane .yh-flow strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);word-break:keep-all;overflow-wrap:anywhere;}
+.reportpane .yh-flow p {margin:0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;overflow-wrap:anywhere;}
+.reportpane .yh-pair {margin-top:56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;min-width:0;width:100%;}
+.reportpane .yh-pair.yh-pair-one {grid-template-columns:minmax(0,1fr);}
+.reportpane .yh-pair section {padding:24px;border:1px solid var(--bt-line);border-radius:8px;background:var(--bt-surface);min-width:0;overflow-wrap:anywhere;}
 .reportpane .yh-pair .yh-sec-t {font-size:20px;line-height:28px;margin-bottom:16px;}
-.reportpane .yh-pair ul {margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
-.reportpane .yh-pair li {position:relative;padding-left:16px;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-text);word-break:keep-all;}
+.reportpane .yh-pair ul {margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;min-width:0;}
+.reportpane .yh-pair li {position:relative;padding-left:16px;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-text);word-break:keep-all;overflow-wrap:anywhere;}
 .reportpane .yh-pair li::before {content:"";position:absolute;left:0;top:12px;width:6px;height:2px;background:var(--bt-accent);}
-.reportpane .yh-pair-note {margin:16px 0 0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;}
-.reportpane .yh-cases {margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
-.reportpane .yh-cases li {padding:24px;border:1px solid var(--bt-line);border-radius:8px;background:var(--bt-surface);display:flex;flex-direction:column;gap:8px;}
+.reportpane .yh-pair-note {margin:16px 0 0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;overflow-wrap:anywhere;}
+.reportpane .yh-cases {margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;width:100%;}
+.reportpane .yh-cases.yh-cases-one {grid-template-columns:minmax(0,1fr);}
+.reportpane .yh-cases li {padding:24px;border:1px solid var(--bt-line);border-radius:8px;background:var(--bt-surface);display:flex;flex-direction:column;gap:8px;min-width:0;}
 .reportpane .yh-case-tag {font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
-.reportpane .yh-cases strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);word-break:keep-all;}
-.reportpane .yh-cases p {margin:0;flex:1;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);word-break:keep-all;}
+.reportpane .yh-cases strong {font-size:18px;font-weight:600;line-height:28px;color:var(--bt-text);word-break:keep-all;overflow-wrap:anywhere;}
+.reportpane .yh-cases p {margin:0;flex:1;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);word-break:keep-all;overflow-wrap:anywhere;}
 .reportpane .yh-case-r {
   align-self:flex-start;margin-top:4px;padding:2px 10px;border-radius:999px;
   border:1px solid var(--bt-active);color:var(--bt-active);font-size:14px;font-weight:600;line-height:20px;
+  max-width:100%;overflow-wrap:anywhere;word-break:keep-all;
 }
-@container tablet (max-width:900px) {
-  .reportpane .yh-flow {grid-template-columns:repeat(2,minmax(0,1fr));}
+.reportpane .yh-steps h4,.reportpane .yh-steps p,.reportpane .yh-lead,.reportpane .yh-topic strong {
+  overflow-wrap:anywhere;word-break:keep-all;
+}
+.reportpane .yh-topic {min-width:0;}
+.reportpane .yh-topic strong {min-width:0;}
+/* 좁은 가로·짧은 높이: flow 연결선 끄고 2단, pair/cases는 1단 (실기기 반응형 1080·680) */
+@container tablet (max-width:1080px) {
+  .reportpane .yh-flow,
+  .reportpane .yh-flow[data-flow-n="3"],
+  .reportpane .yh-flow[data-flow-n="5"] {grid-template-columns:repeat(2,minmax(0,1fr));}
   .reportpane .yh-flow li::after {display:none;}
+  .reportpane .yh-pair:not(.yh-pair-one) {grid-template-columns:1fr;}
+  .reportpane .yh-cases:not(.yh-cases-one) {grid-template-columns:1fr;}
+}
+@container tablet (max-height:680px) {
+  .reportpane .yh-pair:not(.yh-pair-one) {grid-template-columns:1fr;}
+  .reportpane .yh-cases:not(.yh-cases-one) {grid-template-columns:1fr;}
 }
 @container tablet (max-width:720px) {
-  .reportpane .yh-pair,.reportpane .yh-cases {grid-template-columns:1fr;}
+  .reportpane .yh-flow,
+  .reportpane .yh-flow[data-flow-n="3"],
+  .reportpane .yh-flow[data-flow-n="5"] {grid-template-columns:minmax(0,1fr);}
+  .reportpane .yh-flow li::after {display:none;}
 }
 /* YK-OS 고객 확인(맞아요/아니요) 강조 (2026-10-28) */
 .ccheck{background:var(--sf); border:1px solid var(--hair2); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;}
