@@ -61,7 +61,7 @@ async function retopic(data, { small, middle = "", party = "", keepSummary = tru
     ...data,
     helper: {
       ...data.helper,
-      ...(keepSummary ? {} : { topic: tpl.label || middle || data.helper.topic, summary: [] }),
+      ...(keepSummary ? {} : { topic: tpl.label || middle || data.helper.topic, summary: [], agenda: [] }),
       party: p,
       // 고객이 고른 값이면 다시 묻지 않는다. '잘 모르겠어요'(공통)도 고른 것으로 본다.
       partyKnown: !!party || data.helper.partyKnown,

@@ -2438,12 +2438,25 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .reportpane .yh-topic {word-break:keep-all;display:flex;align-items:baseline;gap:16px;margin:0 0 24px;padding:16px 0;border-top:1px solid var(--bt-line);border-bottom:1px solid var(--bt-line);}
 .reportpane .yh-topic-l {flex:none;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-muted);}
 .reportpane .yh-topic strong {font-size:18px;font-weight:600;line-height:26px;letter-spacing:-.01em;color:var(--bt-text);}
-.reportpane .yh-agenda {gap:0;}
+.reportpane .yh-agenda {margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0;}
 .reportpane .yh-agenda li {padding:12px 0;}
 .reportpane .yh-agenda li:last-child {padding-bottom:12px;}
-.reportpane .yh-agenda .yh-sec-h {margin:0;align-items:flex-start;}
-.reportpane .yh-agenda .yh-sec-h h4 {font-size:18px;font-weight:600;line-height:28px;letter-spacing:-.01em;word-break:keep-all;}
-.reportpane .yh-agenda .yh-sec-h .n {height:28px;padding-top:4px;font-size:14px;line-height:20px;word-break:keep-all;}
+.reportpane .yh-agenda .yh-sec-h {margin:0;display:flex;gap:12px;align-items:flex-start;}
+.reportpane .yh-agenda .yh-sec-h h4 {margin:0;font-size:18px;font-weight:600;line-height:28px;letter-spacing:-.01em;word-break:keep-all;overflow-wrap:anywhere;color:var(--bt-text);}
+.reportpane .yh-agenda .yh-sec-h .n {flex:none;height:28px;padding-top:4px;font-size:14px;line-height:20px;word-break:keep-all;color:var(--bt-accent);}
+/* 1뎁스→2뎁스 조합: 말씀해 주신 내용 · 말씀하신 궁금한 점 (2026-11-05) */
+.reportpane .yh-said {margin-top:40px;min-width:0;}
+.reportpane .yh-said-list {margin:0;padding:0;list-style:none;display:flex;flex-direction:column;}
+.reportpane .yh-said-list li {
+  padding:16px 0;border-bottom:1px solid var(--bt-line);
+  font-size:18px;font-weight:400;line-height:30px;color:var(--bt-text);word-break:keep-all;overflow-wrap:anywhere;
+}
+.reportpane .yh-said-list li:first-child {border-top:1px solid var(--bt-line);}
+.reportpane .yh-agenda-sec {margin-top:40px;min-width:0;}
+.reportpane .yh-said + .yh-agenda-sec {margin-top:40px;}
+.reportpane .yh-sec-t.yh-sec-sub {font-size:20px;line-height:28px;margin-bottom:16px;}
+.reportpane .yh-agenda-sec + .yh-sec-t {margin-top:40px;}
+.reportpane .yh-said + .yh-sec-t {margin-top:40px;}
 
 /* YK 소개 (2026-10-28): YK 타이포그래피(typography.md) 역할값을 따른다.
    브랜드 메시지만 마루부리, 나머지는 SUIT. 박스·그림자 없이 헤어라인으로 위계. */

@@ -88,6 +88,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
         {(screen === "topics" || (screen === "report" && !hasSummary)) && (
           <Report
             helper={data.helper}
+            answers={answers}
             onParty={onParty}
             onCounsel={() => onScreen("counsel")}
             onPrevious={screen === "topics" ? () => onScreen("report") : () => onScreen("firm")}
@@ -566,7 +567,7 @@ function PartyAsk({ helper, onParty }) {
   );
 }
 
-function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말씀하신 내용으로" }) {
+function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previousLabel = "말씀하신 내용으로" }) {
   const topics = helper?.topics || [];
   const intake = helper?.intake;
   const steps = topics.length ? topics : intake?.steps || [];
@@ -574,7 +575,14 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
   const ask = helper?.ask?.length ? helper.ask : [];
   const bring = helper?.bring?.length ? helper.bring : [];
   const cases = helper?.cases?.length ? helper.cases : [];
-  const pairCount = (ask.length > 0 ? 1 : 0) + (bring.length > 0 ? 1 : 0);
+  // 1뎁스(summary)가 있는 예약만 2뎁스에 조합. 없으면 화면 변화 없음.
+  const summary = helper?.summary || [];
+  const hasDepth1 = summary.length > 0;
+  const confirmed = hasDepth1 ? summary.filter((_, i) => answers[i] !== "no") : [];
+  const noCount = hasDepth1 ? summary.filter((_, i) => answers[i] === "no").length : 0;
+  const agenda = hasDepth1 ? (helper?.agenda || []) : [];
+  const askRows = noCount > 0 ? [`앞에서 다르다고 하신 부분(${noCount}건)`, ...ask] : ask;
+  const pairCount = (askRows.length > 0 ? 1 : 0) + (bring.length > 0 ? 1 : 0);
   const [caseItem, setCaseItem] = useState(null);
 
   return (
@@ -594,6 +602,33 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
             </div>
           )}
           <PartyAsk helper={helper} onParty={onParty} />
+          {/* 1뎁스 문장 중 아니요가 아닌 것만. 전부 아니요면 섹션 자체 생략. */}
+          {confirmed.length > 0 && (
+            <section className="yh-said" aria-labelledby="yh-said">
+              <h4 className="yh-sec-t" id="yh-said">말씀해 주신 내용</h4>
+              <ol className="yh-said-list">
+                {confirmed.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ol>
+            </section>
+          )}
+          {/* agenda는 1뎁스 있는 예약만 helper에 실림. steps 앞에 소제목으로. */}
+          {agenda.length > 0 && (
+            <section className="yh-agenda-sec" aria-labelledby="yh-agenda">
+              <h4 className="yh-sec-t yh-sec-sub" id="yh-agenda">말씀하신 궁금한 점</h4>
+              <ol className="yh-agenda">
+                {agenda.map((t, i) => (
+                  <li key={t}>
+                    <div className="yh-sec-h">
+                      <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                      <h4>{t}</h4>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
           {topics.length > 0 && <h4 className="yh-sec-t">상담에서 함께 볼 내용</h4>}
           {steps.length > 0 && (
             <ol className="yh-steps">
@@ -630,10 +665,10 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
 
           {pairCount > 0 && (
             <div className={`yh-pair${pairCount === 1 ? " yh-pair-one" : ""}`}>
-              {ask.length > 0 && (
+              {askRows.length > 0 && (
                 <section aria-labelledby="yh-ask">
                   <h4 className="yh-sec-t" id="yh-ask">상담에서 여쭤볼 내용</h4>
-                  <ul>{ask.map((x) => <li key={x}>{x}</li>)}</ul>
+                  <ul>{askRows.map((x) => <li key={x}>{x}</li>)}</ul>
                 </section>
               )}
               {bring.length > 0 && (
