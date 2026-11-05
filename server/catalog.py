@@ -252,8 +252,12 @@ def profile_bits(name: str) -> dict:
     for w in extra.get("works") or []:
         title = " ".join((w.get("title") or "").split())
         href = w.get("href") or ""
-        if title and href.startswith("https://www.yklawfirm.co.kr/case/"):
-            works.append({"title": title, "href": href})
+        if title and href.startswith("https://www.yklawfirm.co.kr/case-study/"):
+            item = {"title": title, "href": href}
+            s = " ".join((w.get("s") or "").split())
+            if s:
+                item["s"] = s
+            works.append(item)
     return {"awards": awards, "works": works, "areas": areas, "papers": papers}
 
 

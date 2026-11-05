@@ -2,24 +2,24 @@
   "박찬": {
     "works": [
       {
+        "title": "대여금청구 일부기각 | 배우자 사망 후 상속채무 부담, 차용증 증명력과 소멸시효를 근거로 방어",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/17231",
+        "s": "의뢰인은 배우자 사망 후 자녀들의 상속 포기로 단독상속인이 되었고, 배우자와 부동산 투자·동업 관계에 있던 상대방으로부터 대여금과 구상금 지급을 청구받았습니다."
+      },
+      {
+        "title": "임대차보증금 지급청구 일부승소 | 대체담보 가치와 동시이행 합의 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/estate/15980",
+        "s": "의뢰인들은 매장 임대인으로, 임대차를 유지하면서 대체담보 제공 약정에 따른 임차인의 보증금 지급을 구하기 위해 소송을 제기했습니다."
+      },
+      {
         "title": "소유권이전등기말소 청구기각 | 명의신탁 재산 이전 과정의 적극 가담 주장 반박",
-        "href": "https://www.yklawfirm.co.kr/case/estate/14648"
+        "href": "https://www.yklawfirm.co.kr/case-study/estate/14648",
+        "s": "의뢰인은 장인·장모로부터 증여받은 토지와 건물 지분에 관해 소유권이전등기를 마친 상태였습니다. 의뢰인 역시 해당 부동산의 기존 공유자였습니다."
       },
       {
-        "title": "유류분청구 전부승소 | 상속재산 분배 갈등 속 최소 상속분 침해 입증",
-        "href": "https://www.yklawfirm.co.kr/case/civil/14738"
-      },
-      {
-        "title": "형법(배임증재)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1049122"
-      },
-      {
-        "title": "형법(배임증재)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1048929"
-      },
-      {
-        "title": "건설산업기본법위반",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1046060"
+        "title": "부동산 약정금 청구 일부승소 | 내부 승인 지연과 계약 효력 다툼 속 금전 지급 판결",
+        "href": "https://www.yklawfirm.co.kr/case-study/customs/18363",
+        "s": "의뢰인 회사는 제3자로부터 부동산 매수인 지위를 넘겨받았습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5690",
@@ -88,37 +88,36 @@
         "group": "기업법무",
         "name": "증권금융"
       }
+    ],
+    "works": [
+      {
+        "title": "업무상배임집행유예 | 퇴직금 과다 수령 혐의에서 실제 입사일 다퉈 피해액 축소한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/17034",
+        "s": "회사 대표이사로 재직한 의뢰인은 퇴직금 산정에 잘못된 입사일을 적용해 약 33억 원의 손해를 끼쳤다는 혐의와 법인카드를 사적으로 사용한 혐의로 기소되었습니다."
+      }
     ]
   },
   "박춘기": {
     "works": [
       {
-        "title": "성범죄 불송치 | 고소 내용의 신빙성 다툼과 사실관계 불일치 소명",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/14651"
+        "title": "음주운전집행유예 | 재범과 높은 혈중알코올농도 수치에도 자발적 예방교육 이수 참작된 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/traffic/18250",
+        "s": "의뢰인은 과거 음주운전으로 벌금형을 받은 뒤 다시 혈중알코올농도 수치 0.106% 상태로 약 2.7km를 운전해 음주운전 재범으로 재판을 받았습니다."
       },
       {
-        "title": "뇌물공여 무죄 | 인허가 편의 대가 주장, 위법 압수 증거 반박",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14878"
+        "title": "뇌물수수 무죄 | 인허가 편의 대가 주장, 위법 압수 증거 반박",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/14878",
+        "s": "공무원인 의뢰인은 건설사업 인허가 과정에서 건설업자로부터 상품권을 받은 혐의로 재판을 받았으나, 1심에서 압수수색으로 확보된 자료의 증거능력이 인정되지 않아 뇌물수수 혐의에 무죄 판단을 받았습니다."
       },
       {
-        "title": "뇌물공여 무죄 | 위법하게 수집된 전자정보 증거능력 다퉈 혐의 불성립",
-        "href": "https://www.yklawfirm.co.kr/case/detective/15084"
+        "title": "뇌물수수 무죄 | 위법하게 수집된 전자정보 증거능력 다퉈 혐의 불성립",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/15084",
+        "s": "의뢰인은 직무와 관련해 금품 등을 받았다는 뇌물수수 혐의로 기소된 뒤 1심 판결에 불복해 항소를 제기했고, 항소심에서는 휴대전화 전자정보의 증거능력이 핵심 쟁점이 되었습니다."
       },
       {
-        "title": "사기 유죄 | 피고인의 채권 쟁점에도 기망과 피해 발생 입증",
-        "href": "https://www.yklawfirm.co.kr/case/detective/15154"
-      },
-      {
-        "title": "산재손해배상 상고기각 | 법령 위반 주장 인정되지 않아 피고 승소",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15185"
-      },
-      {
-        "title": "손해배상 청구기각 | 거래상 책임 주장에 대응해 상대방 요구 전부 반박",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15200"
-      },
-      {
-        "title": "소유권이전등기청구 항소기각 | 근저당권 말소서류 미비 주장 반박해 매매계약상 의무 입증",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15244"
+        "title": "특경법배임집행유예 | 1심 실형에서 피해 회복으로 감형 이끈 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/17499",
+        "s": "의뢰인은 회사 대표이사로서 임무를 위반해 회사에 약 9억 원의 손해를 끼친 배임 혐의로 기소되어, 1심에서 실형을 선고받았습니다. 의뢰인은 형량이 무겁다는 이유로 항소했습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5998",
@@ -259,8 +258,19 @@
     ],
     "works": [
       {
-        "title": "강제추행 혐의 사건 — 불송치",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/1054871"
+        "title": "강제추행 불기소 | 녹취록과 제3자 진술로 비동의 주장 반박",
+        "href": "https://www.yklawfirm.co.kr/case-study/sexual-assault/16134",
+        "s": "의뢰인은 지인들과 술을 마신 뒤 상대방의 주거지에서 신체를 접촉했다는 이유로 강제추행 혐의를 받았습니다."
+      },
+      {
+        "title": "전자금융거래법위반집행유예 | 작업대출 관련 실형 이력에도 반성과 피해 변제·공탁으로 선처 이끈 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/17344",
+        "s": "의뢰인은 작업대출 관련 사기죄로 실형을 받은 이력이 있는 상황에서, 대출을 받을 기회를 대가로 법인 명의 계좌의 통장·OTP 등 접근매체를 대여해 전자금융거래법위반 혐의로 재판을 받았습니다."
+      },
+      {
+        "title": "업무상배임 혐의없음 | 낮은 대부료로 손해 의혹 제기됐으나 계약 갱신 적법성 소명",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/16329",
+        "s": "의뢰인은 시외버스터미널 대부계약 갱신에 관여하면서, 다른 업체가 더 높은 금액으로 입찰할 의향을 밝혔음에도 기존 운영업체와 낮은 대부료로 수의계약을 갱신해 지방자치단체에 손해를 입혔다는 의혹으로 업무상배임 등의 혐의"
       }
     ],
     "papers": [
@@ -273,36 +283,24 @@
   "김경": {
     "works": [
       {
-        "title": "횡령불송치 | 회사 비용 유용 의심, 관여·고의 부족 소명",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14989"
+        "title": "화재손해배상 일부승소 | 발화원인 불명에도 건물 안전성 결여에 따른 소유자 책임 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/18345",
+        "s": "유통업을 하던 의뢰인은 인접 건물에서 번진 화재로 창고에 보관하던 물품이 소실되는 피해를 입었으나, 구체적인 발화원인이 밝혀지지 않아 손해배상책임을 둘러싼 다툼에 직면했습니다."
       },
       {
-        "title": "영업권리금 반환청구 기각 | 수익성 관련 기망·착오 주장과 해제 약정 성립을 다툰 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15033"
+        "title": "공사대금청구 전부기각 | 지급약정 성립 다퉈 1심 패소 취소한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16817",
+        "s": "의뢰인은 토지 매도를 위해 통행로 개설 등을 맡긴 상대방으로부터 약정금 중 남은 약 1,000만원과 지연손해금을 지급하라는 소송을 제기받아 1심에서 일부 패소했습니다."
       },
       {
-        "title": "매매대금 청구 승소 | 대물변제 약정 불이행에도 잔금 지급의무 입증",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15086"
+        "title": "친생자관계부존재확인 승소 | 가족관계등록부상 아버지로 등재됐으나 유전자 감정으로 혈연관계 없음 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/customs/16764",
+        "s": "의뢰인은 혼인신고 전 태어난 자녀의 출생신고를 마쳐 가족관계등록부상 아버지로 등재되었으나, 유전자검사에서 혈연관계가 없다는 결과를 받아 친생자관계부존재확인 소송을 제기했습니다."
       },
       {
-        "title": "이혼소송 | 원고의 혼인관계 해소 청구가 받아들여진 판결",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/15153"
-      },
-      {
-        "title": "대여금 청구기각 | 금전 반환 요구 근거 부족을 다퉈 방어한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15162"
-      },
-      {
-        "title": "변리사시험 불합격처분 취소 | 문항 출제 의도 불명확성 인정",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15204"
-      },
-      {
-        "title": "산재 손해배상 청구기각 | 안전배려의무 및 현장 하자 인정 어려움 입증",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15464"
-      },
-      {
-        "title": "대여금청구 전부기각 | 계약서 없는 송금과 공동사업 거래 정황으로 상속채무 성립 부정 판결",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15615"
+        "title": "특수상해집행유예 | 특수상해 전력과 1심 실형에도 피해자 처벌불원 의사 등 참작된 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/16872",
+        "s": "의뢰인은 함께 일하던 피해자를 자동차 열쇠의 철제 부분으로 여러 차례 때려 다치게 한 혐의로 기소됐습니다. 같은 범죄의 집행유예 기간 중 범행한 점 등으로 1심에서 실형을 선고받았습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5588",
@@ -336,8 +334,9 @@
   "양호산": {
     "works": [
       {
-        "title": "가습기살균제 살인 혐의없음 | 장기 미제 제품 판매 고발에서 고의 성립 주장 반박",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14710"
+        "title": "업무상횡령집행유예 | 회사 자금 사적 사용, 범행 인정과 기존 범죄의 동시 판결 형평 고려한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/17137",
+        "s": "의뢰인은 도시락 납품업체의 경영과 자금관리를 총괄하면서 허위 급여·퇴직금 등의 명목으로 회사 자금을 개인적으로 사용하고, 사적인 해외 방문 중 법인카드를 사용해 업무상횡령·업무상배임 혐의로 재판을 받았습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5645",
@@ -399,28 +398,24 @@
   "배인구": {
     "works": [
       {
-        "title": "사해행위취소항소기각 | 재산분할채권 부족 주장에 무자력 반박",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15726"
+        "title": "친생자부존재 전부승소 | 실제와 다른 모친 등재, 유전자검사로 혈연관계 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/inherit/18516",
+        "s": "의뢰인은 아버지의 가족관계등록부에 실제 생모가 아닌 다른 여성이 어머니로 등재되어 있어, 이를 바로잡기 위한 소송을 제기했습니다."
       },
       {
-        "title": "입양무효확인청구기각 | 가족관계 합의와 부양 생활 정황 입증",
-        "href": "https://www.yklawfirm.co.kr/case/inherit/15737"
+        "title": "재산분할 일부승소 | 상대방 명의 보험·재건축 입주권의 형성·유지 기여 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/divorce/18337",
+        "s": "의뢰인은 배우자가 제기한 이혼소송에서 1심 판결을 받은 뒤, 항소심에서 상대방 명의 보험 해약환급금과 재건축 입주권에 대한 재산분할을 다시 다투게 되었습니다."
       },
       {
-        "title": "소유권이전등기말소승소 | 상속 부동산 장기 점유와 취득시효 인정으로 청구 기각 판결",
-        "href": "https://www.yklawfirm.co.kr/case/estate/15823"
+        "title": "소유권말소청구 항소기각 | 선대 증여 토지를 둘러싼 상속인 권리 주장에 자주점유 법리로 반박",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/18482",
+        "s": "선대로부터 증여받은 토지의 소유권을 두고 다른 상속인들이 소유권 말소소송을 제기했으나, 의뢰인은 1심에서 청구 기각 판결을 받았습니다."
       },
       {
-        "title": "조정이혼 성립 | 재산분할 청구에 의뢰인 요구 반영",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/11855"
-      },
-      {
-        "title": "조정성립 | 남편 외도와 채무 상속 우려를 반영해 이혼 조정 성립",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/11833"
-      },
-      {
-        "title": "무면허운전 집행유예 | 세 번째 무면허에도 실형 피한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/traffic/11789"
+        "title": "상간소송 일부승소 | 배우자의 외도로 이혼에 이른 경위 입증해 위자료 청구 인용",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16861",
+        "s": "의뢰인은 배우자가 기혼자임을 알면서도 부정행위를 이어간 상대방으로 인해 20년 넘게 유지한 혼인관계가 이혼으로 끝나자 손해배상 소송을 제기했습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5590",
@@ -532,7 +527,28 @@
         "name": "근로기준법"
       }
     ],
-    "works": [],
+    "works": [
+      {
+        "title": "특수폭행불기소 | 머그컵 사용 의혹에도 진술 번복과 증거 부족으로 혐의 벗은 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/18628",
+        "s": "회사원인 의뢰인은 상대방과 말다툼을 하던 중 머그컵으로 이마를 내리쳤다는 특수폭행 혐의로 수사를 받았습니다."
+      },
+      {
+        "title": "컴퓨터등사용사기집행유예 | 1심 실형 이후 반성과 피해회복 노력 인정받아 항소 인용",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/16831",
+        "s": "의뢰인은 글을 읽거나 모바일 은행거래를 하기 어려운 피해자를 속여 피해자 명의 계좌에서 다른 계좌로 임의로 돈을 이체한 혐의로 기소되었고, 1심에서 실형을 선고받자 형량이 무겁다는 이유로 항소했습니다."
+      },
+      {
+        "title": "카메라등이용촬영기소유예 | 혐의 인정 검찰 송치된 뒤 재판 없이 종결한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/sexual-assault/18614",
+        "s": "회사원인 의뢰인은 카메라등이용촬영 혐의로 경찰 수사를 받았고, 혐의가 인정된다는 판단에 따라 불구속 상태로 검찰에 송치되었습니다."
+      },
+      {
+        "title": "도박개장집행유예 | 대규모 불법 사이트 운영 가담에도 짧은 가담 기간과 초범 사정 인정된 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/18300",
+        "s": "의뢰인은 약 8개월간 불법 인터넷 도박사이트의 야간 직원으로 충전·환전과 고객 응대를 담당하여 국민체육진흥법 위반 및 도박공간개설 혐의로 재판을 받았습니다."
+      }
+    ],
     "papers": [],
     "awards": [
       "2007년 법무부장관상"
@@ -541,36 +557,24 @@
   "변민선": {
     "works": [
       {
-        "title": "친환경농어업법 무죄 | 인증 마크 없는 광고 문구 혼동 가능성 반박",
-        "href": "https://www.yklawfirm.co.kr/case/detective/15641"
+        "title": "공사대금청구 전부기각 | 지급약정 성립 다퉈 1심 패소 취소한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16817",
+        "s": "의뢰인은 토지 매도를 위해 통행로 개설 등을 맡긴 상대방으로부터 약정금 중 남은 약 1,000만원과 지연손해금을 지급하라는 소송을 제기받아 1심에서 일부 패소했습니다."
       },
       {
-        "title": "부당이득금승소 | 이자 명목 지급액 반환청구에서 법률상 원인 없음 입증",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15834"
+        "title": "보조금반환처분취소 | 사업기간 내 미착공에도 전액 환수의 비례원칙 위반 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16768",
+        "s": "가축분뇨 자원화시설 설치사업을 추진하던 의뢰인 법인은 연장된 사업기간에도 착공하지 못했다는 이유로 보조금 교부결정 취소와 약 62억 원의 반환처분을 받았습니다."
       },
       {
-        "title": "직장 회식 자리 강제추행 혐의 사건에서 무죄를 선고받은 사례",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/39473"
+        "title": "부당이득금 일부승소 | 운영비 대납 주장에 지출 증빙 다퉈 반환 범위 축소한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/18355",
+        "s": "의뢰인은 식당에서 근무했던 상대방으로부터 운영비를 돌려달라는 소송을 제기받았습니다. 상대방은 식자재 구입비와 아르바이트생 급여, 튀김기 구입비 등을 대신 지급했다고 주장했습니다."
       },
       {
-        "title": "[성범죄] 강제추행 사건에서 무죄",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/1055458"
-      },
-      {
-        "title": "[성범죄] 강제추행",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/1055373"
-      },
-      {
-        "title": "약사법위반",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1054724"
-      },
-      {
-        "title": "병역법위반",
-        "href": "https://www.yklawfirm.co.kr/case/military/1053941"
-      },
-      {
-        "title": "의료법위반 등",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1053577"
+        "title": "유류분반환 일부승소 | 간병·사업 지원 대가라는 증여 쟁점에도 반환금 지급 판결",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/17297",
+        "s": "의뢰인은 부모 사망 후 남아 있는 상속재산이 없는 상황에서, 생전에 토지와 금전을 증여받은 다른 자녀들을 상대로 유류분 반환을 청구했습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5681",
@@ -599,24 +603,24 @@
     ],
     "works": [
       {
-        "title": "특경법 배임 무죄 | 신주인수대금 가장납입과 회사 손해 부재",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14595"
-      },
-      {
-        "title": "사기 혐의 불송치 | 금전 분쟁에서 반환 정황으로 편취 고의 부재 입증",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14699"
-      },
-      {
-        "title": "가습기살균제 살인 혐의없음 | 장기 미제 제품 판매 고발에서 고의 성립 주장 반박",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14710"
+        "title": "업무상배임집행유예 | 퇴직금 과다 수령 혐의에서 실제 입사일 다퉈 피해액 축소한 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/17034",
+        "s": "회사 대표이사로 재직한 의뢰인은 퇴직금 산정에 잘못된 입사일을 적용해 약 33억 원의 손해를 끼쳤다는 혐의와 법인카드를 사적으로 사용한 혐의로 기소되었습니다."
       },
       {
         "title": "절도 불송치 | 헬스장 우산 혼동과 보관 경위를 근거로 고의 부재 소명",
-        "href": "https://www.yklawfirm.co.kr/case/detective/14791"
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/14791",
+        "s": "헬스장에서 다른 회원의 우산을 자신의 우산으로 착각해 가져갔다가 절도 혐의로 조사를 받게 되었습니다."
       },
       {
-        "title": "피감독자간음 불기소 | 장기간 연락과 객관적 자료로 위력 행사 주장에 대응한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/15028"
+        "title": "직권남용불기소 | 감사업무 방해 의혹에 보완지시와 법률검토 요구의 정당성 소명",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/18413",
+        "s": "의뢰인은 공직자로 근무하면서 부정채용 의혹에 관한 감사결과 보고를 반려하고 법률검토를 요구한 일로, 감사업무를 방해했다는 직권남용 혐의를 받아 장기간 수사를 받았습니다."
+      },
+      {
+        "title": "대마기소유예 | 소지·교부·흡연 혐의에도 반성과 재범 방지 다짐 참작된 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/drug/18438",
+        "s": "자영업자인 의뢰인은 발견한 대마를 흡연 목적으로 소지하다가 일부를 다른 사람에게 무상으로 건네고, 남은 대마를 차량 안에서 흡연해 수사를 받았습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5589",
@@ -694,36 +698,24 @@
   "정병실": {
     "works": [
       {
-        "title": "부정행위 위자료청구 기각 | 혼인 파탄 책임 주장에 객관적 근거 부족을 들어 청구 전부 기각 판결",
-        "href": "https://www.yklawfirm.co.kr/case/inherit/14852"
+        "title": "분묘훼손 손해배상청구 기각 | 공사 전 자료로 점유자 책임 부존재 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16060",
+        "s": "의뢰인은 펜션 주차장 부지의 분묘를 임의로 훼손했다는 이유로 후손들로부터 총 약 4,000만원의 손해배상청구를 받았습니다."
+      },
+      {
+        "title": "사기불송치 | 사업자금 차용 의혹에 고소인의 사업 관여와 자금 사용처로 기망 부존재 소명",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/16042",
+        "s": "자영업자인 의뢰인은 타운하우스 사업자금을 빌리는 과정에서 함께 상환을 책임지겠다고 속여 고소인으로부터 약 2억 원을 송금받았다는 의혹으로 사기 혐의에 대한 수사를 받았습니다."
+      },
+      {
+        "title": "특허권이전등록 승소 | 퇴직 후 기술, 반출 자료로 회사 귀속 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/16131",
+        "s": "의뢰인 회사는 퇴직한 직원이 재직 중 취득한 기술자료를 바탕으로 RTO 관련 특허를 등록하자 특허권이전등록 소송을 제기했으나, 1심에서 청구가 받아들여지지 않아 항소심에서 다시 다투게 되었습니다."
       },
       {
         "title": "유책배우자 이혼 승소 | 장기간 별거와 회복 노력 부재로 혼인관계 파탄 인정 판결",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/15367"
-      },
-      {
-        "title": "재판상 이혼 청구 인용 | 부정행위 쟁점에도 장기간 별거와 회복 의사 부재를 근거로 혼인관계 파탄 판결",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/15411"
-      },
-      {
-        "title": "형사사건 유죄판결 이후 부당이득반환 청구를 막아낸 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/62202"
-      },
-      {
-        "title": "배우자로부터 청구된 고액 손해배상 방어한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/56419"
-      },
-      {
-        "title": "상간 피고에 대한 고액 위자료 60% 감액한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/49528"
-      },
-      {
-        "title": "징계위원회 자문 | 편파적 윤리위 사실관계 입증 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/11901"
-      },
-      {
-        "title": "관세사 징계유보 | 편파적 윤리위 결정 재심 방어한 행정전문변호사 조력",
-        "href": "https://www.yklawfirm.co.kr/case/civil/11899"
+        "href": "https://www.yklawfirm.co.kr/case-study/divorce/15367",
+        "s": "의뢰인은 오랜 기간 별거한 배우자와의 혼인관계가 회복될 수 없다고 보아 재판상 이혼을 청구했으나, 과거의 잘못을 이유로 상대방이 이혼에 반대했습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5591",
@@ -765,20 +757,24 @@
   "송각엽": {
     "works": [
       {
+        "title": "공직선거법위반무죄 | 검사 상고에 법리와 증거관계로 대응해 대법원에서 무죄 확정",
+        "href": "https://www.yklawfirm.co.kr/case-study/election/18631",
+        "s": "의뢰인은 공직선거법상 기부행위와 관련해 형사재판을 받았으며, 항소심에서 무죄 판단을 받은 뒤 검사의 상고로 대법원의 판단을 받게 되었습니다."
+      },
+      {
+        "title": "부당해고재심판정취소 승소 | 징계사유 인정에도 해직의 과도함 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16751",
+        "s": "의뢰인은 금융기관에서 장기간 근무하다 직장 동료와의 부적절한 관계를 이유로 징계해직되었고, 노동위원회에서도 부당해고 구제신청이 받아들여지지 않아 재심판정 취소소송을 제기했습니다."
+      },
+      {
+        "title": "특허권이전등록 승소 | 퇴직 후 기술, 반출 자료로 회사 귀속 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/16131",
+        "s": "의뢰인 회사는 퇴직한 직원이 재직 중 취득한 기술자료를 바탕으로 RTO 관련 특허를 등록하자 특허권이전등록 소송을 제기했으나, 1심에서 청구가 받아들여지지 않아 항소심에서 다시 다투게 되었습니다."
+      },
+      {
         "title": "입찰참가자격제한처분 취소 | 품질보증서 위조 제출에도 실제 재산상 손해가 인정되지 않은 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15036"
-      },
-      {
-        "title": "카메라등이용촬영 기소유예 | 유사 범행 이력과 반복 촬영 혐의에도 피해 회복과 재범방지 노력으로 처분 방어",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/15472"
-      },
-      {
-        "title": "복잡한 공탁 회수청구권 분쟁에 화해로 조력한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/66516"
-      },
-      {
-        "title": "패소 부분 뒤집고 가공대금, 손해배상 조력 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/64353"
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/15036",
+        "s": "군수품 납품 과정에서 직원이 위조된 품질보증서를 제출해, 의뢰인은 입찰참가자격 제한처분을 받았습니다."
       }
     ],
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5618",
@@ -949,7 +945,13 @@
         "name": "기타민사"
       }
     ],
-    "works": [],
+    "works": [
+      {
+        "title": "선거무효결정 효력정지 가처분 기각 | 당선인 지위 임시 확인 요구에 고도의 소명 기준으로 방어",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/16107",
+        "s": "협회 회장 보궐선거의 무효 결정 이후, 당선인이 그 효력 정지와 지위의 임시 확인을 구하는 가처분을 신청하면서 협회는 선거 절차의 적법성을 다투게 되었습니다."
+      }
+    ],
     "papers": [
       "지식재산권에 관한 형사소송 집필 (3판, 2012)",
       "특허권침해금지가처분 집필 (초판, 2001)",
@@ -1014,7 +1016,29 @@
       "주석 채무자회생법 제1판 (편집대표), 한국사법행정학회(2020)",
       "주석 상법 [회사] (편집대표), 한국사법행정학회(2021)"
     ],
-    "profile": "https://www.yklawfirm.co.kr/member/lawyer/5806"
+    "profile": "https://www.yklawfirm.co.kr/member/lawyer/5806",
+    "works": [
+      {
+        "title": "부당이득금 일부승소 | 공유 부동산 임대수익 정산 분쟁에서 항소심 추가 지급 판결",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/17064",
+        "s": "의뢰인은 공유 부동산을 관리·임대하던 상대방과 임대수익 정산을 두고 분쟁이 생겨, 자신의 지분에 해당하는 수익을 돌려받기 위한 부당이득금반환 소송을 제기했습니다."
+      },
+      {
+        "title": "임시주주총회소집허가 인용 | 회사 거부·권리남용 주장에 지분 요건 소명",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/15967",
+        "s": "의뢰인들은 회사 지분 52%를 보유하고도 임시주주총회 소집 요구가 받아들여지지 않아 경영진 선임 절차에 어려움을 겪었습니다."
+      },
+      {
+        "title": "특허권이전등록 승소 | 퇴직 후 기술, 반출 자료로 회사 귀속 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/16131",
+        "s": "의뢰인 회사는 퇴직한 직원이 재직 중 취득한 기술자료를 바탕으로 RTO 관련 특허를 등록하자 특허권이전등록 소송을 제기했으나, 1심에서 청구가 받아들여지지 않아 항소심에서 다시 다투게 되었습니다."
+      },
+      {
+        "title": "명도소송 인용 | 임대차 승인·유치권 주장 반박해 인도 의무 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/17194",
+        "s": "의뢰인은 신탁부동산의 소유자인 수탁자로서, 위탁자나 분양대행사와 임대차계약을 맺은 점유자들이 오피스텔 3개 호실을 사용하고 있어 인도와 차임 상당 부당이득 반환을 청구했습니다."
+      }
+    ]
   },
   "양동학": {
     "areas": [
@@ -1027,7 +1051,29 @@
         "name": "노동행정"
       }
     ],
-    "profile": "https://www.yklawfirm.co.kr/member/lawyer/5847"
+    "profile": "https://www.yklawfirm.co.kr/member/lawyer/5847",
+    "works": [
+      {
+        "title": "소유권이전등기 항소기각 | 재단 설립 전 출연재산 청구에 맞서 1심 소 각하 유지",
+        "href": "https://www.yklawfirm.co.kr/case-study/estate/16871",
+        "s": "의뢰인은 장학재단에 출연할 예정이던 재산을 상속받은 뒤, 재단 설립을 준비하던 발기인들로부터 토지 소유권이전등기와 발전사업허가 양도 등을 요구하는 소송을 당했습니다."
+      },
+      {
+        "title": "음주운전집행유예 | 거듭된 처벌 이력에도 잘못 인정과 재범 간격 참작된 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/traffic/17013",
+        "s": "의뢰인은 과거 음주운전으로 벌금과 집행유예 처벌을 받았음에도 다시 술에 취한 상태로 고속도로 등을 운전해 재판을 받았습니다."
+      },
+      {
+        "title": "매매대금반환 전부승소 | 공사 중단 후 책임 부인한 공동 매도인들의 반환 의무 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/16384",
+        "s": "의뢰인은 주택 분양대금으로 총 4,700만 원을 지급했으나 공사가 중단되었고, 공동 매도인들이 계약 당사자는 시공회사라며 반환 책임을 부인해 소송을 진행했습니다."
+      },
+      {
+        "title": "음주운전집행유예 | 음주운전 전력과 재범에도 범행 경위 등 양형 사정 소명",
+        "href": "https://www.yklawfirm.co.kr/case-study/traffic/17750",
+        "s": "의뢰인은 음주운전으로 처벌받은 이력이 여러 차례 있었고, 집행유예 기간 중 다시 혈중알코올농도 수치 0.075% 상태로 약 14km를 운전해 재판을 받았습니다."
+      }
+    ]
   },
   "김윤정": {
     "areas": [
@@ -1088,72 +1134,57 @@
         "name": "상속포기한정승인"
       }
     ],
-    "profile": "https://www.yklawfirm.co.kr/member/lawyer/6188"
+    "profile": "https://www.yklawfirm.co.kr/member/lawyer/6188",
+    "works": [
+      {
+        "title": "인지청구 인용 | 유전자검사로 친생자관계 입증해 친권·양육권과 양육비 지급 인정받은 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/inherit/16911",
+        "s": "의뢰인은 교제하던 상대방과의 사이에서 자녀를 출산한 뒤, 법적으로 친생자관계를 인정받고 자녀의 양육에 필요한 권한과 양육비를 확보하고자 소송을 제기했습니다."
+      },
+      {
+        "title": "음주운전집행유예 | 과거 처벌 이력에도 반성하는 태도 참작된 사례",
+        "href": "https://www.yklawfirm.co.kr/case-study/traffic/17075",
+        "s": "의뢰인은 과거 두 차례 음주운전으로 처벌받은 이력이 있는 상태에서 혈중알코올농도 수치 0.077%로 약 5km를 운전해 다시 형사처벌을 받게 되었습니다."
+      },
+      {
+        "title": "특허권이전등록 승소 | 퇴직 후 기술, 반출 자료로 회사 귀속 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/16131",
+        "s": "의뢰인 회사는 퇴직한 직원이 재직 중 취득한 기술자료를 바탕으로 RTO 관련 특허를 등록하자 특허권이전등록 소송을 제기했으나, 1심에서 청구가 받아들여지지 않아 항소심에서 다시 다투게 되었습니다."
+      }
+    ]
   },
   "강경훈": {
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5759",
-    "works": [
-      {
-        "title": "[도박] 사이버 도박",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1053208"
-      },
-      {
-        "title": "[도박] 사이버 도박",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1053207"
-      },
-      {
-        "title": "형법(소방기본법위반)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1051947"
-      },
-      {
-        "title": "형법(소방기본법위반)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1051945"
-      },
-      {
-        "title": "아청법(아청음란물소지)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1051339"
-      },
-      {
-        "title": "아청법(아청음란물소지)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1051336"
-      },
-      {
-        "title": "형법(폭행)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1051292"
-      },
-      {
-        "title": "형법(폭행)",
-        "href": "https://www.yklawfirm.co.kr/case/detective/1051291"
-      }
-    ]
+    "works": []
   },
   "김택형": {
     "profile": "https://www.yklawfirm.co.kr/member/lawyer/5616",
     "works": [
       {
-        "title": "통신매체이용음란 기소유예 | 형사조정 성립과 처벌불원 의사로 선처 소명",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/14787"
+        "title": "배우자 폭행 항소심 무죄 | 불일치한 진술과 녹음 내용 분석으로 공소사실 입증 부족 소명",
+        "href": "https://www.yklawfirm.co.kr/case-study/detective/16044",
+        "s": "이혼소송 중 배우자를 폭행한 혐의로 재판에 넘겨진 자영업자는 1심에서 유죄 판단을 받았으나 항소했습니다."
+      },
+      {
+        "title": "부당이득금 일부승소 | 공유 부동산 임대수익 정산 분쟁에서 항소심 추가 지급 판결",
+        "href": "https://www.yklawfirm.co.kr/case-study/civil/17064",
+        "s": "의뢰인은 공유 부동산을 관리·임대하던 상대방과 임대수익 정산을 두고 분쟁이 생겨, 자신의 지분에 해당하는 수익을 돌려받기 위한 부당이득금반환 소송을 제기했습니다."
       },
       {
         "title": "이혼조정 성립 | 친권·양육권 지정과 추가 분쟁 정리 사례",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/15343"
+        "href": "https://www.yklawfirm.co.kr/case-study/divorce/15343",
+        "s": "의뢰인은 혼인관계 파탄 이후 상대방의 지속적인 폭언과 협박으로 이혼절차를 조속히 마무리하고 자녀의 양육 환경을 안정적으로 정할 필요가 있었습니다."
       },
       {
-        "title": "이혼 상고기각 | 상대방의 쟁점에도 항소심 결과 유지",
-        "href": "https://www.yklawfirm.co.kr/case/divorce/15513"
-      },
-      {
-        "title": "음주운전에 대한 체계적 정상자료가 집행유예로 영향 미친 사례",
-        "href": "https://www.yklawfirm.co.kr/case/traffic/73923"
-      },
-      {
-        "title": "복잡한 공탁 회수청구권 분쟁에 화해로 조력한 사례",
-        "href": "https://www.yklawfirm.co.kr/case/civil/66516"
+        "title": "특허권이전등록 승소 | 퇴직 후 기술, 반출 자료로 회사 귀속 입증",
+        "href": "https://www.yklawfirm.co.kr/case-study/corporate/16131",
+        "s": "의뢰인 회사는 퇴직한 직원이 재직 중 취득한 기술자료를 바탕으로 RTO 관련 특허를 등록하자 특허권이전등록 소송을 제기했으나, 1심에서 청구가 받아들여지지 않아 항소심에서 다시 다투게 되었습니다."
       }
     ]
   },
   "정창호": {
-    "profile": "https://www.yklawfirm.co.kr/member/lawyer/6267"
+    "profile": "https://www.yklawfirm.co.kr/member/lawyer/6267",
+    "works": []
   },
   "유병두": {
     "awards": [
@@ -1279,16 +1310,7 @@
         "name": "해양"
       }
     ],
-    "works": [
-      {
-        "title": "강제추행 불송치 | 직장 동료 진술 불일치와 객관적 증거 부재를 근거로 혐의없음 입증",
-        "href": "https://www.yklawfirm.co.kr/case/sexual-assault/14768"
-      },
-      {
-        "title": "손해배상청구 기각 | 무죄 확정 뒤 제기된 허위 고소 주장, 고의·중과실 부재로 방어",
-        "href": "https://www.yklawfirm.co.kr/case/civil/15124"
-      }
-    ]
+    "works": []
   },
   "강성용": {
     "profile": "https://www.yklawfirm.co.kr/member/advisory/6148",

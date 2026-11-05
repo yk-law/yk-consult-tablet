@@ -200,7 +200,7 @@ ok(
   "별≠사내직위",
   counselCases.some((v) => (v.seniors || []).some((s) => s.n === "한상진" && s.grade === "rep" && s.stars === 4)),
 );
-ok("한상진 수상·업무사례", (unsigned.seniors || []).some((s) => s.n === "한상진" && (s.awards || []).length && (s.works || []).some((w) => String(w.href).includes("/case/"))));
+ok("한상진 수상·업무사례", (unsigned.seniors || []).some((s) => s.n === "한상진" && (s.awards || []).length && (s.works || []).some((w) => String(w.href).includes("/case-study/"))));
 ok("한상진 논문·저서", (unsigned.seniors || []).some((s) => s.n === "한상진" && (s.papers || []).some((p) => String(p).includes("검찰"))));
 ok("김동진 업무분야 세부", counselCases.some((v) => (v.seniors || []).some((s) => s.n === "김동진" && (s.areas || []).length >= 20)));
 ok("김동진 논문·저서", counselCases.some((v) => (v.seniors || []).some((s) => s.n === "김동진" && (s.papers || []).length >= 4)));

@@ -16,7 +16,7 @@ export function relatedCaseWorks(works, field) {
     try {
       const url = new URL(work.href);
       if (url.hostname !== "www.yklawfirm.co.kr") return false;
-      const category = url.pathname.match(/^\/case\/([^/]+)\/[^/]+\/?$/)?.[1];
+      const category = url.pathname.match(/^\/case-study\/([^/]+)\/[^/]+\/?$/)?.[1];
       return CATEGORY_FIELDS[category] === field;
     } catch {
       return false;
