@@ -448,13 +448,20 @@ def party_of(b: dict, template: dict | None) -> tuple[str, bool]:
 
 
 def with_role(template: dict | None, party: str) -> dict | None:
-    """지위가 기본과 다르면 그 지위의 내용으로 바꾼다. 사례(cases)는 기본 지위 기준이라 뺀다."""
+    """지위가 기본과 다르면 그 지위의 내용으로 바꾼다.
+
+    사례(cases)는 소분류에만 두고 지위별(roles)에는 넣지 않는다. 구체 지위(피해자·원고 등)로
+    바꿀 때는 기본 지위 관점의 사례를 빼지만, 지위 미정·「잘 모르겠어요」인 **공통**은
+    사건 종류 사례를 그대로 둔다 — 시연 예약은 party가 비어 공통으로 시작한다.
+    """
     if not template or not party or party == template.get("base_role"):
         return template
     v = (template.get("roles") or {}).get(party)
     if not v:
         return template
-    return {**template, **v, "cases": []}
+    # 공통: steps/flow 등만 지위 중립 문구로 바꾸고, 소분류 사례는 유지
+    cases = template.get("cases", []) if party == "공통" else []
+    return {**template, **v, "cases": cases}
 
 
 def helper_view(b: dict) -> dict:
