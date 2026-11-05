@@ -1399,7 +1399,26 @@ def neutral_civil(label):
 COMPLAINT_ACCUSED = {"경제범죄고소": "일반사기", "성범죄고소": "@성범죄", "@고소, 고발": "@일반형사"}
 
 
+# 소분류별 지위 문구(민사·가사 우선, 형사 파일은 다음 작업에서 추가).
+# 같은 폴더에서 불러오며, 없으면 빈 dict로 두고 대분류 공통 문구를 쓴다.
+def _load_role_text():
+    text = {}
+    try:
+        from topics_roles_civil import ROLE_TEXT as CIVIL_TEXT
+        text.update(CIVIL_TEXT)
+    except ImportError:
+        pass
+    try:
+        from topics_roles_crim import ROLE_TEXT as CRIM_TEXT
+        text.update(CRIM_TEXT)
+    except ImportError:
+        pass
+    return text
+
+
 def add_roles(out):
+    role_text = _load_role_text()
+
     def get(ref):
         return out["_middle"][ref[1:]] if ref.startswith("@") else out[ref]
 
@@ -1420,6 +1439,12 @@ def add_roles(out):
         elif label in CIVIL:
             t["base_role"] = "원고"
             t["roles"] = {"피고": defendant(t), "공통": neutral_civil(label)}
+        # _middle(@ 접두)은 덮어쓰지 않는다. 소분류만 ROLE_TEXT로 지위 문구를 바꾼다.
+        if k.startswith("@"):
+            continue
+        for role, payload in role_text.get(k, {}).items():
+            if role in t.get("roles", {}):
+                t["roles"][role] = payload
 
 
 def C(path, tag, t, r, s):
