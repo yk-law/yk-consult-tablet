@@ -55,7 +55,8 @@ async function retopic(data, { small, middle = "", party = "", keepSummary = tru
   if (!base) return data;
   const p = party || base.base_role || "";
   const v = p !== base.base_role ? base.roles?.[p] : null;
-  const tpl = v ? { ...base, ...v, cases: [] } : base;
+  // 사례는 소분류에만 있음. 구체 지위면 빼고, 공통(미정·잘 모르겠어요)은 유지 — catalog.with_role과 같음
+  const tpl = v ? { ...base, ...v, cases: p === "공통" ? base.cases || [] : [] } : base;
   return {
     ...data,
     helper: {
