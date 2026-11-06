@@ -2,6 +2,7 @@ import { cleanProfileContent, profileCategories } from "./profileContent.js";
 import { specialistHero, specialistHeadline } from "./specialistHero.js";
 import HeroBackdrop from "./HeroBackdrop.jsx";
 import { relatedCaseWorks } from "./caseWorks.js";
+import CaseModal from "./CaseModal.jsx";
 import { customerDateParts } from "./customerDate.js";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
@@ -87,6 +88,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
         {(screen === "topics" || (screen === "report" && !hasSummary)) && (
           <Report
             helper={data.helper}
+            answers={answers}
             onParty={onParty}
             onCounsel={() => onScreen("counsel")}
             onPrevious={screen === "topics" ? () => onScreen("report") : () => onScreen("firm")}
@@ -565,7 +567,7 @@ function PartyAsk({ helper, onParty }) {
   );
 }
 
-function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말씀하신 내용으로" }) {
+function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previousLabel = "말씀하신 내용으로" }) {
   const topics = helper?.topics || [];
   const intake = helper?.intake;
   const steps = topics.length ? topics : intake?.steps || [];
@@ -573,7 +575,15 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
   const ask = helper?.ask?.length ? helper.ask : [];
   const bring = helper?.bring?.length ? helper.bring : [];
   const cases = helper?.cases?.length ? helper.cases : [];
-  const pairCount = (ask.length > 0 ? 1 : 0) + (bring.length > 0 ? 1 : 0);
+  // 1뎁스(summary)가 있는 예약만 2뎁스에 조합. 없으면 화면 변화 없음.
+  const summary = helper?.summary || [];
+  const hasDepth1 = summary.length > 0;
+  const confirmed = hasDepth1 ? summary.filter((_, i) => answers[i] !== "no") : [];
+  const noCount = hasDepth1 ? summary.filter((_, i) => answers[i] === "no").length : 0;
+  const agenda = hasDepth1 ? (helper?.agenda || []) : [];
+  const askRows = noCount > 0 ? [`앞에서 다르다고 하신 부분(${noCount}건)`, ...ask] : ask;
+  const pairCount = (askRows.length > 0 ? 1 : 0) + (bring.length > 0 ? 1 : 0);
+  const [caseItem, setCaseItem] = useState(null);
 
   return (
     <section className="pane on reportpane">
@@ -592,6 +602,33 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
             </div>
           )}
           <PartyAsk helper={helper} onParty={onParty} />
+          {/* 1뎁스 문장 중 아니요가 아닌 것만. 전부 아니요면 섹션 자체 생략. */}
+          {confirmed.length > 0 && (
+            <section className="yh-said" aria-labelledby="yh-said">
+              <h4 className="yh-sec-t" id="yh-said">말씀해 주신 내용</h4>
+              <ol className="yh-said-list">
+                {confirmed.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ol>
+            </section>
+          )}
+          {/* agenda는 1뎁스 있는 예약만 helper에 실림. steps 앞에 소제목으로. */}
+          {agenda.length > 0 && (
+            <section className="yh-agenda-sec" aria-labelledby="yh-agenda">
+              <h4 className="yh-sec-t yh-sec-sub" id="yh-agenda">말씀하신 궁금한 점</h4>
+              <ol className="yh-agenda">
+                {agenda.map((t, i) => (
+                  <li key={t}>
+                    <div className="yh-sec-h">
+                      <span className="n">{String(i + 1).padStart(2, "0")}</span>
+                      <h4>{t}</h4>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
           {topics.length > 0 && <h4 className="yh-sec-t">상담에서 함께 볼 내용</h4>}
           {steps.length > 0 && (
             <ol className="yh-steps">
@@ -628,10 +665,10 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
 
           {pairCount > 0 && (
             <div className={`yh-pair${pairCount === 1 ? " yh-pair-one" : ""}`}>
-              {ask.length > 0 && (
+              {askRows.length > 0 && (
                 <section aria-labelledby="yh-ask">
                   <h4 className="yh-sec-t" id="yh-ask">상담에서 여쭤볼 내용</h4>
-                  <ul>{ask.map((x) => <li key={x}>{x}</li>)}</ul>
+                  <ul>{askRows.map((x) => <li key={x}>{x}</li>)}</ul>
                 </section>
               )}
               {bring.length > 0 && (
@@ -651,10 +688,16 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
               <ul className={`yh-cases${cases.length === 1 ? " yh-cases-one" : ""}`}>
                 {cases.map((c) => (
                   <li key={c.href || c.t}>
-                    {c.tag ? <span className="yh-case-tag">{c.tag}</span> : null}
-                    {c.t ? <strong>{c.t}</strong> : null}
-                    {c.s ? <p>{c.s}</p> : null}
-                    {c.r ? <span className="yh-case-r">{c.r}</span> : null}
+                    <button
+                      type="button"
+                      className="yh-case-btn"
+                      onClick={() => setCaseItem(c)}
+                    >
+                      {c.tag ? <span className="yh-case-tag">{c.tag}</span> : null}
+                      {c.t ? <strong>{c.t}</strong> : null}
+                      {c.s ? <p>{c.s}</p> : null}
+                      {c.r ? <span className="yh-case-r">{c.r}</span> : null}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -685,6 +728,7 @@ function Report({ helper, onParty, onCounsel, onPrevious, previousLabel = "말�
           ) : <ReportNext onClick={onCounsel} />}
         </div>
       </div>
+      <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
     </section>
   );
 }
@@ -740,6 +784,7 @@ function CareerSection({ items }) {
 }
 
 function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, specialist = false }) {
+  const [caseItem, setCaseItem] = useState(null);
   if (specialist) {
     l = cleanProfileContent(l);
     hasFields = profileCategories(l, FIELD).length > 0;
@@ -770,12 +815,13 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
         {hasWorks ? <section className="detail-subsection counsel-works">
           <h4>관련 업무 사례</h4>
           <ul className="clist">{relatedWorks.map((work) => <li key={work.href}>
-            <a href={work.href} target="_blank" rel="noreferrer" aria-label={`${work.title} (새 탭에서 열림)`}>
+            <button
+              type="button"
+              className="case-work-btn"
+              onClick={() => setCaseItem(work)}
+            >
               <span>{work.title}</span>
-              <svg className="lucide lucide-arrow-up-right" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                <path d="M7 7h10v10M7 17 17 7" />
-              </svg>
-            </a>
+            </button>
           </li>)}</ul>
         </section> : null}
       </div>
@@ -788,6 +834,7 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
         {listSection("논문·저서", l.papers)}
       </div>
     </section> : null}
+    <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
   </>;
 }
 
@@ -801,6 +848,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
   const [indexItems, setIndexItems] = useState([]);
   const [activeIndex, setActiveIndex] = useState("");
   const [heroHidden, setHeroHidden] = useState(false);
+  const [caseItem, setCaseItem] = useState(null);
   useEffect(() => {
     const profile = profileRef.current;
     const pane = profile?.closest(".counselpane");
@@ -989,7 +1037,13 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
           <ul className="clist">
             {l.works.map((w) => (
               <li key={w.href}>
-                <a href={w.href} target="_blank" rel="noreferrer">{w.title}</a>
+                <button
+                  type="button"
+                  className="case-work-btn"
+                  onClick={() => setCaseItem(w)}
+                >
+                  {w.title}
+                </button>
               </li>
             ))}
           </ul>
@@ -1004,6 +1058,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       ) : null}
       </div>
       </div>
+      <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
     </div>
   );
 }

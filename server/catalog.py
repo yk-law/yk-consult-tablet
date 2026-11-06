@@ -252,8 +252,12 @@ def profile_bits(name: str) -> dict:
     for w in extra.get("works") or []:
         title = " ".join((w.get("title") or "").split())
         href = w.get("href") or ""
-        if title and href.startswith("https://www.yklawfirm.co.kr/case/"):
-            works.append({"title": title, "href": href})
+        if title and href.startswith("https://www.yklawfirm.co.kr/case-study/"):
+            item = {"title": title, "href": href}
+            s = " ".join((w.get("s") or "").split())
+            if s:
+                item["s"] = s
+            works.append(item)
     return {"awards": awards, "works": works, "areas": areas, "papers": papers}
 
 
@@ -490,6 +494,8 @@ def helper_view(b: dict) -> dict:
         "parties": parties,
         "partyKnown": known or len(parties) < 2,
         "summary": b.get("summary") or [],
+        # 1뎁스가 있는 예약만 2뎁스에 agenda를 실어 「말씀하신 궁금한 점」으로 보여 준다.
+        "agenda": (b.get("agenda") or []) if b.get("summary") else [],
         "topics": template["steps"] if template else [],
         # 2뎁스를 채우는 일반 정보. 사건 종류가 같으면 모든 고객에게 같다.
         "flow": template.get("flow", []) if template else [],
