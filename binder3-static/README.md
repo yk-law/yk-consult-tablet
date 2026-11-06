@@ -2,6 +2,8 @@
 
 YK-OS 고객 태블릿 화면(바인더#3)을 운영팀 공유와 디자인 수정용으로 고정한 것입니다. 서버 없이 `index.html` 을 열면 됩니다.
 
+공유 주소: https://yk-law.github.io/yk-consult-tablet/binder3-static/ (main 에 반영되면 `.github/workflows/pages.yml` 이 함께 올립니다.)
+
 ## 내용
 
 - 사건 26건: 콜 내용은 전부 더미입니다(`_build/dummy_cases.json`). 고객명은 홍길동, 상담 일시는 2026-11-01 14:00 입니다.

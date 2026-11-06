@@ -34,6 +34,10 @@ jobs:
         working-directory: app
         env:
           VITE_BASE: /yk-consult-tablet/
+      # 바인더#3 정적 검토본은 빌드 없이 그대로 /binder3-static/ 에 올린다.
+      - run: |
+          cp -r binder3-static app/dist/binder3-static
+          rm -rf app/dist/binder3-static/_build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app/dist
