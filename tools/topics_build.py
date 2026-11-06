@@ -1416,8 +1416,11 @@ def _load_role_text():
     return text
 
 
+_EXTRA_ROLES = {}
+
+
 def add_roles(out):
-    role_text = _load_role_text()
+    role_text = {**_load_role_text(), **_EXTRA_ROLES}
 
     def get(ref):
         return out["_middle"][ref[1:]] if ref.startswith("@") else out[ref]
@@ -1445,6 +1448,34 @@ def add_roles(out):
         for role, payload in role_text.get(k, {}).items():
             if role in t.get("roles", {}):
                 t["roles"][role] = payload
+
+
+
+# 2026-11-05 미팅 결정 2: 템플릿이 없던 소분류(YK-OS 296종 중 약 194종)를 중분류 묶음별 파일로 채운다.
+# tools/topics_small_<묶음>.py 마다 아래 이름을 둔다(없으면 빈 값).
+#   SMALL    = {"<소분류>": {"label", "steps", "flow", "ask", "bring"}}  # 기본 지위 문구
+#   ALIAS    = {"<소분류>": "<같은 내용으로 보여 줄 소분류>"}
+#   ROLES    = {"<소분류>": {"<지위>": {"steps", "flow", "ask", "bring"}}}  # 형식은 ROLE_TEXT와 같다
+#   NO_SIDES = {"<상대방이 없는 절차라 지위를 나누지 않는 소분류>"}
+def _load_small_extra():
+    import importlib.util
+
+    small, alias, roles, no_sides = {}, {}, {}, set()
+    for f in sorted(Path(__file__).resolve().parent.glob("topics_small_*.py")):
+        spec = importlib.util.spec_from_file_location(f.stem, f)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        for k, v in getattr(mod, "SMALL", {}).items():
+            assert k not in small, (f.name, k)
+            small[k] = {"label": v["label"], "basis": v.get("basis", 0), **{x: v[x] for x in ("steps", "flow", "ask", "bring")}}
+        for k, v in getattr(mod, "ALIAS", {}).items():
+            assert k not in alias, (f.name, k)
+            alias[k] = v
+        for k, v in getattr(mod, "ROLES", {}).items():
+            assert k not in roles, (f.name, k)
+            roles[k] = v
+        no_sides |= set(getattr(mod, "NO_SIDES", set()))
+    return small, alias, roles, no_sides
 
 
 def C(path, tag, t, r, s):
@@ -1664,6 +1695,15 @@ def main() -> None:
     for k, v in SMALL.items():
         assert k not in out, k
         out[k] = v
+    extra_small, extra_alias, extra_roles, extra_no_sides = _load_small_extra()
+    for k, v in extra_small.items():
+        assert k not in out and k not in ALIAS, k
+        out[k] = v
+    for a, k in extra_alias.items():
+        assert a not in out and a not in ALIAS, a
+        ALIAS[a] = k
+    NO_SIDES.update(extra_no_sides)
+    _EXTRA_ROLES.update(extra_roles)
     for k, cs in CASES.items():
         assert k in out and not k.startswith("_"), k
         assert 1 <= len(cs) <= 2, k
