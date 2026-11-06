@@ -63,6 +63,8 @@ http://localhost:5173/?v=os                  ← 미연결 상태 YK-OS
 
 ## 점검
 
+API 단위 테스트(서버 기동 불필요): `python3 -m pip install -r server/requirements-dev.txt && python3 -m pytest server/tests -q`
+
 서버가 켜진 상태에서:
 
 ```bash
