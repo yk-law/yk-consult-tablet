@@ -822,6 +822,8 @@ ALIAS = {
     "전세자금": "보증금",
     "계약해지": "계약해제",
     "법률검토": "법률자문",
+    # YK-OS 소분류 이름이 「재개발, 재건축」 하나다. 템플릿은 topics_small_labor.py 의 재개발·재건축 둘로 나눠 두었다.
+    "재개발, 재건축": "재개발",
 }
 
 MIDDLE = {
@@ -1399,7 +1401,29 @@ def neutral_civil(label):
 COMPLAINT_ACCUSED = {"경제범죄고소": "일반사기", "성범죄고소": "@성범죄", "@고소, 고발": "@일반형사"}
 
 
+# 소분류별 지위 문구(민사·가사 우선, 형사 파일은 다음 작업에서 추가).
+# 같은 폴더에서 불러오며, 없으면 빈 dict로 두고 대분류 공통 문구를 쓴다.
+def _load_role_text():
+    text = {}
+    try:
+        from topics_roles_civil import ROLE_TEXT as CIVIL_TEXT
+        text.update(CIVIL_TEXT)
+    except ImportError:
+        pass
+    try:
+        from topics_roles_crim import ROLE_TEXT as CRIM_TEXT
+        text.update(CRIM_TEXT)
+    except ImportError:
+        pass
+    return text
+
+
+_EXTRA_ROLES = {}
+
+
 def add_roles(out):
+    role_text = {**_load_role_text(), **_EXTRA_ROLES}
+
     def get(ref):
         return out["_middle"][ref[1:]] if ref.startswith("@") else out[ref]
 
@@ -1420,6 +1444,40 @@ def add_roles(out):
         elif label in CIVIL:
             t["base_role"] = "원고"
             t["roles"] = {"피고": defendant(t), "공통": neutral_civil(label)}
+        # _middle(@ 접두)은 덮어쓰지 않는다. 소분류만 ROLE_TEXT로 지위 문구를 바꾼다.
+        if k.startswith("@"):
+            continue
+        for role, payload in role_text.get(k, {}).items():
+            if role in t.get("roles", {}):
+                t["roles"][role] = payload
+
+
+
+# 2026-11-05 미팅 결정 2: 템플릿이 없던 소분류(YK-OS 296종 중 약 194종)를 중분류 묶음별 파일로 채운다.
+# tools/topics_small_<묶음>.py 마다 아래 이름을 둔다(없으면 빈 값).
+#   SMALL    = {"<소분류>": {"label", "steps", "flow", "ask", "bring"}}  # 기본 지위 문구
+#   ALIAS    = {"<소분류>": "<같은 내용으로 보여 줄 소분류>"}
+#   ROLES    = {"<소분류>": {"<지위>": {"steps", "flow", "ask", "bring"}}}  # 형식은 ROLE_TEXT와 같다
+#   NO_SIDES = {"<상대방이 없는 절차라 지위를 나누지 않는 소분류>"}
+def _load_small_extra():
+    import importlib.util
+
+    small, alias, roles, no_sides = {}, {}, {}, set()
+    for f in sorted(Path(__file__).resolve().parent.glob("topics_small_*.py")):
+        spec = importlib.util.spec_from_file_location(f.stem, f)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        for k, v in getattr(mod, "SMALL", {}).items():
+            assert k not in small, (f.name, k)
+            small[k] = {"label": v["label"], "basis": v.get("basis", 0), **{x: v[x] for x in ("steps", "flow", "ask", "bring")}}
+        for k, v in getattr(mod, "ALIAS", {}).items():
+            assert k not in alias, (f.name, k)
+            alias[k] = v
+        for k, v in getattr(mod, "ROLES", {}).items():
+            assert k not in roles, (f.name, k)
+            roles[k] = v
+        no_sides |= set(getattr(mod, "NO_SIDES", set()))
+    return small, alias, roles, no_sides
 
 
 def C(path, tag, t, r, s):
@@ -1639,6 +1697,15 @@ def main() -> None:
     for k, v in SMALL.items():
         assert k not in out, k
         out[k] = v
+    extra_small, extra_alias, extra_roles, extra_no_sides = _load_small_extra()
+    for k, v in extra_small.items():
+        assert k not in out and k not in ALIAS, k
+        out[k] = v
+    for a, k in extra_alias.items():
+        assert a not in out and a not in ALIAS, a
+        ALIAS[a] = k
+    NO_SIDES.update(extra_no_sides)
+    _EXTRA_ROLES.update(extra_roles)
     for k, cs in CASES.items():
         assert k in out and not k.startswith("_"), k
         assert 1 <= len(cs) <= 2, k
