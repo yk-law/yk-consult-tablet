@@ -33,7 +33,16 @@ COUNT_RANGE = {
     "bring": (4, 5),
 }
 
-FORBIDDEN_TOKENS = ("%", "전관", "승소율", "성공률", "반드시", "무조건", "100%", "보장")
+# '보장' 단독은 잡지 않는다. 결과·승소 약속·책임 표현만 FORBIDDEN.
+FORBIDDEN_TOKENS = ("%", "전관", "승소율", "성공률", "반드시", "무조건", "100%")
+FORBIDDEN_PATTERNS = (
+    re.compile(r"(?:결과|승소)\s*를?\s*보장"),
+    re.compile(r"보장합니다"),
+    re.compile(r"보장하겠습니다"),
+    re.compile(r"보장해\s*드립니다"),
+    re.compile(r"보장해\s*드릴게요"),
+    re.compile(r"책임지고.{0,24}해\s*드립니다"),
+)
 ENGLISH_ALLOW = {"CCTV", "SNS", "DNA", "PC", "AI", "ID"}
 ENGLISH_RE = re.compile(r"[A-Za-z]+")
 
@@ -136,25 +145,26 @@ def lint_payload(cat: str, role: str, payload: dict) -> list[dict]:
     for field, index, sentence in _texts_in_payload(payload):
         if not sentence:
             continue
-        for token in FORBIDDEN_TOKENS:
-            if token in sentence:
-                add("FORBIDDEN", field, index, sentence)
-                break
+        forbidden = any(token in sentence for token in FORBIDDEN_TOKENS) or any(
+            pat.search(sentence) for pat in FORBIDDEN_PATTERNS
+        )
+        if forbidden:
+            add("FORBIDDEN", field, index, sentence)
         for word in ENGLISH_RE.findall(sentence):
             if word.upper() not in ENGLISH_ALLOW:
                 add("ENGLISH", field, index, sentence)
                 break
 
-    # DUP_IN — 한 템플릿(소분류×지위) 안 동일 문장
-    seen: dict[str, list[tuple[str, int]]] = defaultdict(list)
+    # DUP_IN — 같은 필드 안 동일 문장만 (steps 제목 ↔ flow 단계명 교차는 제외)
+    seen: dict[tuple[str, str], list[int]] = defaultdict(list)
     for field, index, sentence in _texts_in_payload(payload):
         if not sentence:
             continue
-        seen[sentence].append((field, index))
-    for sentence, locs in seen.items():
-        if len(locs) < 2:
+        seen[(field, sentence)].append(index)
+    for (field, sentence), indices in seen.items():
+        if len(indices) < 2:
             continue
-        for field, index in locs:
+        for index in indices:
             add("DUP_IN", field, index, sentence)
 
     return hits
