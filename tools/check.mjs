@@ -38,7 +38,7 @@ const visit = await fetch(`${API}/api/visit?id=228271`).then((r) => r.json());
 ok("visit helper", Array.isArray(visit.helper && visit.helper.topics) && visit.helper.topics.length >= 3 && Array.isArray(visit.helper.summary), JSON.stringify(visit.helper && { eng: visit.helper.engId, n: (visit.helper.topics || []).length, s: (visit.helper.summary || []).length }));
 ok("YK 소개 구성", (visit.firm?.advisors || []).length === 28 && (visit.firm?.police || []).length === 25 && (visit.firm?.bench || []).length > 0 && (visit.firm?.prosecution || []).length > 0, JSON.stringify(visit.firm && { a: visit.firm.advisors?.length, p: visit.firm.police?.length }));
 const lawyers = (visit.seniors || []).filter((s) => s.kind !== "advisor");
-ok("전문인력 변호사 5명 이하", lawyers.length > 0 && lawyers.length <= 5, lawyers.length);
+ok("전문인력 변호사 4명 이하", lawyers.length > 0 && lawyers.length <= 4, lawyers.length);
 ok("전문인력 분야 매칭", lawyers.every((s) => s.match === "field" || s.match === "near" || s.match === "court" || s.match === "roster"));
 ok("홈페이지 명언", (visit.seniors || []).some((s) => /의뢰인|진심|정성|약속|파트너|전심|해결/.test(s.pitch || "")));
 ok("미니 수상실적 정책", (visit.seniors || []).every((s) => Array.isArray(s.awards)));
@@ -172,8 +172,23 @@ const dup = (rows) => (rows || []).some((s) => {
   return both("부장검사 역임", "검사 역임") || both("부장판사 역임", "판사 역임") || both("대법관 역임", "판사 역임") || both("고검장 역임", "검사 역임");
 });
 ok("동일 직군 최고 직위", !dup(unsigned.seniors) && !dup(visit.seniors));
-ok("자문위원 목록 없음", !(unsigned.seniors || []).some((s) => s.pos === "자문위원"));
-ok("예시 고문·전문위원", (unsigned.seniors || []).some((s) => s.n === "강성용") && (unsigned.seniors || []).some((s) => s.n === "강신선"));
+// 전문인력 6슬롯(2026-11-04): 1~4 상담 변호사를 뺀 변호사(대표 > 파트너 > 일반), 5~6 고문·전문위원·자문위원 무작위.
+const RANK = { rep: 0, partner: 1, counsel: 2, assoc: 3 };
+const slotVisits = await Promise.all(cat.bookings.map((b) => fetch(`${API}/api/visit?id=${b.id}`).then((r) => r.json())));
+const slotAgain = await fetch(`${API}/api/visit?id=228340`).then((r) => r.json());
+ok("전문인력 6칸 이하", slotVisits.every((v) => (v.seniors || []).length <= 6 && (v.seniors || []).length >= 4));
+ok("전문인력 상담 변호사 제외", slotVisits.every((v) => !(v.seniors || []).some((s) => s.n === v.booking.counsel)));
+ok("전문인력 변호사 1~4칸·고문 뒤", slotVisits.every((v) => {
+  const k = (v.seniors || []).map((s) => s.kind === "advisor");
+  const n = k.filter((x) => !x).length;
+  return n <= 4 && k.every((x, i) => !x || k.slice(i).every(Boolean));
+}));
+ok("전문인력 직위순", slotVisits.every((v) => {
+  const r = (v.seniors || []).filter((s) => s.kind !== "advisor").map((s) => RANK[s.grade] ?? 9);
+  return r.every((x, i) => i === 0 || r[i - 1] <= x);
+}));
+ok("전문인력 고문·위원 같은 예약은 고정", JSON.stringify(unsigned.seniors.map((s) => s.n)) === JSON.stringify(slotAgain.seniors.map((s) => s.n)));
+ok("자문위원도 후보", slotVisits.some((v) => (v.seniors || []).some((s) => s.pos === "자문위원")));
 ok(
   "강신선 형사기동대",
   (unsigned.seniors || []).some((s) => s.n === "강신선" && (s.titles || []).includes("형사기동대")),

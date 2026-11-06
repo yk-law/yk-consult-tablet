@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import random
 import re
 from collections import Counter
 from functools import lru_cache
@@ -273,7 +274,7 @@ FRAME_RANK = {
 }
 
 # 전문인력 그리드 나열 순서 (2026-09-22). 프레임 색 우열과 별개.
-# 대표 > 파트너 > 고문변호사 > 고문 > 전문위원. 자문위원은 목록에서 빼 둠 (2026-09-22).
+# 대표 > 파트너 > 고문변호사 > 일반. 고문·위원은 변호사 뒤(2026-11-04 6슬롯 규칙에서 자문위원도 포함).
 LIST_RANK = {
     "rep": 0,
     "partner": 1,
@@ -284,7 +285,12 @@ LIST_RANK = {
     "consultant": 6,
 }
 
-ADVISOR_ROLE_ORDER = ("고문", "전문위원")
+ADVISOR_ROLE_ORDER = ("고문", "전문위원", "자문위원")
+
+# 전문인력 탭 6슬롯(2026-11-04 재완님): 1~4 상담 변호사를 뺀 분야 변호사, 5~6 고문·전문위원·자문위원 무작위.
+# 분야 변호사가 4명보다 적으면 모자란 칸도 고문·위원이 채운다.
+EXPERT_SLOTS = 6
+LAWYER_SLOTS = 4
 
 
 # 같은 직군이면 가장 높은 직위만. 긴 직함부터 맞춰 부장검사가 검사로 깎이지 않게 한다.
@@ -507,60 +513,60 @@ def helper_view(b: dict) -> dict:
     }
 
 
-def advisor_cards() -> list[dict]:
-    """예시로 고문·전문위원 각 1인. 자문위원은 빼 둔다."""
+def _advisor_card(a: dict, portraits: dict) -> dict:
+    """고문·전문위원·자문위원 카드."""
+    r = a.get("r") or ""
+    label = (a.get("c") or "").strip()
+    titles = prominent_titles([t for t in (a.get("titles") or ([label] if label else [])) if t])
+    career = list(a.get("career") or [])
+    quote = " ".join((a.get("quote") or "").split())
+    highlight = next((line for line in career if line and line != label), "")
+    # 기업자문·경찰 경력 같은 분류 라벨 자리에는 경력 하이를 올린다.
+    if highlight and (not titles or set(titles) <= {label}):
+        titles = [highlight]
+    if quote and quote != label and quote not in titles:
+        pitch = quote
+    else:
+        rest = [line for line in career if line not in titles and line != label]
+        pitch = rest[0] if rest else ""
+    if not career and label:
+        career = [label]
+    tags = [label] if label and label not in titles else []
+    bits = profile_bits(a["n"])
+    return {
+        "n": a["n"],
+        "pos": r,
+        "o": "",
+        "f": [],
+        "edu": "",
+        "exam": "",
+        "tr": "",
+        "career": career,
+        "cases": [],
+        "awards": bits["awards"],
+        "works": [],
+        "areas": bits["areas"],
+        "papers": bits["papers"],
+        "quote": pitch,
+        "titles": titles,
+        "tags": tags,
+        "photo": a["n"] in portraits,
+        "videoId": None,
+        "videoTitle": None,
+        "grade": frame_of({}, r),
+        "kind": "advisor",
+        "pitch": pitch,
+        "reasons": [],
+        "match": "advisor",
+    }
+
+
+def advisor_pool() -> list[dict]:
+    """5~6슬롯 후보. 사진·경력을 준비해 둔 고문·위원만 쓴다(시연 데이터는 3명: 고문·전문위원·자문위원 각 1).
+    운영에서는 YK-OS·홈페이지 구성원 전체가 후보가 된다."""
     portraits = catalog()["portraits"]
-    by_role = {}
-    for a in catalog()["advisors"]:
-        r = a.get("r") or ""
-        if r not in ADVISOR_ROLE_ORDER or r in by_role:
-            continue
-        label = (a.get("c") or "").strip()
-        titles = prominent_titles([t for t in (a.get("titles") or ([label] if label else [])) if t])
-        career = list(a.get("career") or [])
-        quote = " ".join((a.get("quote") or "").split())
-        highlight = next((line for line in career if line and line != label), "")
-        # 기업자문·경찰 경력 같은 분류 라벨 자리에는 경력 하이를 올린다.
-        if highlight and (not titles or set(titles) <= {label}):
-            titles = [highlight]
-        if quote and quote != label and quote not in titles:
-            pitch = quote
-        else:
-            rest = [line for line in career if line not in titles and line != label]
-            pitch = rest[0] if rest else ""
-        if not career and label:
-            career = [label]
-        tags = [label] if label and label not in titles else []
-        bits = profile_bits(a["n"])
-        by_role[r] = {
-            "n": a["n"],
-            "pos": r,
-            "o": "",
-            "f": [],
-            "edu": "",
-            "exam": "",
-            "tr": "",
-            "career": career,
-            "cases": [],
-            "awards": bits["awards"],
-            "works": [],
-            "areas": bits["areas"],
-            "papers": bits["papers"],
-            "quote": pitch,
-            "titles": titles,
-            "tags": tags,
-            "photo": a["n"] in portraits,
-            "videoId": None,
-            "videoTitle": None,
-            "grade": frame_of({}, r),
-                "kind": "advisor",
-            "pitch": pitch,
-            "reasons": [],
-            "match": "advisor",
-        }
-        if len(by_role) == len(ADVISOR_ROLE_ORDER):
-            break
-    return [by_role[r] for r in ADVISOR_ROLE_ORDER if r in by_role]
+    return [_advisor_card(a, portraits) for a in catalog()["advisors"]
+            if (a.get("r") or "") in ADVISOR_ROLE_ORDER and (a["n"] in portraits or a.get("career"))]
 
 
 # 법원·검찰 근무 이력은 사실 서술로만 쓴다. 「전관」이라는 말은 고객 화면에 두지 않는다.
@@ -632,89 +638,67 @@ def bar_seniority(p: dict) -> tuple[int, str]:
 def seniors_for(
     field: str,
     court: str,
-    limit: int = 5,
     counsel_name: str | None = None,
     roster: list | None = None,
+    seed: str = "",
 ) -> tuple[list[dict], str]:
-    """전문인력. 내부적으로는 전관 변호사 + 고문변호사 + 고문·위원.
-    roster가 있으면 시연용 임의 배치(홈페이지 구성원)를 그 순서로 쓴다."""
+    """전문인력 탭 6슬롯(2026-11-04 재완님).
+
+    1~4슬롯: 상담 변호사를 뺀 변호사. 사건 업무분야가 맞는 변호사를 대표 > 파트너 > (고문변호사) > 일반 순으로 고른다.
+    5~6슬롯: 고문·전문위원·자문위원을 무작위로. 분야 변호사가 4명보다 적으면 모자란 칸도 고문·위원이 채운다.
+    무작위는 예약 ID(seed)로 고정해 같은 예약은 화면을 다시 열어도 같은 사람이 나온다.
+    roster가 있으면(시연 예약) 그 명단을 분야 변호사·고문·위원 후보로 쓴다.
+    """
     cat = catalog()
     by_name = {l["n"]: l for l in cat["lawyers"]}
+    pool = advisor_pool()
+    pool_by_name = {a["n"]: a for a in pool}
 
+    lawyers, named_advisors = [], []
     if roster:
-        advisors_by_name = {a["n"]: a for a in advisor_cards()}
-        if any(name in advisors_by_name for name in roster):
-            # 직군을 포함해 지정한 명단은 지정 순서 그대로 표시한다.
-            selected = []
-            for name in roster:
-                if name == counsel_name:
-                    continue
-                if name in by_name:
-                    selected.append(public_profile(by_name[name]))
-                elif name in advisors_by_name:
-                    selected.append(advisors_by_name[name])
-            return selected[:6], "법무법인 YK의 전문인력입니다"
-        out = []
-        for name in roster:
-            l = by_name.get(name)
-            if not l:
+        for i, name in enumerate(roster):
+            if name == counsel_name:
+                continue
+            if name in by_name:
+                p = public_profile(by_name[name])
+                p["reasons"] = reasons(by_name[name], field, court) if field else []
+                p["match"] = "roster"
+                lawyers.append((LIST_RANK.get(p["grade"], 9), i, p))
+            elif name in pool_by_name:
+                named_advisors.append(pool_by_name[name])
+    else:
+        for l in cat["lawyers"]:
+            if l["n"] == counsel_name:
+                continue
+            sc = score(l, field, court)
+            if not sc["hit"]:
                 continue
             p = public_profile(l)
-            p["reasons"] = reasons(l, field, court) if field else []
-            p["match"] = "roster"
-            out.append(p)
-            if len(out) >= limit:
-                break
-        # 좌측부터 기수가 오래된 순. 고문·전문위원은 기수가 없어 뒤에 붙는다.
-        out.sort(key=bar_seniority)
-        out = out + advisor_cards()
-        return out, "법무법인 YK의 전문인력입니다"
+            p["reasons"] = reasons(l, field, court)
+            p["match"] = "field"
+            lawyers.append((LIST_RANK.get(p["grade"], 9), -sc["s"], p))
+    lawyers.sort(key=lambda x: (x[0], x[1], x[2]["n"]))
+    picked = [p for _, _, p in lawyers[:LAWYER_SLOTS]]
+    if roster and len(picked) < LAWYER_SLOTS:
+        # 시연 명단이 4명보다 적으면 사진·프로필을 준비해 둔 분야 변호사로 채운다.
+        have = {p["n"] for p in picked} | {counsel_name}
+        extra = []
+        for l in cat["lawyers"]:
+            sc = score(l, field, court)
+            if l["n"] in have or not l.get("photo") or not sc["hit"]:
+                continue
+            p = public_profile(l)
+            p["reasons"] = reasons(l, field, court)
+            p["match"] = "field"
+            extra.append((LIST_RANK.get(p["grade"], 9), -sc["s"], p))
+        extra.sort(key=lambda x: (x[0], x[1], x[2]["n"]))
+        picked += [p for _, _, p in extra[: LAWYER_SLOTS - len(picked)]]
+        picked.sort(key=lambda p: LIST_RANK.get(p["grade"], 9))
 
-    scored = []
-    for l in cat["lawyers"]:
-        if not is_specialist_lawyer(l):
-            continue
-        sc = score(l, field, court)
-        if not (sc["hit"] or sc["near"] or sc["court"]):
-            continue
-        p = public_profile(l)
-        p["reasons"] = reasons(l, field, court)
-        p["match"] = "field" if sc["hit"] else ("court" if sc["court"] else "near")
-        p["_s"] = sc["s"]
-        p["_court"] = sc["court"]
-        p["_list"] = LIST_RANK.get(p["grade"], 9)
-        scored.append(p)
-    if any(x["match"] == "field" for x in scored):
-        scored = [x for x in scored if x["match"] == "field"]
-    scored.sort(key=lambda x: (
-        x["_list"],
-        0 if x["match"] == "field" else 1 if x["match"] == "court" else 2,
-        0 if x["_court"] else 1,
-        -x["_s"],
-        x["n"],
-    ))
-    out = scored[:limit]
-    if counsel_name:
-        pinned = next((x for x in scored if x["n"] == counsel_name), None)
-        if pinned and all(x["n"] != counsel_name for x in out):
-            out = out[: max(limit - 1, 0)] + [pinned]
-        out.sort(key=lambda x: (
-            x["_list"],
-            0 if x["match"] == "field" else 1 if x["match"] == "court" else 2,
-            0 if x["_court"] else 1,
-            -x["_s"],
-            x["n"],
-        ))
-        out = out[:limit]
-    for x in out:
-        x.pop("_s", None)
-        x.pop("_court", None)
-        x.pop("_list", None)
-    # 누구를 보여줄지는 위에서 정했고, 늘어놓는 순서는 기수를 따른다.
-    out.sort(key=bar_seniority)
-    out = out + advisor_cards()
-    return out, "법무법인 YK의 전문인력입니다"
-
+    rest = [a for a in pool if a not in named_advisors]
+    random.Random(f"{seed}|{field}").shuffle(rest)
+    advisors = (named_advisors + rest)[: EXPERT_SLOTS - len(picked)]
+    return picked + advisors, "법무법인 YK의 전문인력입니다"
 
 def seniors() -> list[dict]:
     return [public_profile(l) for l in catalog()["lawyers"] if is_senior(l)]
@@ -731,6 +715,7 @@ def visit_for(bid: str | None = None) -> dict:
         b.get("court") or "",
         counsel_name=b.get("counsel"),
         roster=b.get("seniors"),
+        seed=b.get("id") or "",
     )
     portraits = c["portraits"]
     firm = firm_view()
