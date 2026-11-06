@@ -53,7 +53,8 @@ async function retopic(data, { small, middle = "", party = "", keepSummary = tru
   if (!data?.helper) return data;
   const base = await topicByKind(small, middle);
   if (!base) return data;
-  const p = party || base.base_role || "";
+  // 지위를 모르면 공통으로 시작한다(catalog.party_of와 같음).
+  const p = party || (base.roles?.["공통"] && !data.helper.partyKnown ? "공통" : base.base_role || "");
   const v = p !== base.base_role ? base.roles?.[p] : null;
   // 사례는 소분류에만 있음. 구체 지위면 빼고, 공통(미정·잘 모르겠어요)은 유지 — catalog.with_role과 같음
   const tpl = v ? { ...base, ...v, cases: p === "공통" ? base.cases || [] : [] } : base;
@@ -63,6 +64,8 @@ async function retopic(data, { small, middle = "", party = "", keepSummary = tru
       ...data.helper,
       ...(keepSummary ? {} : { topic: tpl.label || middle || data.helper.topic, summary: [], agenda: [] }),
       party: p,
+      // 고를 수 있는 지위도 바꿔 끼운 템플릿 기준으로 바꾼다(catalog.helper_view와 같음). 예약 원래 사건 기준이 남지 않게.
+      parties: base.base_role ? [base.base_role, ...Object.keys(base.roles || {}).filter((x) => x !== "공통")] : [],
       // 고객이 고른 값이면 다시 묻지 않는다. '잘 모르겠어요'(공통)도 고른 것으로 본다.
       partyKnown: !!party || data.helper.partyKnown,
       topics: tpl.steps || [],

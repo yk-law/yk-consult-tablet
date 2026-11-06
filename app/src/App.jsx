@@ -150,7 +150,11 @@ export default function App() {
     if (!data || !party) { setPartyData(null); return; }
     let live = true;
     const b = data.booking;
-    api.retopic(data, { small: b.cat2, middle: b.cat1, party }).then((d) => live && setPartyData(d));
+    // 검토용 딥링크(k·m)로 사건 종류를 바꿔 열었으면 지위를 골라도 그 종류 안에서 바꾼다.
+    const q = new URLSearchParams(location.search);
+    const small = q.get("k") || b.cat2;
+    const middle = q.get("k") ? q.get("m") || "" : b.cat1;
+    api.retopic(data, { small, middle, party }).then((d) => live && setPartyData(d));
     return () => { live = false; };
   }, [data, party]);
 
