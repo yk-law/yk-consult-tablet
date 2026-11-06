@@ -12,7 +12,7 @@ const WEB = process.env.WEB_URL || "http://localhost:5173";
 const SHOT = ".check";
 await mkdir(SHOT, { recursive: true });
 
-const EXPECT = { lawyers: 316, advisors: 98, bookings: 7 };
+const EXPECT = { lawyers: 316, advisors: 98, bookings: 8 };
 const fails = [];
 const ok = (label, cond, got) => {
   console.log(`  ${cond ? "✓" : "✗"} ${label}${cond ? "" : `   ← ${got}`}`);
