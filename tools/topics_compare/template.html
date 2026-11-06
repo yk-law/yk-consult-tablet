@@ -1,0 +1,145 @@
+<title>2뎁스 템플릿 As-is·To-be</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* 레이아웃: 왼쪽 소분류 목록(필터·검색) + 오른쪽 As-is | To-be 두 칸 비교. 좁으면 한 칸씩 쌓는다. YK 디자인 가이드 색 토큰 */
+:root {
+  --bg: #F7F8FA; --surface: #FFFFFF; --fg: #202631; --muted: #626873; --border: #D5DBE5;
+  --primary: #102169; --ring: #3754A0; --sel: #EDEFF5;
+  --new-bg: #DCFCE7; --new-fg: #15803D; --chg-bg: #FEF3C7; --chg-fg: #B45309; --same-bg: #EDEFF5; --same-fg: #626873;
+  --old-mark: #FEE2E2; --new-mark: #DCFCE7;
+  --font: "SUIT Variable", "SUIT", "Noto Sans KR", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #131720; --surface: #202631; --fg: #EDEFF5; --muted: #ACB6C7; --border: #323945;
+  --primary: #9DB2F5; --ring: #7F9BE8; --sel: #323945;
+  --new-bg: #14532D; --new-fg: #DCFCE7; --chg-bg: #78350F; --chg-fg: #FEF3C7; --same-bg: #323945; --same-fg: #ACB6C7;
+  --old-mark: #7F1D1D; --new-mark: #14532D; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #131720; --surface: #202631; --fg: #EDEFF5; --muted: #ACB6C7; --border: #323945;
+  --primary: #9DB2F5; --ring: #7F9BE8; --sel: #323945;
+  --new-bg: #14532D; --new-fg: #DCFCE7; --chg-bg: #78350F; --chg-fg: #FEF3C7; --same-bg: #323945; --same-fg: #ACB6C7;
+  --old-mark: #7F1D1D; --new-mark: #14532D; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 16px }
+header h1 { font-size: 24px; font-weight: 700; margin: 0; text-wrap: balance; color: var(--primary) }
+header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; max-width: 75ch }
+.sum { display: flex; flex-wrap: wrap; gap: 8px }
+.chip { border: 1px solid var(--border); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; min-height: 36px }
+.chip[aria-pressed="true"] { border-color: var(--ring); box-shadow: inset 0 0 0 1px var(--ring) }
+.chip b { font-variant-numeric: tabular-nums }
+.tag { font-size: 12px; font-weight: 600; border-radius: 4px; padding: 1px 6px; white-space: nowrap }
+.k-new { background: var(--new-bg); color: var(--new-fg) } .k-chg { background: var(--chg-bg); color: var(--chg-fg) } .k-same { background: var(--same-bg); color: var(--same-fg) }
+.tools { display: flex; flex-wrap: wrap; gap: 8px }
+.tools select, .tools input { font: inherit; font-size: 14px; color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; min-height: 36px }
+.tools input { flex: 1 1 200px; min-width: 0 }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px }
+.main { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; align-items: start }
+.list { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; max-height: 78vh; overflow: auto; position: sticky; top: env(safe-area-inset-top, 0px) }
+.grp { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--muted); padding: 10px 12px 4px; position: sticky; top: 0; background: var(--surface) }
+.item { display: flex; justify-content: space-between; gap: 8px; align-items: center; width: 100%; text-align: left; border: 0; background: none; font: inherit; font-size: 14px; color: var(--fg); padding: 7px 12px; cursor: pointer; min-height: 36px }
+.item:hover { background: var(--sel) } .item[aria-current="true"] { background: var(--sel); font-weight: 600 }
+.detail { display: grid; gap: 12px; min-width: 0 }
+.dhead { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline }
+.dhead h2 { margin: 0; font-size: 20px; font-weight: 700 }
+.dhead .src { color: var(--muted); font-size: 13px }
+.roles { display: flex; flex-wrap: wrap; gap: 6px }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+.col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; min-width: 0 }
+.col h3 { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--muted) }
+.col.tobe h3 { color: var(--primary) }
+.sec { margin-top: 10px } .sec h4 { margin: 0 0 4px; font-size: 14px; font-weight: 600 }
+.sec ol, .sec ul { margin: 0; padding-left: 20px; display: grid; gap: 4px } .sec li { font-size: 14px }
+.sec li b { font-weight: 600 }
+.col.asis li.diff { background: var(--old-mark); border-radius: 4px; padding: 0 4px }
+.col.tobe li.diff { background: var(--new-mark); border-radius: 4px; padding: 0 4px }
+.empty { color: var(--muted); font-size: 14px }
+.note { color: var(--muted); font-size: 13px }
+@media (max-width: 820px) { .main { grid-template-columns: minmax(0, 1fr) } .list { position: static; max-height: 40vh } .cols { grid-template-columns: minmax(0, 1fr) } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>2뎁스 템플릿 As-is·To-be</h1>
+    <p>YK-OS 사건 소분류마다 고객 태블릿 「사건 요약」 2뎁스에 보이는 내용을 지금(main, As-is)과 작업 후(To-be)로 나란히 놓았습니다. 고객 입장(지위)을 고르면 그 입장의 문구를 비교합니다. 달라진 항목은 색으로 표시합니다.</p>
+    <p class="note" id="meta"></p>
+  </header>
+  <div class="sum" id="sum" role="group" aria-label="변화 종류로 거르기"></div>
+  <div class="tools">
+    <label for="mid" class="note" style="align-self:center">중분류</label>
+    <select id="mid"></select>
+    <input id="q" type="search" placeholder="소분류 검색 (예: 상간, 공갈, 인지)" aria-label="소분류 검색">
+  </div>
+  <div class="main">
+    <nav class="list" id="list" aria-label="소분류 목록"></nav>
+    <section class="detail" id="detail" aria-live="polite"></section>
+  </div>
+</div>
+
+<script type="application/json" id="data">/*DATA*/</script>
+<script type="application/json" id="metadata">/*META*/</script>
+<script>
+const rows = JSON.parse(document.getElementById("data").textContent);
+const meta = JSON.parse(document.getElementById("metadata").textContent);
+const KIND = { "신규 추가": "k-new", "문구 보강": "k-chg", "변화 없음": "k-same" };
+const SEC = [["steps", "상담에서 함께 볼 내용"], ["flow", "일반적인 진행 순서"], ["ask", "상담에서 여쭤볼 내용"], ["bring", "가지고 계시면 도움이 되는 자료"]];
+let kindFilter = null, sel = null, role = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+$("meta").textContent = meta.text;
+
+function counts() {
+  const c = { "신규 추가": 0, "문구 보강": 0, "변화 없음": 0 };
+  rows.forEach((r) => c[r.kind]++);
+  $("sum").innerHTML = [["전체", rows.length, null]].concat(Object.entries(c).map(([k, n]) => [k, n, k]))
+    .map(([label, n, k]) => `<button class="chip" type="button" data-k="${k ?? ""}" aria-pressed="${kindFilter === k}">${k ? `<span class="tag ${KIND[k]}">${label}</span>` : label} <b>${n}</b></button>`).join("");
+  $("sum").querySelectorAll(".chip").forEach((b) => b.onclick = () => { kindFilter = b.dataset.k || null; counts(); renderList(); });
+}
+function mids() {
+  const m = [...new Set(rows.map((r) => r.middle))];
+  $("mid").innerHTML = `<option value="">전체</option>` + m.map((x) => `<option>${esc(x)}</option>`).join("");
+  $("mid").onchange = renderList;
+}
+function visible() {
+  const q = $("q").value.trim(), m = $("mid").value;
+  return rows.filter((r) => (!kindFilter || r.kind === kindFilter) && (!m || r.middle === m) && (!q || r.small.includes(q)));
+}
+function renderList() {
+  const v = visible(); let html = "", last = "";
+  v.forEach((r) => {
+    const i = rows.indexOf(r);
+    if (r.middle !== last) { html += `<div class="grp">${esc(r.major)} · ${esc(r.middle)}</div>`; last = r.middle; }
+    html += `<button class="item" type="button" data-i="${i}" aria-current="${sel === i}"><span>${esc(r.small)}</span><span class="tag ${KIND[r.kind]}">${r.kind}</span></button>`;
+  });
+  $("list").innerHTML = html || `<p class="empty" style="padding:12px">조건에 맞는 소분류가 없습니다.</p>`;
+  $("list").querySelectorAll(".item").forEach((b) => b.onclick = () => { sel = +b.dataset.i; role = null; renderList(); renderDetail(); });
+  if (sel === null && v.length) { sel = rows.indexOf(v[0]); renderList(); renderDetail(); }
+}
+function itemText(x) { return Array.isArray(x) ? `<b>${esc(x[0])}</b> — ${esc(x[1])}` : esc(x); }
+function key(x) { return Array.isArray(x) ? x.join("|") : x; }
+function col(label, cls, v, other) {
+  if (!v) return `<div class="col ${cls}"><h3>${label}</h3><p class="empty">내용 없음</p></div>`;
+  const others = new Set(SEC.flatMap(([k]) => (other?.[k] || []).map(key)));
+  return `<div class="col ${cls}"><h3>${label}</h3>` + SEC.map(([k, t]) => {
+    const list = v[k] || []; if (!list.length) return "";
+    const tag = k === "flow" ? "ol" : "ul";
+    return `<div class="sec"><h4>${t}</h4><${tag}>${list.map((x) => `<li class="${others.has(key(x)) ? "" : "diff"}">${itemText(x)}</li>`).join("")}</${tag}></div>`;
+  }).join("") + `</div>`;
+}
+function renderDetail() {
+  const r = rows[sel]; if (!r) { $("detail").innerHTML = ""; return; }
+  const vs = r.variants; const cur = vs.find((x) => x.role === role) || vs[0]; role = cur.role;
+  $("detail").innerHTML = `
+    <div class="dhead"><h2>${esc(r.small)}</h2><span class="tag ${KIND[r.kind]}">${r.kind}</span>
+      <span class="src">As-is: ${esc(r.asisSrc)} → To-be: ${esc(r.tobeSrc)}</span></div>
+    <div class="roles" role="group" aria-label="고객 입장">${vs.map((x) => `<button class="chip" type="button" data-r="${esc(x.role)}" aria-pressed="${x.role === role}">${esc(x.role)}${x.changed ? "" : " · 같음"}</button>`).join("")}</div>
+    <div class="cols">${col("AS-IS · 지금 main", "asis", cur.asis, cur.tobe)}${col("TO-BE · 작업 후", "tobe", cur.tobe, cur.asis)}</div>`;
+  $("detail").querySelectorAll("[data-r]").forEach((b) => b.onclick = () => { role = b.dataset.r; renderDetail(); });
+}
+$("q").oninput = () => { renderList(); };
+counts(); mids(); renderList();
+</script>
