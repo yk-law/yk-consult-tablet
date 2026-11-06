@@ -1,8 +1,6 @@
 """FastAPI 엔드포인트 응답 형태·오류·세션 흐름."""
 from __future__ import annotations
 
-import pytest
-
 
 def test_health_ok(client):
     r = client.get("/api/health")
@@ -41,13 +39,7 @@ def test_catalog_shape_and_counts(client, expect):
     assert isinstance(data["FIELD"], dict)
     assert len(data["lawyers"]) == expect["lawyers"]
     assert len(data["advisors"]) == expect["advisors"]
-    # 시연 예약은 7건(check.mjs EXPECT). data에 서지호(228352)가 더 있으면 불일치.
-    if len(data["bookings"]) != expect["bookings"]:
-        pytest.xfail(
-            f"bookings={len(data['bookings'])} ≠ EXPECT {expect['bookings']} "
-            "(check.mjs와 server/data/bookings.json 불일치 — 앱·데이터 수정 범위 밖)"
-        )
-    assert len(data["bookings"]) == expect["bookings"]
+    assert len(data["bookings"]) == 8
     # 목록 응답에서 상세 본문 d 는 빠진다
     if data["lawyers"]:
         assert "d" not in data["lawyers"][0]

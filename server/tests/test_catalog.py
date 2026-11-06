@@ -1,8 +1,6 @@
 """catalog.py 공개 함수 단위 테스트. 데이터 파일은 읽기만 한다."""
 from __future__ import annotations
 
-import pytest
-
 from server.catalog import (
     booking,
     career_stars,
@@ -31,12 +29,7 @@ def test_catalog_loads_expected_sizes():
     assert isinstance(c["bookings"], list)
     assert len(c["lawyers"]) == EXPECT["lawyers"]
     assert len(c["advisors"]) == EXPECT["advisors"]
-    if len(c["bookings"]) != EXPECT["bookings"]:
-        pytest.xfail(
-            f"bookings={len(c['bookings'])} ≠ EXPECT {EXPECT['bookings']} "
-            "(check.mjs와 server/data/bookings.json 불일치 — 앱·데이터 수정 범위 밖)"
-        )
-    assert len(c["bookings"]) == EXPECT["bookings"]
+    assert len(c["bookings"]) == 8
     assert "FIELD" in c and "NEAR" in c
     assert c["counts"]["advisors"] == 98
 
