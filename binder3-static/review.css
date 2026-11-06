@@ -1,0 +1,13 @@
+/* 검토본 전용. YKOS 화면에는 없는 스타일이다. */
+html,body {margin:0;height:100%;background:#fff;}
+#app {height:100dvh;}
+#app .yk-binder3 {height:100dvh;}
+.review-picker {max-width:1040px;margin:0 auto;padding:40px 24px;font-family:"SUIT Variable",-apple-system,system-ui,sans-serif;color:#202631;word-break:keep-all;}
+.review-picker h1 {margin:0 0 8px;font-size:28px;}
+.review-picker p {margin:0 0 24px;color:#626873;line-height:1.6;}
+.review-picker ul {display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:0;padding:0;list-style:none;}
+.review-picker button {display:flex;flex-direction:column;gap:6px;width:100%;height:100%;padding:16px;border:1px solid #D5DBE5;border-radius:8px;background:#fff;color:inherit;font:inherit;font-size:14px;text-align:left;cursor:pointer;}
+.review-picker button:hover {border-color:#102169;}
+.review-picker strong {font-size:16px;color:#102169;}
+.review-picker span {color:#626873;}
+.review-home {position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:1000;padding:8px 12px;border:1px solid #D5DBE5;border-radius:8px;background:rgba(255,255,255,.92);font:13px -apple-system,system-ui,sans-serif;color:#202631;cursor:pointer;}
