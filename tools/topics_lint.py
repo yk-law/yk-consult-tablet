@@ -59,6 +59,12 @@ RULES = (
 )
 FATAL = {"FORBIDDEN", "SHAPE", "ALIAS"}
 
+# 경제범죄고소의 피의자는 일반사기 문구를 그대로 쓰도록 설계됨
+# (소분류 frozenset, 지위) — steps 완전 동일해도 DUP_ACROSS 위반으로 치지 않음
+DUP_ACROSS_ALLOW = (
+    (frozenset({"경제범죄고소", "일반사기"}), "피의자"),
+)
+
 
 def _as_list(value: Any) -> list:
     return value if isinstance(value, list) else []
@@ -232,8 +238,14 @@ def lint_alias(data: dict) -> list[dict]:
     return hits
 
 
-def lint_dup_across(units: list[tuple[str, str, dict, bool]], alias: dict) -> list[dict]:
-    """서로 다른 소분류·같은 지위 steps 묶음이 완전 동일하면 위반. 별칭 키는 제외."""
+def lint_dup_across(
+    units: list[tuple[str, str, dict, bool]], alias: dict
+) -> tuple[list[dict], int]:
+    """서로 다른 소분류·같은 지위 steps 묶음이 완전 동일하면 위반. 별칭 키는 제외.
+
+    Returns:
+        (hits, exception_pairs) — exception_pairs는 DUP_ACROSS_ALLOW로 뺀 쌍 수.
+    """
     alias_keys = set(alias) if isinstance(alias, dict) else set()
     groups: dict[tuple[str, str], list[str]] = defaultdict(list)
 
@@ -250,8 +262,18 @@ def lint_dup_across(units: list[tuple[str, str, dict, bool]], alias: dict) -> li
             groups[key].append(cat)
 
     hits: list[dict] = []
-    for (role, steps_json), cats in groups.items():
+    exception_pairs = 0
+    for (role, _steps_json), cats in groups.items():
         if len(cats) < 2:
+            continue
+        cats_set = frozenset(cats)
+        allowed = False
+        for allow_cats, allow_role in DUP_ACROSS_ALLOW:
+            if role == allow_role and cats_set == allow_cats:
+                exception_pairs += 1
+                allowed = True
+                break
+        if allowed:
             continue
         cats_sorted = sorted(cats)
         others = ", ".join(cats_sorted)
@@ -266,17 +288,18 @@ def lint_dup_across(units: list[tuple[str, str, dict, bool]], alias: dict) -> li
                     "sentence": f"동일 steps: {others}",
                 }
             )
-    return hits
+    return hits, exception_pairs
 
 
-def lint_topics(data: dict) -> list[dict]:
+def lint_topics(data: dict) -> tuple[list[dict], int]:
     units = iter_units(data)
     hits: list[dict] = []
     for cat, role, payload, _ in units:
         hits.extend(lint_payload(cat, role, payload))
-    hits.extend(lint_dup_across(units, data.get("_alias") or {}))
+    across_hits, exception_pairs = lint_dup_across(units, data.get("_alias") or {})
+    hits.extend(across_hits)
     hits.extend(lint_alias(data))
-    return hits
+    return hits, exception_pairs
 
 
 def summarize(hits: list[dict]) -> dict[str, int]:
@@ -288,7 +311,7 @@ def summarize(hits: list[dict]) -> dict[str, int]:
     return counts
 
 
-def format_text(counts: dict[str, int], hits: list[dict]) -> str:
+def format_text(counts: dict[str, int], hits: list[dict], exception_pairs: int = 0) -> str:
     lines = ["규칙별 건수"]
     for rule in RULES:
         lines.append(f"  {rule}: {counts[rule]}")
@@ -302,6 +325,7 @@ def format_text(counts: dict[str, int], hits: list[dict]) -> str:
             lines.append(
                 f"  {h['category']} · {h['role']} · {h['field']} · {h['index']} · {h['sentence']} · {h['rule']}"
             )
+    lines.append(f"예외 처리: {exception_pairs}쌍")
     return "\n".join(lines) + "\n"
 
 
@@ -313,20 +337,25 @@ def main(argv: list[str] | None = None) -> int:
 
     path = Path(args.path)
     data = json.loads(path.read_text(encoding="utf-8"))
-    hits = lint_topics(data)
+    hits, exception_pairs = lint_topics(data)
     counts = summarize(hits)
     fatal = any(h["rule"] in FATAL for h in hits)
 
     if args.json:
         print(
             json.dumps(
-                {"counts": counts, "hits": hits, "fatal": fatal},
+                {
+                    "counts": counts,
+                    "hits": hits,
+                    "fatal": fatal,
+                    "exception_pairs": exception_pairs,
+                },
                 ensure_ascii=False,
                 indent=2,
             )
         )
     else:
-        sys.stdout.write(format_text(counts, hits))
+        sys.stdout.write(format_text(counts, hits, exception_pairs))
 
     return 1 if fatal else 0
 
