@@ -206,6 +206,60 @@
   backdrop-filter:blur(32px) saturate(150%);
   transition:background-color .2s ease;
 }
+/* (임시) 유튜브 탭: 변호사 소개 영상 모음 */
+.yk-binder3 .b3-youtube {position:relative;flex:1;min-height:0;display:flex;background:var(--yk-background);}
+.yk-binder3 .b3-youtube-scroll {flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;}
+.yk-binder3 .b3-youtube-body {width:100%;max-width:1040px;margin:0 auto;padding:40px 40px 56px;}
+.yk-binder3 .b3-youtube-head {margin-bottom:28px;}
+.yk-binder3 .b3-youtube-eyebrow {margin:0 0 8px;font-size:14px;font-weight:600;line-height:20px;letter-spacing:.04em;color:var(--b3-accent);}
+.yk-binder3 .b3-youtube-head h2 {margin:0;font-family:var(--b3-font-serif);font-size:36px;font-weight:600;line-height:48px;color:var(--yk-primary);}
+.yk-binder3 .b3-youtube-tagline {margin:8px 0 0;font-size:18px;line-height:28px;color:var(--yk-muted-foreground);}
+/* 고른 영상: 업무 사례 팝업(b3-case-modal)과 같은 바탕. 머리말 없이 16:9 영상만 두고, 닫기는 바탕 오른쪽 위에 둔다. 영상이 화면 안에 들어오게 크기를 잡아 가운데에 둔다. */
+.yk-binder3 .b3-youtube-layer {
+  position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:32px 80px;
+  background:rgba(32,38,49,.55);container-type:size;container-name:b3yt;
+}
+.yk-binder3 .b3-youtube-stage {
+  display:flex;flex-direction:column;width:min(960px, 100cqw, 100cqh * 16 / 9);
+  border-radius:12px;background:#000;overflow:hidden;
+}
+.yk-binder3 .b3-youtube-close {
+  position:absolute;top:16px;right:16px;display:grid;place-items:center;width:48px;height:48px;padding:0;border:0;border-radius:8px;
+  background:transparent;color:#FFFFFF;cursor:pointer;
+}
+.yk-binder3 .b3-youtube-close svg {width:28px;height:28px;}
+.yk-binder3 .b3-youtube-close:hover {background:rgba(255,255,255,.14);}
+.yk-binder3 .b3-youtube-close:focus-visible {outline:2px solid #FFFFFF;outline-offset:2px;}
+.yk-binder3 .b3-youtube-player {position:relative;aspect-ratio:16 / 9;background:#000;}
+.yk-binder3 .b3-youtube-player iframe {position:absolute;inset:0;width:100%;height:100%;border:0;}
+.yk-binder3 .b3-youtube-list-title {margin:8px 0 16px;font-size:20px;font-weight:700;line-height:28px;color:var(--yk-foreground);}
+.yk-binder3 .b3-youtube-list-title span {margin-left:6px;font-size:16px;font-weight:500;color:var(--yk-muted-foreground);}
+.yk-binder3 .b3-youtube-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 20px;margin:0;padding:0;list-style:none;}
+.yk-binder3 .b3-youtube-card {
+  display:flex;flex-direction:column;gap:6px;width:100%;padding:0;border:0;background:transparent;
+  font-family:var(--b3-font);text-align:left;color:var(--yk-foreground);cursor:pointer;
+}
+.yk-binder3 .b3-youtube-thumb {position:relative;display:block;aspect-ratio:16 / 9;margin-bottom:6px;border-radius:8px;overflow:hidden;background:var(--b3-tint);}
+.yk-binder3 .b3-youtube-thumb img {display:block;width:100%;height:100%;object-fit:cover;transition:transform 300ms ease;}
+.yk-binder3 .b3-youtube-card:hover .b3-youtube-thumb img {transform:scale(1.04);}
+.yk-binder3 .b3-youtube-card.is-playing .b3-youtube-thumb {outline:3px solid var(--yk-primary);outline-offset:-3px;}
+.yk-binder3 .b3-youtube-badge {
+  position:absolute;left:8px;bottom:8px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;
+  background:rgba(11,19,54,.78);color:#FFFFFF;font-size:13px;font-weight:600;line-height:20px;
+}
+.yk-binder3 .b3-youtube-card.is-playing .b3-youtube-badge {background:var(--yk-primary);}
+.yk-binder3 .b3-youtube-badge svg {width:14px;height:14px;}
+.yk-binder3 .b3-youtube-card-lawyer {font-size:14px;font-weight:600;line-height:20px;color:var(--b3-accent);}
+.yk-binder3 .b3-youtube-card-line {font-size:16px;font-weight:500;line-height:24px;word-break:keep-all;}
+@container tablet (max-width:900px) {
+  .yk-binder3 .b3-youtube-list {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@container tablet (max-width:720px) {
+  .yk-binder3 .b3-youtube-layer {padding:72px 16px;}
+  .yk-binder3 .b3-youtube-body {padding:32px 24px 48px;}
+  .yk-binder3 .b3-youtube-head h2 {font-size:28px;line-height:38px;}
+}
+@media (prefers-reduced-motion:reduce) {.yk-binder3 .b3-youtube-thumb img {transition:none;}}
 .yk-binder3 .b3-film-skip:hover {background-color:rgba(19,23,32,.48);}
 .yk-binder3 .b3-film-skip:active {background-color:rgba(19,23,32,.56);}
 .yk-binder3 .b3-film-skip:focus-visible {outline:2px solid #FFFFFF;outline-offset:2px;}

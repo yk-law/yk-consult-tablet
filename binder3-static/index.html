@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>바인더#3 검토본</title>
-<link rel="stylesheet" href="binder3.css?v=profile-back-over-video">
+<link rel="stylesheet" href="binder3.css?v=youtube-tab">
 <link rel="stylesheet" href="review.css">
 </head>
 <body>
@@ -394,6 +394,44 @@
   </div>
 </template>
 
+<!-- (임시) 유튜브: 변호사 소개 영상 모음. 처음에는 목록만, 고르면 가운데 팝업에서 소리 켜고 재생 -->
+<template id="tpl-youtube">
+  <section class="b3-youtube" aria-label="법무법인 YK 영상">
+    <div class="b3-youtube-scroll">
+      <div class="b3-youtube-body">
+        <header class="b3-youtube-head">
+          <p class="b3-youtube-eyebrow">법무법인 YK 영상</p>
+          <h2>{{playlist.title}}</h2>
+          <p class="b3-youtube-tagline">{{playlist.tagline}}</p>
+        </header>
+        <h3 class="b3-youtube-list-title">변호사 소개 영상 <span>{{videos.length}}편</span></h3>
+        <ul class="b3-youtube-list">
+          <li data-each="v in videos">
+            <button type="button" class="b3-youtube-card" aria-pressed="false" aria-label="{{v.lawyer}} 영상 보기" data-action="youtube-play" data-arg="{{v.id}}">
+              <span class="b3-youtube-thumb">
+                <img src="https://i.ytimg.com/vi/{{v.id}}/hqdefault.jpg" alt="" loading="lazy">
+                <span class="b3-youtube-badge"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5L8 5.5Z"/></svg>보기</span>
+              </span>
+              <span class="b3-youtube-card-lawyer">{{v.lawyer}}</span>
+              <span class="b3-youtube-card-line">{{v.headline}}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</template>
+<template id="tpl-youtube-layer">
+  <div class="b3-youtube-layer" role="dialog" aria-modal="true" aria-label="{{v.lawyer}} 영상" data-action="youtube-close">
+    <button type="button" class="b3-youtube-close" aria-label="영상 닫기" data-action="youtube-close"><svg width="20" height="20" aria-hidden="true"><use href="#i-close"/></svg></button>
+    <div class="b3-youtube-stage" data-action="stop">
+      <div class="b3-youtube-player">
+        <iframe title="재생 중: {{v.lawyer}}" src="https://www.youtube-nocookie.com/embed/{{v.id}}?{{params}}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+</template>
+
 <template id="tpl-case-preview">
   <main class="yk-binder3">
     <button class="review-home" type="button" data-action="open-case" data-arg="{{id}}">업무 사례 다시 열기</button>
@@ -414,6 +452,6 @@
 </template>
 
 <script src="data.js?v=20261111-members"></script>
-<script src="binder3.js?v=shared-profile-hero"></script>
+<script src="binder3.js?v=youtube-tab"></script>
 </body>
 </html>
