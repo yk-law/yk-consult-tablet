@@ -113,6 +113,13 @@ def main():
     table = json.loads(TOPICS.read_text(encoding="utf-8"))
     db = SessionLocal()
     firm = get_firm_view_cached(db)
+    # 공개 구성원 수는 DB 집계 대신 브랜드사이트의 노출 기준을 사용한다.
+    brand = json.loads((HERE / "brand_members.json").read_text(encoding="utf-8"))
+    firm["stats"].update(members=brand["members"], asOf=brand["asOf"])
+    advisors = {person["name"]: person for person in firm["advisors"]}
+    for person in brand["additionalAdvisors"]:
+        advisors.setdefault(person["name"], person)
+    firm["advisors"] = list(advisors.values())
     for case in cases:
         case["field"] = category_of(db, case["small"], case["middle"])
     lawyers = choose_lawyers(db, [c["field"] for c in cases if c["field"]])
