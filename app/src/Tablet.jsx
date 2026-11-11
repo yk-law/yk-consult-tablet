@@ -19,7 +19,7 @@ const SHOW_RESERVATION_QR = false;
 
 /** 고객이 태블릿 안에서 자유 이동하는 퍼널 장면. */
 const JOURNEY = [
-  ["firm", "YK 소개"],
+  ["firm", "법무법인 YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문 인력"],
@@ -80,7 +80,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           />
         )}
         {screen === "firm" && (
-          <FirmIntro firm={data.firm} portraits={data.portraits} FIELD={FIELD} onNext={() => onScreen("report")} />
+          <FirmIntro firm={data.firm} portraits={data.portraits} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && hasSummary && (
           <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} onPrevious={() => onScreen("firm")} />
@@ -92,7 +92,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             onParty={onParty}
             onCounsel={() => onScreen("counsel")}
             onPrevious={screen === "topics" ? () => onScreen("report") : () => onScreen("firm")}
-            previousLabel={screen === "topics" ? "말씀하신 내용으로" : "YK 소개로"}
+            previousLabel={screen === "topics" ? "말씀하신 내용으로" : "법무법인 YK 소개로"}
           />
         )}
         {counselVideo && (
@@ -376,51 +376,30 @@ function CounselVideo({ l, onDone }) {
 
 /** YK 소개 — 센터 구성과 구성원 면면. 고객이 이 로펌의 규모와 경력을 한 화면에서 본다(2026-10-28).
  *  수치는 홈페이지 기준만 쓰고, 법원·검찰 근무는 「역임」 사실로만 적는다. */
-function FirmIntro({ firm, portraits, FIELD, onNext }) {
+function FirmIntro({ firm, portraits, onNext }) {
   if (!firm) return null;
   const people = [
-    // 10-29 김윤창: '출신'이 아니라 '역임'으로 쓴다.
-    ["법관 역임 변호사", firm.bench],
-    ["검사 역임 변호사", firm.prosecution],
+    ["법원 경력 변호사", firm.bench],
+    ["검찰 경력 변호사", firm.prosecution],
   ];
+  const [year, month] = (firm.asOf || "").split("-");
   return (
     <section className="pane on reportpane firmpane">
       <div className="ykhelper">
         <div className="yh-body firm-body">
           <header className="firm-hero">
-            <p className="firm-eyebrow">법무법인 YK</p>
-            <h3>{firm.slogan}</h3>
+            <h3><span className="firm-headline-lead">{firm.sloganLead}</span>{firm.slogan}</h3>
             <p className="firm-en">{firm.sloganEn}</p>
             <dl className="firm-stats">
               {firm.stats.map((x) => (
                 <div key={x.label}>
                   <dt>{x.label}</dt>
-                  <dd><strong>{x.n}</strong><span>{x.unit}</span></dd>
+                  <dd><strong>{Number(x.n).toLocaleString("ko-KR")}</strong><span>{x.unit}</span></dd>
                 </div>
               ))}
             </dl>
-            <p className="firm-note">{firm.statsNote}</p>
+            {year && month && <p className="firm-note">({year}년 {Number(month)}월 기준)</p>}
           </header>
-
-          <section className="firm-sec" aria-labelledby="firm-centers">
-            <h4 id="firm-centers">분야별 전문 센터</h4>
-            <p className="firm-sec-lead">사건 분야마다 전담 센터를 두고 있습니다.</p>
-            <div className="firm-centers">
-              {firm.centerGroups.map((g) => (
-                <div className="firm-center-group" key={g.t}>
-                  <p className="firm-group-t">{g.t}</p>
-                  <ul>
-                    {g.centers.map((c) => (
-                      <li key={c.n}>
-                        <span className="firm-center-n">{c.n}</span>
-                        {c.f && FIELD[c.f] && <span className="firm-center-d">{FIELD[c.f][1]}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
 
           {people.map(([title, rows]) => rows?.length > 0 && (
             <section className="firm-sec" key={title} aria-label={title}>
@@ -440,29 +419,49 @@ function FirmIntro({ firm, portraits, FIELD, onNext }) {
             </section>
           ))}
 
-          {firm.advisors?.length > 0 && (
+          {(firm.advisors?.length > 0 || firm.police?.length > 0) && (
             <section className="firm-sec" aria-labelledby="firm-advisors">
-              <h4 id="firm-advisors">고문 {firm.advisors.length}명</h4>
-              <p className="firm-sec-lead">정부기관·경찰·입법 분야에서 일한 고문들이 함께합니다.</p>
-              <ul className="firm-names">
-                {firm.advisors.map((a) => (
-                  <li key={a.n}><strong>{a.n}</strong>{a.c && <span>{a.c}</span>}</li>
-                ))}
-              </ul>
+              <h4 id="firm-advisors">고문 및 전문위원</h4>
+              <p className="firm-sec-lead">정부기관·경찰·입법 분야의 실무 경험을 바탕으로, 사안 검토에 필요한 전문적 관점을 더합니다.</p>
+              {firm.advisors?.length > 0 && (
+                <div className="firm-subgroup">
+                  <h5>고문</h5>
+                  <ul className="firm-names">
+                    {firm.advisors.map((a) => (
+                      <li key={a.n}><strong>{a.n}</strong>{a.c && <span>{a.c}</span>}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {firm.police?.length > 0 && (
+                <div className="firm-subgroup">
+                  <h5>경찰 경력 전문위원</h5>
+                  <ul className="firm-names compact">
+                    {firm.police.map((a) => <li key={a.n}><strong>{a.n}</strong></li>)}
+                  </ul>
+                </div>
+              )}
             </section>
           )}
 
-          {firm.police?.length > 0 && (
-            <section className="firm-sec" aria-labelledby="firm-police">
-              <h4 id="firm-police">경찰 경력 전문위원 {firm.police.length}명</h4>
-              <p className="firm-sec-lead">전문위원 {firm.expertCount}명 가운데 경찰에서 일했던 분들입니다.</p>
-              <ul className="firm-names compact">
-                {firm.police.map((a) => (
-                  <li key={a.n}><strong>{a.n}</strong></li>
-                ))}
-              </ul>
-            </section>
-          )}
+          <section className="firm-sec" aria-labelledby="firm-centers">
+            <h4 id="firm-centers">분야별 전문 센터</h4>
+            <p className="firm-sec-lead">형사·가사·민사·기업 등 각 분야의 실무 경험을 바탕으로, 사건의 주요 쟁점과 대응 절차를 살핍니다.</p>
+            <div className="firm-centers">
+              {firm.centerGroups.map((g) => (
+                <div className="firm-center-group" key={g.t}>
+                  <p className="firm-group-t">{g.t}</p>
+                  <ul>
+                    {g.centers.map((c) => (
+                      <li key={c.n}>
+                        <span className="firm-center-n">{c.n}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <ReportNext onClick={onNext} label="사건 요약 보기" />
         </div>
@@ -518,7 +517,7 @@ function Summary({ helper, answers, onAnswer, onNext, onPrevious }) {
           <p className="yh-src">모두 고르지 않으셔도 괜찮습니다. 고르신 답은 다시 누르면 바뀝니다.</p>
           {/* 11-03 재완님: 1뎁스에서 돌아갈 길이 없었다. 2뎁스와 같은 앞/뒤 버튼 줄을 둔다. */}
           <div className="counsel-page-links">
-            <ReportNext onClick={onPrevious} label="YK 소개로" previous />
+            <ReportNext onClick={onPrevious} label="법무법인 YK 소개로" previous />
             <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
           </div>
         </div>
@@ -838,7 +837,7 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
   </>;
 }
 
-function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specialist = false, onNext, onPrevious }) {
+function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specialist = false, onBack, onNext, onPrevious }) {
   const heroRef = useRef(null);
   const profileRef = useRef(null);
   const indexId = useId();
@@ -946,6 +945,14 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     <div className="profile" ref={profileRef}>
       <div ref={heroRef} className={counselHero ? "counsel-hero" : "profile-hero-pass"}>
       {counselHero && <HeroBackdrop />}
+      {onBack && (
+        <div className="specialist-back-row">
+          <button type="button" autoFocus onClick={onBack}>
+            <svg className="lucide lucide-arrow-left" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14" /></svg>
+            전문 인력 목록
+          </button>
+        </div>
+      )}
       <div className="xlead">
         <Portrait l={l} portraits={portraits} size="hero" />
         <div className="xident xmeta">
@@ -1386,13 +1393,8 @@ function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext })
       </div>
     </section>
       {shown && <section className="pane on counselpane specialist-detail-page" aria-label={`${shown.n} 프로필 상세`}>
-        <div className="specialist-back-row">
-          <button type="button" autoFocus onClick={() => { pauseBriefly(); setOpen(null); }}>
-            <svg className="lucide lucide-arrow-left" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14" /></svg>
-            전문 인력 목록
-          </button>
-        </div>
-        <ProfileBody key={shown.n} l={shown} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero specialist />
+        <ProfileBody key={shown.n} l={shown} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero specialist
+          onBack={() => { pauseBriefly(); setOpen(null); }} />
       </section>}
     </div>
   );

@@ -1744,13 +1744,15 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 /* Hero 배경은 전체 너비, 내용은 800px 중앙 정렬 */
 .profile-hero-pass,.profile-details-pass {display:contents;}
 .binder-theme .counselpane > .profile {width:100%;max-width:none;margin:0;padding:0;}
-.counsel-hero {padding:40px;}
+.counsel-hero {padding-inline:40px;}
 .binder-theme.theme-light .counsel-hero {background:#F3F5FC;}
 .binder-theme.theme-dark .counsel-hero {background:#202631;}
-.binder-theme .counselpane .counsel-hero > .xlead {width:100%;max-width:800px;margin:0 auto;}
+.binder-theme .counselpane .counsel-hero > .xlead {width:100%;max-width:800px;margin:0 auto;padding-top:40px;}
 .counsel-details {width:calc(100% - 80px);max-width:800px;margin:0 auto;padding:40px 0 32px;}
 .binder-theme .counselpane .counsel-details > .xsec:first-child {margin-top:0;padding-top:0;border-top:0;}
 @container tablet (max-width:720px) {
+  .counsel-hero {padding-inline:24px;}
+  .binder-theme .counselpane .counsel-hero > .xlead {padding-top:32px;}
   .counsel-details {width:calc(100% - 48px);}
 }
 
@@ -1765,12 +1767,14 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 
 
 /* 확대된 사진의 하단을 Hero 배경 끝에 정렬 */
-.counsel-hero {padding-bottom:0;}
 .binder-theme .counselpane .profile .xlead {grid-template-columns:240px minmax(0,1fr);}
 .binder-theme .counselpane .profile .xlead .pframe.hero {
-  width:240px;height:288px;align-self:end;
+  width:240px;height:auto;aspect-ratio:3 / 4;padding-top:20px;align-self:end;
 }
-.binder-theme .counselpane .pframe.hero .pmat {height:288px;}
+.binder-theme .counselpane .counsel-hero .pframe.hero .pmat {height:100%;}
+.binder-theme .counselpane .counsel-hero .pframe.hero img {
+  object-fit:contain;object-position:center top;transform:scale(1.35);transform-origin:center top;
+}
 .binder-theme .counselpane .profile .xlead > .xident {margin-bottom:40px;}
 @container tablet (max-width:520px) {
   .binder-theme .counselpane .profile .xlead {grid-template-columns:minmax(0,1fr);}
@@ -2043,7 +2047,7 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .counsel-detail-layout {width:calc(100% - 80px);max-width:1000px;margin:0 auto;padding:40px 0 32px;display:grid;gap:32px;}
 .counsel-detail-layout > .counsel-details {width:100%;max-width:none;padding:0;margin:0;min-width:0;}
 .counsel-profile-card {display:none;width:160px;border-left:1px solid var(--navigation-line);align-self:start;color:var(--bt-text);font-family:var(--font);}
-.counsel-profile-card-photo {display:flex;align-items:center;justify-content:center;width:100%;height:176px;overflow:hidden;background:var(--bt-tint);}
+.counsel-profile-card-photo {display:flex;align-items:center;justify-content:center;width:100%;height:176px;overflow:hidden;border-radius:0;background:var(--bt-tint);}
 .counsel-profile-card-photo img {display:block;width:100%;height:100%;object-fit:cover;object-position:center top;}
 .counsel-card-identity {display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;margin-top:12px;padding-left:0;padding-right:16px;}
 .counsel-card-identity strong {font-size:16px;font-weight:600;line-height:24px;}
@@ -2381,20 +2385,11 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .senior-pages > .seniorpane {height:100%;box-sizing:border-box;}
 .senior-pages > .is-detail-hidden {visibility:hidden;pointer-events:none;}
 .binder-theme .senior-pages > .specialist-detail-page {position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;}
-.specialist-back-row {display:flex;align-items:center;flex:none;box-sizing:border-box;height:56px;padding:6px 40px;background:var(--bt-bg);}
+.specialist-back-row {display:flex;align-items:center;flex:none;box-sizing:border-box;height:56px;padding-block:6px;background:transparent;}
 .specialist-back-row button {display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0;border:0;background:transparent;color:var(--bt-muted);font:500 14px/22px var(--font);cursor:pointer;}
 .specialist-back-row button:hover,
 .specialist-back-row button:active {color:var(--bt-text);}
 .specialist-back-row button:focus-visible {outline:2px solid currentColor;outline-offset:4px;}
-@container tablet (max-width:720px) {.specialist-back-row {padding-inline:24px;}}
-
-/* 전문 인력 Hero: 본문의 우측 목차 공간을 반영한 동일 시작선 */
-@container tablet (min-width:900px) and (min-aspect-ratio:1/1) {
-  .binder-theme .specialist-detail-page .counsel-hero {padding-left:40px;padding-right:200px;}
-}
-@container tablet (max-width:720px) {
-  .binder-theme .specialist-detail-page .counsel-hero {padding-left:24px;padding-right:24px;}
-}
 
 /* 예약 고객명은 가로형 좌측 내비게이션에서만 표시 */
 .journey-client {display:none;}
@@ -2460,12 +2455,12 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 
 /* YK 소개 (2026-10-28): YK 타이포그래피(typography.md) 역할값을 따른다.
    브랜드 메시지만 마루부리, 나머지는 SUIT. 박스·그림자 없이 헤어라인으로 위계. */
-.firmpane .firm-body {max-width:880px;word-break:keep-all;overflow-wrap:anywhere;}
+.firmpane .firm-body {max-width:800px;word-break:keep-all;overflow-wrap:anywhere;}
 .firm-hero {padding:0 0 40px;border-bottom:1px solid var(--bt-line);}
 /* Label */
-.firm-eyebrow {margin:0 0 16px;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
 /* Brand(마루부리) 40/400/56 */
 .reportpane .firm-hero h3 {margin:0;font-family:var(--font-serif);font-size:40px;font-weight:400;line-height:56px;letter-spacing:0;}
+.firm-headline-lead {display:block;font-size:28px;line-height:40px;}
 /* Body */
 .firm-en {margin:8px 0 0;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);}
 .firm-stats {display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));margin:32px 0 0;border-top:1px solid var(--bt-line);}
@@ -2485,35 +2480,37 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .firm-sec h4 {margin:0;font-family:var(--font);font-size:24px;font-weight:700;line-height:32px;letter-spacing:-.01em;color:var(--bt-text);}
 .firm-sec-lead {margin:16px 0 0;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-muted);}
 
-.firm-centers {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:24px 40px;margin-top:24px;}
+.firm-subgroup {margin-top:24px;}
+.firm-subgroup + .firm-subgroup {margin-top:32px;}
+.firm-subgroup h5 {margin:0;font-size:18px;font-weight:600;line-height:26px;color:var(--bt-text);}
+
+.firm-centers {display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:32px 40px;margin-top:24px;}
 .firm-group-t {margin:0 0 8px;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
-.firm-center-group ul {list-style:none;margin:0;padding:0;border-top:1px solid var(--bt-line);}
-.firm-center-group li {display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--bt-line);}
-/* Title 18/600/26 */
-.firm-center-n {font-size:18px;font-weight:600;line-height:26px;letter-spacing:-.01em;color:var(--bt-text);}
-/* Body 보조 14/400/24 */
-.firm-center-d {font-size:14px;font-weight:400;line-height:24px;color:var(--bt-muted);}
+.firm-center-group ul {display:grid;row-gap:16px;list-style:none;margin:0;padding:0;}
+.firm-center-group li {display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;}
+.firm-center-n {font-size:16px;font-weight:600;line-height:24px;letter-spacing:-.01em;color:var(--bt-text);}
 
 .firm-people {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill, minmax(132px, 1fr));gap:24px 20px;}
 .firm-people li {display:flex;flex-direction:column;min-width:0;}
-.firm-ph {display:block;aspect-ratio:3 / 4;max-width:100%;margin:0 0 12px;overflow:hidden;background:var(--bt-tint);}
-.firm-ph img {display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%;}
+.firm-ph {display:block;aspect-ratio:3 / 4;max-width:100%;margin:0 0 12px;padding-top:20px;border-radius:8px;overflow:hidden;background:var(--bt-tint);}
+.firm-ph img {display:block;width:100%;height:100%;object-fit:contain;object-position:center top;transform:scale(1.6);transform-origin:center top;}
 .firm-ph > span {display:flex;width:100%;height:100%;align-items:center;justify-content:center;font-size:32px;color:var(--bt-muted);}
 .firm-people strong {font-size:18px;font-weight:600;line-height:26px;letter-spacing:-.01em;color:var(--bt-text);}
 .firm-people-pos {font-size:14px;font-weight:400;line-height:20px;color:var(--bt-muted);}
 .firm-people-t {margin-top:4px;font-size:14px;font-weight:500;line-height:20px;color:var(--bt-accent);}
 
-.firm-names {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));border-top:1px solid var(--bt-line);}
-.firm-names li {display:flex;flex-direction:column;gap:4px;padding:12px 12px 12px 0;border-bottom:1px solid var(--bt-line);min-width:0;}
+.firm-names {list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));row-gap:16px;}
+.firm-names li {display:flex;flex-direction:column;gap:4px;padding-right:12px;min-width:0;}
 /* Title 소형 16/600/24 */
 .firm-names strong {font-size:16px;font-weight:600;line-height:24px;letter-spacing:-.01em;color:var(--bt-text);}
 .firm-names span {font-size:14px;font-weight:400;line-height:20px;color:var(--bt-muted);}
 .firm-names.compact {grid-template-columns:repeat(5, minmax(0, 1fr));}
 
-.firmpane .report-next {margin-top:32px;}
+.firmpane .report-next {margin-top:40px;padding-top:24px;}
 
 @container tablet (max-width:720px) {
   .reportpane .firm-hero h3 {font-size:32px;line-height:44px;}
+  .firm-headline-lead {font-size:24px;line-height:34px;}
   .firm-stats dd strong {font-size:40px;line-height:50px;}
   .firm-centers {grid-template-columns:minmax(0, 1fr);}
   .firm-names, .firm-names.compact {grid-template-columns:repeat(3, minmax(0, 1fr));}

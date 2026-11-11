@@ -4,7 +4,6 @@ from __future__ import annotations
 import json
 import random
 import re
-from collections import Counter
 from functools import lru_cache
 from pathlib import Path
 
@@ -570,51 +569,9 @@ def advisor_pool() -> list[dict]:
 
 
 # 법원·검찰 근무 이력은 사실 서술로만 쓴다. 「전관」이라는 말은 고객 화면에 두지 않는다.
-BENCH_ORDER = ["대법관", "부장판사", "판사"]
-PROSECUTION_ORDER = ["고검장", "차장검사", "부장검사"]
-
-
 def firm_view() -> dict:
-    """YK 소개. 센터 구성과 구성원(법원·검찰 근무 이력, 고문, 경찰 경력 전문위원)을 보여 준다.
-    수치는 홈페이지에 적힌 것만 쓴다. 승패소율·수임 건수는 넣지 않는다.
-    10-28 미팅: 고객마다 바꾸지 않는 공통 포맷이다."""
-    cat = catalog()
-    intro = cat["firmIntro"]
-
-    bench, prosecution = [], []
-    for l in cat["lawyers"]:
-        p = public_profile(l)
-        title = next((t for t in (p.get("titles") or []) if str(t).endswith("역임")), "")
-        role = title.removesuffix("역임").strip()
-        if role in BENCH_ORDER:
-            bench.append({"n": p["n"], "pos": p["pos"], "title": title, "_o": BENCH_ORDER.index(role)})
-        elif role in PROSECUTION_ORDER:
-            prosecution.append({"n": p["n"], "pos": p["pos"], "title": title, "_o": PROSECUTION_ORDER.index(role)})
-    for rows in (bench, prosecution):
-        rows.sort(key=lambda x: (x["_o"], x["n"]))
-        for x in rows:
-            x.pop("_o")
-
-    advisors = [a for a in cat["advisors"] if a.get("r") == "고문"]
-    experts = [a for a in cat["advisors"] if a.get("r") == "전문위원"]
-    police = [a for a in experts if "경찰" in (a.get("c") or "")]
-    # 많은 경력 라벨부터(정부기관 → 경찰 → …), 라벨 없는 고문은 뒤에. 같은 라벨끼리 이름순.
-    label_n = Counter(a.get("c") or "" for a in advisors)
-    advisors.sort(key=lambda a: (0 if a.get("c") else 1, -label_n[a.get("c") or ""], a.get("c") or "", a["n"]))
-
-    return {
-        **{k: intro[k] for k in ("slogan", "sloganEn", "stats", "statsNote")},
-        "centerGroups": [
-            {"t": g["t"], "centers": [{"n": n, "f": f} for n, f in g["centers"]]}
-            for g in intro["centerGroups"]
-        ],
-        "bench": bench,
-        "prosecution": prosecution,
-        "photos": {x["n"]: cat["portraitsFirm"][x["n"]] for x in bench + prosecution if x["n"] in cat["portraitsFirm"]},
-        "advisors": [{"n": a["n"], "c": a.get("c") or ""} for a in advisors],
-        "police": [{"n": a["n"]} for a in sorted(police, key=lambda a: a["n"])],
-        "expertCount": len(experts),
-    }
+    """검토본과 동일한 공개 구성원·전문센터 스냅샷."""
+    return catalog()["firmIntro"]
 
 
 def bar_seniority(p: dict) -> tuple[int, str]:

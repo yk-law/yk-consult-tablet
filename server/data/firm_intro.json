@@ -1,16 +1,483 @@
 {
-  "slogan": "내 일처럼 열정을 다하자",
-  "sloganEn": "Built on Your Needs. Strengthened by Your Trust.",
+  "sloganLead": "고객중심 법률파트너",
+  "slogan": "법무법인 YK",
+  "sloganEn": "People. Promise. Performance.",
+  "asOf": "2026-11",
   "stats": [
-    { "n": "412", "unit": "명", "label": "구성원 변호사·고문·위원" },
-    { "n": "31", "unit": "곳", "label": "전국 사무소" },
-    { "n": "16", "unit": "개", "label": "분야별 전문 센터" }
+    {
+      "n": 416,
+      "unit": "명",
+      "label": "구성원 변호사·고문·위원"
+    },
+    {
+      "n": 31,
+      "unit": "곳",
+      "label": "전국 사무소"
+    },
+    {
+      "n": 18,
+      "unit": "개",
+      "label": "분야별 전문 센터"
+    }
   ],
-  "statsNote": "법무법인 YK 홈페이지 기준 (구성원 2026년 10월)",
   "centerGroups": [
-    { "t": "형사", "centers": [["형사센터", "A"], ["성범죄센터", "B"], ["마약센터", "D"], ["학교폭력센터", "C"], ["교통사고센터", "E"], ["군형사센터", "M"]] },
-    { "t": "가사", "centers": [["이혼센터", "J"], ["가사상속센터", "L"]] },
-    { "t": "민사 · 기업", "centers": [["민사센터", "K"], ["기업총괄센터", "F"], ["법인 회생·파산센터", "H"], ["부동산·건설센터", "I"]] },
-    { "t": "노동 · 산업", "centers": [["노동센터", "O"], ["중대재해센터", "N"], ["의료센터", "Q"], ["환경·에너지전략센터", ""]] }
+    {
+      "t": "형사",
+      "centers": [
+        {
+          "n": "형사센터"
+        },
+        {
+          "n": "국방법무센터"
+        },
+        {
+          "n": "교통형사센터"
+        },
+        {
+          "n": "성범죄센터"
+        },
+        {
+          "n": "마약센터"
+        },
+        {
+          "n": "선거법센터"
+        },
+        {
+          "n": "학교폭력센터"
+        }
+      ]
+    },
+    {
+      "t": "가사",
+      "centers": [
+        {
+          "n": "이혼센터"
+        },
+        {
+          "n": "가사상속&가업승계센터"
+        }
+      ]
+    },
+    {
+      "t": "민사 · 기업",
+      "centers": [
+        {
+          "n": "기업총괄센터"
+        },
+        {
+          "n": "법인 회생·파산센터"
+        },
+        {
+          "n": "부동산건설센터"
+        },
+        {
+          "n": "민사·행정센터"
+        },
+        {
+          "n": "해양법무센터"
+        },
+        {
+          "n": "DISCOVERY"
+        }
+      ]
+    },
+    {
+      "t": "노동 · 산업",
+      "centers": [
+        {
+          "n": "노동센터"
+        },
+        {
+          "n": "의료센터"
+        },
+        {
+          "n": "중대재해센터"
+        }
+      ]
+    }
+  ],
+  "bench": [
+    {
+      "n": "정창호",
+      "pos": "대표변호사",
+      "title": "국제형사재판소(ICC) 재판관 역임"
+    },
+    {
+      "n": "권순일",
+      "pos": "대표변호사",
+      "title": "대법관 역임"
+    },
+    {
+      "n": "김경",
+      "pos": "대표변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "김동진",
+      "pos": "파트너변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "김윤정",
+      "pos": "파트너변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "박찬",
+      "pos": "대표변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "박춘기",
+      "pos": "대표변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "배인구",
+      "pos": "대표변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "변민선",
+      "pos": "대표변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "송각엽",
+      "pos": "파트너변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "정병실",
+      "pos": "파트너변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "김택형",
+      "pos": "파트너변호사",
+      "title": "판사 역임"
+    },
+    {
+      "n": "양동학",
+      "pos": "고문변호사",
+      "title": "판사 역임"
+    }
+  ],
+  "prosecution": [
+    {
+      "n": "배성범",
+      "pos": "대표변호사",
+      "title": "고검장 역임"
+    },
+    {
+      "n": "나찬기",
+      "pos": "대표변호사",
+      "title": "차장검사 역임"
+    },
+    {
+      "n": "유병두",
+      "pos": "대표변호사",
+      "title": "차장검사 역임"
+    },
+    {
+      "n": "김정헌",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "변광호",
+      "pos": "고문변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "양호산",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "이상목",
+      "pos": "파트너변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "장일희",
+      "pos": "파트너변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "천기홍",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "최영운",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "한상진",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "홍성준",
+      "pos": "파트너변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "진호식",
+      "pos": "파트너변호사",
+      "title": "부부장검사 역임"
+    },
+    {
+      "n": "강형윤",
+      "pos": "변호사",
+      "title": "검사 역임"
+    },
+    {
+      "n": "안태민",
+      "pos": "변호사",
+      "title": "검사 역임"
+    },
+    {
+      "n": "이태훈",
+      "pos": "파트너변호사",
+      "title": "검사 역임"
+    },
+    {
+      "n": "최진홍",
+      "pos": "파트너변호사",
+      "title": "검사 역임"
+    }
+  ],
+  "photos": {
+    "정창호": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/06/12/20260612_174246014.png",
+    "권순일": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/11/19/20251119_085047573.png",
+    "김경": "https://www.yklawfirm.co.kr/upload_file/lawyer/김경.png",
+    "김동진": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/05/12/20260512_175727655.png",
+    "김윤정": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/12/17/20251217_095121242.png",
+    "박찬": "https://www.yklawfirm.co.kr/upload_file/lawyer/박찬.png",
+    "박춘기": "https://www.yklawfirm.co.kr/upload_file/lawyer/박춘기.png",
+    "배인구": "https://www.yklawfirm.co.kr/upload_file/lawyer/배인구.png",
+    "변민선": "https://www.yklawfirm.co.kr/upload_file/lawyer/변민선.png",
+    "송각엽": "https://www.yklawfirm.co.kr/upload_file/lawyer/송각엽.png",
+    "정병실": "https://www.yklawfirm.co.kr/upload_file/lawyer/정병실.png",
+    "김택형": "https://www.yklawfirm.co.kr/upload_file/lawyer/김택형.png",
+    "양동학": "https://www.yklawfirm.co.kr/upload_file/lawyer/양동학.png",
+    "배성범": "https://www.yklawfirm.co.kr/upload_file/lawyer/배성범.png",
+    "나찬기": "https://www.yklawfirm.co.kr/upload_file/lawyer/나찬기.png",
+    "유병두": "https://www.yklawfirm.co.kr/upload_file/lawyer/유병두.png",
+    "김정헌": "https://www.yklawfirm.co.kr/upload_file/lawyer/김정헌.png",
+    "변광호": "https://www.yklawfirm.co.kr/upload_file/lawyer/변광호.png",
+    "양호산": "https://www.yklawfirm.co.kr/upload_file/lawyer/양호산.png",
+    "이상목": "https://www.yklawfirm.co.kr/upload_file/lawyer/이상목.png",
+    "장일희": "https://www.yklawfirm.co.kr/upload_file/lawyer/장일희.png",
+    "천기홍": "https://www.yklawfirm.co.kr/upload_file/lawyer/천기홍.png",
+    "최영운": "https://www.yklawfirm.co.kr/upload_file/lawyer/최영운.png",
+    "한상진": "https://www.yklawfirm.co.kr/upload_file/lawyer/한상진.png",
+    "홍성준": "https://www.yklawfirm.co.kr/upload_file/lawyer/홍성준.png",
+    "진호식": "https://www.yklawfirm.co.kr/upload_file/lawyer/진호식.png",
+    "강형윤": "https://www.yklawfirm.co.kr/upload_file/lawyer/강형윤.png",
+    "안태민": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/03/10/20260310_014529448.png",
+    "이태훈": "https://www.yklawfirm.co.kr/upload_file/lawyer/이태훈.png",
+    "최진홍": "https://www.yklawfirm.co.kr/upload_file/lawyer/최진홍.png"
+  },
+  "advisors": [
+    {
+      "n": "고기동",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "길병우",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "김동현",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "김준석",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "박기영",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "이준재",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "장상윤",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "최원순",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "최창덕",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "홍정기",
+      "c": "정부기관 경력"
+    },
+    {
+      "n": "구은수",
+      "c": "경찰 경력"
+    },
+    {
+      "n": "박명춘",
+      "c": "경찰 경력"
+    },
+    {
+      "n": "손호중",
+      "c": "경찰 경력"
+    },
+    {
+      "n": "유현철",
+      "c": "경찰 경력"
+    },
+    {
+      "n": "목성호",
+      "c": "특허청 경력"
+    },
+    {
+      "n": "강성용",
+      "c": ""
+    },
+    {
+      "n": "김성섭",
+      "c": ""
+    },
+    {
+      "n": "김성수",
+      "c": ""
+    },
+    {
+      "n": "김화진",
+      "c": ""
+    },
+    {
+      "n": "이용만",
+      "c": ""
+    },
+    {
+      "n": "이재성",
+      "c": ""
+    },
+    {
+      "n": "이재열",
+      "c": ""
+    },
+    {
+      "n": "전종성",
+      "c": ""
+    },
+    {
+      "n": "전진구",
+      "c": ""
+    },
+    {
+      "n": "정기남",
+      "c": ""
+    },
+    {
+      "n": "정찬호",
+      "c": ""
+    },
+    {
+      "n": "진춘도",
+      "c": ""
+    },
+    {
+      "n": "이광환",
+      "c": ""
+    },
+    {
+      "n": "권오상",
+      "c": "정부기관 경력"
+    }
+  ],
+  "police": [
+    {
+      "n": "강정선"
+    },
+    {
+      "n": "김수환"
+    },
+    {
+      "n": "김정수"
+    },
+    {
+      "n": "김형식"
+    },
+    {
+      "n": "남종권"
+    },
+    {
+      "n": "문영구"
+    },
+    {
+      "n": "박성진"
+    },
+    {
+      "n": "박순재"
+    },
+    {
+      "n": "박윤삼"
+    },
+    {
+      "n": "선철주"
+    },
+    {
+      "n": "송광근"
+    },
+    {
+      "n": "여연태"
+    },
+    {
+      "n": "유인재"
+    },
+    {
+      "n": "이상경"
+    },
+    {
+      "n": "이상관"
+    },
+    {
+      "n": "이상국"
+    },
+    {
+      "n": "이정훈"
+    },
+    {
+      "n": "이한영"
+    },
+    {
+      "n": "임동진"
+    },
+    {
+      "n": "임영빈"
+    },
+    {
+      "n": "전창일"
+    },
+    {
+      "n": "정홍구"
+    },
+    {
+      "n": "최계원"
+    },
+    {
+      "n": "최양위"
+    },
+    {
+      "n": "하권삼"
+    },
+    {
+      "n": "황광현"
+    }
   ]
 }

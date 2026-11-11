@@ -8,7 +8,7 @@ import { DEMO_TODAY, ST_CLS, addDays, visitWhen } from "./util.jsx";
 const WATCH = {
   wait: ["대기 화면", "예약자 확인을 기다리는 중"],
   film: ["브랜드 영상", "무음 반복 재생 중"],
-  firm: ["YK 소개", "센터·구성원 소개 보는 중"],
+  firm: ["법무법인 YK 소개", "센터·구성원 소개 보는 중"],
   report: ["사건 요약", "말씀하신 내용 확인 중"],
   topics: ["사건 요약", "사건 종류별 상담 내용 보는 중"],
   counsel: ["상담 변호사", "담당 변호사 프로필"],

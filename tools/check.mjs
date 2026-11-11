@@ -36,7 +36,7 @@ ok("예약 목록", cat.bookings.length === EXPECT.bookings, cat.bookings.length
 
 const visit = await fetch(`${API}/api/visit?id=228271`).then((r) => r.json());
 ok("visit helper", Array.isArray(visit.helper && visit.helper.topics) && visit.helper.topics.length >= 3 && Array.isArray(visit.helper.summary), JSON.stringify(visit.helper && { eng: visit.helper.engId, n: (visit.helper.topics || []).length, s: (visit.helper.summary || []).length }));
-ok("YK 소개 구성", (visit.firm?.advisors || []).length === 28 && (visit.firm?.police || []).length === 25 && (visit.firm?.bench || []).length > 0 && (visit.firm?.prosecution || []).length > 0, JSON.stringify(visit.firm && { a: visit.firm.advisors?.length, p: visit.firm.police?.length }));
+ok("YK 소개 구성", (visit.firm?.advisors || []).length === 29 && (visit.firm?.police || []).length === 26 && (visit.firm?.bench || []).length > 0 && (visit.firm?.prosecution || []).length > 0, JSON.stringify(visit.firm && { a: visit.firm.advisors?.length, p: visit.firm.police?.length }));
 const lawyers = (visit.seniors || []).filter((s) => s.kind !== "advisor");
 ok("전문인력 변호사 4명 이하", lawyers.length > 0 && lawyers.length <= 4, lawyers.length);
 ok("전문인력 분야 매칭", lawyers.every((s) => s.match === "field" || s.match === "near" || s.match === "court" || s.match === "roster"));
@@ -359,7 +359,7 @@ ok("빈 사건요약 안내", emptyR.includes("편하게 말씀해 주세요") &
 await page.goto(`${WEB}/?c=윤서준&s=firm`);
 await page.waitForSelector(".firmpane");
 const firmCopy = await page.locator(".firmpane").innerText();
-ok("YK 소개 고문·경찰 경력", firmCopy.includes("고문 28명") && firmCopy.includes("경찰 경력 전문위원 25명"));
+ok("YK 소개 고문·경찰 경력", firmCopy.includes("고문 및 전문위원") && firmCopy.includes("경찰 경력 전문위원"));
 ok("YK 소개 전관 카피 없음", !firmCopy.includes("전관"));
 ok("YK 소개 공통 포맷", await page.locator(".firm-center-group li.hit").count() === 0);
 await page.screenshot({ path: `${SHOT}/2-firm.png` });

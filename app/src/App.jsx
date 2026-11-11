@@ -8,7 +8,7 @@ const SCREENS = [
   ["wait", "내방"],
   ["prep", "상담 준비"],
   ["film", "소개 영상"],
-  ["firm", "YK 소개"],
+  ["firm", "법무법인 YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문 인력"],
