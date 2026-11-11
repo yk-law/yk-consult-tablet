@@ -267,16 +267,13 @@
     const index = pane.querySelector('.b3-counsel-index');
     const heroEl = pane.querySelector('.b3-counsel-hero');
     const video = heroEl.querySelector('.b3-counsel-backdrop video');
-    if (video) {
-      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      const syncVideo = () => {
-        if (motion.matches) video.pause();
-        else video.play().catch(() => {});
-      };
-      syncVideo();
-      motion.addEventListener('change', syncVideo);
-      cleanups.push(() => motion.removeEventListener('change', syncVideo));
-    }
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncVideo = () => {
+      if (motion.matches) video.pause();
+      else video.play().catch(() => {});
+    };
+    syncVideo();
+    motion.addEventListener('change', syncVideo);
     const observer = new IntersectionObserver(([entry]) => {
       const hidden = !entry.isIntersecting && entry.boundingClientRect.bottom <= (entry.rootBounds ? entry.rootBounds.top : 0);
       card.classList.toggle('is-visible', hidden);
@@ -325,11 +322,15 @@
     };
     update();
     pane.addEventListener('scroll', update, { passive: true });
-    cleanups.push(() => observer.disconnect());
+    return () => {
+      video.pause();
+      motion.removeEventListener('change', syncVideo);
+      observer.disconnect();
+    };
   }
 
   function drawCounsel(view, c) {
-    mountProfile(view, DATA.people[c.counsel], c, false);
+    cleanups.push(mountProfile(view, DATA.people[c.counsel], c, false));
   }
 
   const mod = (v, n) => (n ? ((v % n) + n) % n : 0);
@@ -446,7 +447,12 @@
         state.move(dx < 0 ? 1 : -1);
       }
     });
-    cleanups.push(() => { clearInterval(timer); resize.disconnect(); senior = null; });
+    cleanups.push(() => {
+      clearInterval(timer);
+      resize.disconnect();
+      state.disposeProfile?.();
+      senior = null;
+    });
   }
   function openSenior(index) {
     const c = current();
@@ -455,7 +461,7 @@
     holder.style.display = 'contents';
     holder.className = 'review-senior-detail';
     senior.list.after(holder);
-    mountProfile(holder, senior.people[index], c, true);
+    senior.disposeProfile = mountProfile(holder, senior.people[index], c, true);
   }
 
   /* ---------- 동작 ---------- */
@@ -556,7 +562,11 @@
     'senior-open-focused': () => openSenior(mod(senior.position, senior.people.length)),
     'senior-back': () => {
       const detail = app.querySelector('.review-senior-detail');
-      if (detail) detail.remove();
+      if (detail) {
+        senior.disposeProfile();
+        senior.disposeProfile = null;
+        detail.remove();
+      }
       senior.list.hidden = false;
     },
   };

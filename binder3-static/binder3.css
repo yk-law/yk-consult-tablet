@@ -271,7 +271,7 @@
 }
 .yk-binder3 .b3-firm-ph {display:block;margin:0 0 12px;background:var(--b3-tint);}
 .yk-binder3 .b3-firm-ph img,
-.yk-binder3 .b3-counsel-backdrop + .b3-counsel-lead .b3-counsel-photo img {
+.yk-binder3 .b3-counsel-hero .b3-counsel-photo img {
   object-position:center top;transform:scale(1.35);transform-origin:center top;
 }
 .yk-binder3 .b3-firm-ph img {transform:scale(1.6);}
@@ -390,13 +390,13 @@
 @media (prefers-reduced-motion:reduce) {.yk-binder3 .b3-counsel-loading {animation:none;}}
 
 /* 히어로 */
-.yk-binder3 .b3-counsel-hero {position:relative;isolation:isolate;overflow:hidden;padding:40px 40px 0;background:#F3F5FC;}
+.yk-binder3 .b3-counsel-hero {position:relative;isolation:isolate;overflow:hidden;padding-inline:40px;background:#F3F5FC;}
 .yk-binder3 .b3-counsel-backdrop {position:absolute;inset:0;z-index:-1;pointer-events:none;}
 .yk-binder3 .b3-counsel-backdrop video {display:block;width:100%;height:100%;object-fit:cover;opacity:.28;}
 .yk-binder3 .b3-counsel-backdrop::after {content:"";position:absolute;inset:0;background:rgba(243,245,252,.35);}
 .yk-binder3 .b3-counsel-lead {
   display:grid;grid-template-columns:240px minmax(0,1fr);gap:40px;align-items:end;
-  width:100%;max-width:800px;margin:0 auto;
+  width:100%;max-width:800px;margin:0 auto;padding-top:40px;
 }
 .yk-binder3 .b3-counsel-photo {
   display:flex;align-items:flex-end;justify-content:center;max-width:240px;justify-self:center;
@@ -425,7 +425,8 @@
   .yk-binder3 .b3-counsel-photo {grid-row:2;}
 }
 @container tablet (max-width:720px) {
-  .yk-binder3 .b3-counsel-hero {padding:32px 24px 0;}
+  .yk-binder3 .b3-counsel-hero {padding-inline:24px;}
+  .yk-binder3 .b3-counsel-lead {padding-top:32px;}
 }
 
 /* 본문 + 오른쪽 프로필 카드·목차 */
@@ -453,7 +454,7 @@
 @media (prefers-reduced-motion:reduce) {.yk-binder3 .b3-counsel-card {transition:none;}}
 .yk-binder3 .b3-counsel-card-photo {
   display:flex;align-items:flex-end;justify-content:center;
-  padding-inline:8px;background:var(--b3-tint);
+  padding-inline:8px;border-radius:0;background:var(--b3-tint);
 }
 .yk-binder3 .b3-counsel-card-content {padding:0 0 24px 16px;}
 .yk-binder3 .b3-counsel-card-identity {display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin-top:12px;padding-right:16px;}
@@ -563,13 +564,12 @@
 
 /* 가로형: 사진 띠 캐러셀(가운데 = 60% 자리) + 아래 지금 사람 정보 */
 @container tablet (min-aspect-ratio:1/1) and (min-width:600px) {
-  /* 내용이 위쪽에 붙어 아래가 비지 않게 조금 내린다 */
-  .yk-binder3 .b3-seniors {padding-inline:0;padding-top:clamp(32px, 10cqh, 96px);}
+  .yk-binder3 .b3-seniors {display:flex;flex-direction:column;padding:32px 0;}
   .yk-binder3 .b3-seniors-title,
   .yk-binder3 .b3-seniors-sub,
   .yk-binder3 .b3-seniors-empty,
   .yk-binder3 .b3-senior-controls {width:calc(100% - 80px);max-width:800px;margin-left:auto;margin-right:auto;}
-  .yk-binder3 .b3-seniors-content {max-width:none;}
+  .yk-binder3 .b3-seniors-content {flex:none;max-width:none;margin-block:auto;}
   .yk-binder3 .b3-senior-stage {position:relative;}
   .yk-binder3 .b3-senior-track {
     /* 옆으로 벗어난 사진은 스크롤 없이 자른다. */
@@ -637,15 +637,12 @@
 }
 
 /* 전문 인력 상세: 맨 위 「전문 인력 목록」 */
-.yk-binder3 .b3-specialist-back {padding:16px 40px 0;background:#F3F5FC;}
+.yk-binder3 .b3-specialist-back {padding-top:16px;}
 .yk-binder3 .b3-specialist-back button {
   display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-left:-12px;padding:0 12px;border:0;border-radius:8px;
   background:transparent;color:var(--yk-foreground);font:500 16px/24px var(--b3-font);cursor:pointer;
 }
 .yk-binder3 .b3-specialist-back button:hover {background:rgba(255,255,255,.7);}
-@container tablet (max-width:720px) {
-  .yk-binder3 .b3-specialist-back {padding-inline:24px;}
-}
 
 /* 상담 변호사 하단: 이전·다음 */
 .yk-binder3 .b3-counsel-links {justify-content:space-between;gap:16px;flex-wrap:wrap;}

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>바인더#3 검토본</title>
-<link rel="stylesheet" href="binder3.css?v=case-modal-header">
+<link rel="stylesheet" href="binder3.css?v=profile-back-over-video">
 <link rel="stylesheet" href="review.css">
 </head>
 <body>
@@ -268,12 +268,12 @@
 <!-- 상담 변호사 / 전문 인력 상세 -->
 <template id="tpl-profile">
   <section class="b3-counsel" aria-label="{{ariaLabel}}">
-    <div class="b3-specialist-back" data-if="specialist">
-      <button type="button" data-action="senior-back"><svg class="b3-icon" width="20" height="20" aria-hidden="true"><use href="#i-left"/></svg><span>전문 인력 목록</span></button>
-    </div>
     <div class="b3-counsel-hero">
-      <div class="b3-counsel-backdrop" data-unless="specialist" aria-hidden="true">
+      <div class="b3-counsel-backdrop" aria-hidden="true">
         <video src="assets/welcome-abstract-loop.mp4" poster="assets/welcome-abstract-poster.png" muted loop playsinline preload="auto" tabindex="-1"></video>
+      </div>
+      <div class="b3-specialist-back" data-if="specialist">
+        <button type="button" data-action="senior-back"><svg class="b3-icon" width="20" height="20" aria-hidden="true"><use href="#i-left"/></svg><span>전문 인력 목록</span></button>
       </div>
       <div class="b3-counsel-lead">
         <div class="b3-counsel-photo">
@@ -414,6 +414,6 @@
 </template>
 
 <script src="data.js?v=20261111-members"></script>
-<script src="binder3.js?v=case-lead-24"></script>
+<script src="binder3.js?v=shared-profile-hero"></script>
 </body>
 </html>
