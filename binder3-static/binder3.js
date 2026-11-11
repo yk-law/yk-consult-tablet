@@ -14,7 +14,7 @@
     원고: '상대방에게 청구하려고 해요',
     피고: '소장이나 청구를 받았어요',
   };
-  const MENU = [['firm', 'YK 소개'], ['report', '사건 요약'], ['counsel', '상담 변호사'], ['seniors', '전문 인력']];
+  const MENU = [['firm', '법무법인 YK 소개'], ['report', '사건 요약'], ['counsel', '상담 변호사'], ['seniors', '전문 인력']];
   const app = document.getElementById('app');
 
   const S = { caseId: null, step: 'picker', wrong: false, reportView: 'check', answers: {}, party: null, seniorOpen: null };
@@ -178,8 +178,9 @@
       { label: '전국 사무소', value: firm.stats.offices.toLocaleString('ko-KR'), unit: '곳' },
       { label: '분야별 전문 센터', value: firm.stats.centers.toLocaleString('ko-KR'), unit: '개' },
     ];
-    view.append(render('tpl-firm', { firm, stats, asOf: m ? `(${m[1]}년 ${Number(m[2])}월)` : '' }));
-    [['firm-bench', '법원 출신 변호사', firm.bench], ['firm-prosecution', '검찰 출신 변호사', firm.prosecution]].forEach(([id, title, rows]) => {
+    const hasAdvisorsOrPolice = firm.advisors.length > 0 || firm.police.length > 0;
+    view.append(render('tpl-firm', { firm, stats, hasAdvisorsOrPolice, asOf: m ? `(${m[1]}년 ${Number(m[2])}월 기준)` : '' }));
+    [['firm-bench', '법원 경력 변호사', firm.bench], ['firm-prosecution', '검찰 경력 변호사', firm.prosecution]].forEach(([id, title, rows]) => {
       const host = document.getElementById(id);
       if (rows.length) host.replaceWith(render('tpl-firm-people', { title, rows: rows.map(withPhoto) }));
       else host.remove();
@@ -233,7 +234,7 @@
       cases,
       casesClass: cases.length === 1 ? 'one' : '',
       pairClass: pairCount === 1 ? 'one' : '',
-      previousLabel: c.questions.length ? '말씀하신 내용으로' : 'YK 소개로',
+      previousLabel: c.questions.length ? '말씀하신 내용으로' : '법무법인 YK 소개로',
     }));
   }
 
@@ -396,7 +397,7 @@
           const near = Math.max(0, 1 - Math.abs(d));
           const weight = near * near * (3 - 2 * near);
           card.style.setProperty('--b3-d', String(d));
-          card.style.setProperty('--b3-scale', String(0.62 + 0.48 * weight));
+          card.style.setProperty('--b3-scale', String(0.62 + 0.38 * weight));
           card.style.setProperty('--b3-opacity', off ? '0' : String(0.5 + 0.5 * weight));
           card.classList.toggle('is-focused', d === 0);
           if (off) { card.setAttribute('aria-hidden', 'true'); card.tabIndex = -1; }

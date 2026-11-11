@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>바인더#3 검토본</title>
-<link rel="stylesheet" href="binder3.css">
+<link rel="stylesheet" href="binder3.css?v=firm-center-spacing">
 <link rel="stylesheet" href="review.css">
 </head>
 <body>
@@ -157,29 +157,31 @@
         <dl class="b3-firm-stats">
           <div data-each="x in stats"><dt>{{x.label}}</dt><dd><strong>{{x.value}}</strong><span>{{x.unit}}</span></dd></div>
         </dl>
-        <p class="b3-firm-note">법무법인 YK 홈페이지 구성원 정보 기준 {{asOf}}</p>
+        <p class="b3-firm-note" data-if="asOf">{{asOf}}</p>
       </header>
+      <div id="firm-bench"></div>
+      <div id="firm-prosecution"></div>
+      <section class="b3-firm-sec" data-if="hasAdvisorsOrPolice">
+        <h4>고문 및 전문위원</h4>
+        <p class="b3-firm-sec-lead">정부기관·경찰·입법 분야의 실무 경험을 바탕으로, 사안 검토에 필요한 전문적 관점을 더합니다.</p>
+        <div class="b3-firm-subgroup" data-if="firm.advisors">
+          <h5>고문</h5>
+          <ul class="b3-firm-names"><li data-each="a in firm.advisors"><strong>{{a.name}}</strong><span data-if="a.label">{{a.label}}</span></li></ul>
+        </div>
+        <div class="b3-firm-subgroup" data-if="firm.police">
+          <h5>경찰 경력 전문위원</h5>
+          <ul class="b3-firm-names compact"><li data-each="a in firm.police"><strong>{{a.name}}</strong></li></ul>
+        </div>
+      </section>
       <section class="b3-firm-sec">
         <h4>분야별 전문 센터</h4>
-        <p class="b3-firm-sec-lead">사건 분야마다 전담 센터를 두고 있습니다.</p>
+        <p class="b3-firm-sec-lead">형사·가사·민사·기업 등 각 분야의 실무 경험을 바탕으로, 사건의 주요 쟁점과 대응 절차를 살핍니다.</p>
         <div class="b3-firm-centers">
           <div data-each="g in firm.centerGroups">
             <p class="b3-firm-group-t">{{g.title}}</p>
             <ul><li data-each="c in g.centers"><span class="b3-firm-center-n">{{c}}</span></li></ul>
           </div>
         </div>
-      </section>
-      <div id="firm-bench"></div>
-      <div id="firm-prosecution"></div>
-      <section class="b3-firm-sec" data-if="firm.advisors">
-        <h4>고문 {{firm.advisors.length}}명</h4>
-        <p class="b3-firm-sec-lead">정부기관·경찰·입법 분야에서 일한 고문들이 함께합니다.</p>
-        <ul class="b3-firm-names"><li data-each="a in firm.advisors"><strong>{{a.name}}</strong><span data-if="a.label">{{a.label}}</span></li></ul>
-      </section>
-      <section class="b3-firm-sec" data-if="firm.police">
-        <h4>경찰 경력 전문위원 {{firm.police.length}}명</h4>
-        <p class="b3-firm-sec-lead">전문위원 {{firm.expertCount}}명 가운데 경찰에서 일했던 분들입니다.</p>
-        <ul class="b3-firm-names compact"><li data-each="a in firm.police"><strong>{{a.name}}</strong></li></ul>
       </section>
       <div class="b3-firm-next">
         <button type="button" data-action="go" data-arg="report"><span>사건 요약 보기</span><svg class="b3-icon" width="20" height="20" aria-hidden="true"><use href="#i-right"/></svg></button>
@@ -205,7 +207,7 @@
       </ol>
       <p class="b3-case-check-note">모든 항목에 네 또는 아니오를 골라 주세요. 고르신 답은 다른 쪽을 누르면 바뀝니다.</p>
       <div class="b3-counsel-links">
-        <button type="button" class="b3-counsel-previous" data-action="go" data-arg="firm"><svg class="b3-icon" width="20" height="20" aria-hidden="true"><use href="#i-left"/></svg><span>YK 소개로</span></button>
+        <button type="button" class="b3-counsel-previous" data-action="go" data-arg="firm"><svg class="b3-icon" width="20" height="20" aria-hidden="true"><use href="#i-left"/></svg><span>법무법인 YK 소개로</span></button>
         <button type="button" class="b3-counsel-next" data-disabled="notAnswered" data-action="to-topics"><span>상담에서 함께 볼 내용</span><svg class="b3-icon" width="20" height="20" aria-hidden="true"><use href="#i-right"/></svg></button>
       </div>
     </div>
@@ -400,6 +402,6 @@
 </template>
 
 <script src="data.js?v=20261111-members"></script>
-<script src="binder3.js"></script>
+<script src="binder3.js?v=firm-reference-month"></script>
 </body>
 </html>
