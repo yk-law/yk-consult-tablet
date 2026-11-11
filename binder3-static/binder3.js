@@ -266,6 +266,17 @@
     const card = pane.querySelector('.b3-counsel-card');
     const index = pane.querySelector('.b3-counsel-index');
     const heroEl = pane.querySelector('.b3-counsel-hero');
+    const video = heroEl.querySelector('.b3-counsel-backdrop video');
+    if (video) {
+      const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const syncVideo = () => {
+        if (motion.matches) video.pause();
+        else video.play().catch(() => {});
+      };
+      syncVideo();
+      motion.addEventListener('change', syncVideo);
+      cleanups.push(() => motion.removeEventListener('change', syncVideo));
+    }
     const observer = new IntersectionObserver(([entry]) => {
       const hidden = !entry.isIntersecting && entry.boundingClientRect.bottom <= (entry.rootBounds ? entry.rootBounds.top : 0);
       card.classList.toggle('is-visible', hidden);
