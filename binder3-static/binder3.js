@@ -506,7 +506,45 @@
       if (!body) return;
       const root = app.querySelector('.yk-binder3');
       root.append(render('tpl-case-modal', { title: body.title || '업무 사례' }));
-      root.querySelector('.b3-case-modal iframe').setAttribute('srcdoc', `<!doctype html><meta charset="utf-8">${body.html}`);
+      const frame = root.querySelector('.b3-case-modal iframe');
+      frame.setAttribute('srcdoc', `<!doctype html><meta charset="utf-8">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css">
+        <style>
+          body { margin: 0; }
+          [data-embedded-case-html-root], [data-embedded-case-html-root] * {
+            font-family: "SUIT Variable", system-ui, sans-serif !important;
+          }
+          [data-embedded-case-html-root] :is(.preview-header, .preview-container) {
+            padding-inline: 24px !important;
+          }
+          [data-embedded-case-html-root] p {
+            font-size: 16px !important;
+            font-weight: 400 !important;
+            line-height: 26px !important;
+            margin: 0 0 12px !important;
+          }
+          [data-embedded-case-html-root] p.preview-lead {
+            font-size: 24px !important;
+            font-weight: 500 !important;
+            line-height: 36px !important;
+            margin: 0 !important;
+          }
+          [data-embedded-case-html-root] h2 {
+            font-size: 20px !important;
+            font-weight: 600 !important;
+            line-height: 32px !important;
+            margin-bottom: 12px !important;
+          }
+          [data-embedded-case-html-root] h3 {
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            line-height: 30px !important;
+            margin-bottom: 12px !important;
+          }
+          [data-embedded-case-html-root] .section + .section {
+            margin-top: 32px !important;
+          }
+        </style>${body.html}`);
     },
     'close-case': () => { const m = app.querySelector('.b3-case-modal'); if (m) m.remove(); },
     'senior-move': (step) => { senior.restUntil = Date.now() + PAUSE_MS; senior.move(Number(step)); },
@@ -533,5 +571,11 @@
     if (event.key === 'Escape') actions['close-case']();
   });
 
-  draw();
+  const previewId = new URLSearchParams(window.location.search).get('case-preview');
+  if (previewId && Object.hasOwn(DATA.caseBodies, previewId)) {
+    app.append(render('tpl-case-preview', { id: previewId }));
+    actions['open-case'](previewId);
+  } else {
+    draw();
+  }
 })();

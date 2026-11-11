@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>바인더#3 검토본</title>
-<link rel="stylesheet" href="binder3.css?v=firm-portrait-160">
+<link rel="stylesheet" href="binder3.css?v=case-modal-header">
 <link rel="stylesheet" href="review.css">
 </head>
 <body>
@@ -22,6 +22,7 @@
   <symbol id="i-chev-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></symbol>
   <symbol id="i-chev-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="i-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10M7 17 17 7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
 </svg>
 <div id="app"></div>
 
@@ -393,17 +394,26 @@
   </div>
 </template>
 
+<template id="tpl-case-preview">
+  <main class="yk-binder3">
+    <button class="review-home" type="button" data-action="open-case" data-arg="{{id}}">업무 사례 다시 열기</button>
+  </main>
+</template>
+
 <!-- 업무 사례 모달 -->
 <template id="tpl-case-modal">
-  <div class="b3-case-modal" role="dialog" aria-modal="true" aria-label="{{title}}" data-action="close-case">
+  <div class="b3-case-modal" role="dialog" aria-modal="true" aria-labelledby="b3-case-modal-title" data-action="close-case">
     <div class="b3-case-modal-panel" data-action="stop">
-      <div class="b3-case-modal-bar"><button type="button" data-action="close-case">닫기</button></div>
+      <header class="b3-case-modal-bar">
+        <h2 class="b3-case-modal-title" id="b3-case-modal-title">{{title}}</h2>
+        <button type="button" aria-label="닫기" data-action="close-case"><svg width="20" height="20" aria-hidden="true"><use href="#i-close"/></svg></button>
+      </header>
       <iframe title="{{title}}" sandbox=""></iframe>
     </div>
   </div>
 </template>
 
 <script src="data.js?v=20261111-members"></script>
-<script src="binder3.js?v=counsel-hero"></script>
+<script src="binder3.js?v=case-lead-24"></script>
 </body>
 </html>
