@@ -71,6 +71,7 @@ export default function CaseModal({ item, onClose }) {
         onClick={(event) => event.stopPropagation()}
       >
         <header className="case-modal-head">
+          <h2 id={titleId} className="case-modal-title">{title || "업무 사례"}</h2>
           <button
             ref={closeRef}
             type="button"
@@ -78,12 +79,13 @@ export default function CaseModal({ item, onClose }) {
             onClick={onClose}
             aria-label="닫기"
           >
-            닫기
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+              <path d="m18 6-12 12M6 6l12 12" />
+            </svg>
           </button>
         </header>
         <div className="case-modal-body">
           {tag ? <p className="case-modal-tag">{tag}</p> : null}
-          <h2 id={titleId} className="case-modal-title">{title || "업무 사례"}</h2>
           {subtitle ? <p className="case-modal-sub">{subtitle}</p> : null}
           {result ? <p className="case-modal-result">{result}</p> : null}
           <p className="case-modal-summary">

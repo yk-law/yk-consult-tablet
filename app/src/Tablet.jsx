@@ -820,6 +820,9 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
               onClick={() => setCaseItem(work)}
             >
               <span>{work.title}</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M7 17 17 7M7 7h10v10" />
+              </svg>
             </button>
           </li>)}</ul>
         </section> : null}
