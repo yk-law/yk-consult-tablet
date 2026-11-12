@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>바인더#3 검토본</title>
-<link rel="stylesheet" href="binder3.css?v=youtube-tab">
+<link rel="stylesheet" href="binder3.css?v=next-float">
 <link rel="stylesheet" href="review.css">
 </head>
 <body>
@@ -426,7 +426,7 @@
     <button type="button" class="b3-youtube-close" aria-label="영상 닫기" data-action="youtube-close"><svg width="20" height="20" aria-hidden="true"><use href="#i-close"/></svg></button>
     <div class="b3-youtube-stage" data-action="stop">
       <div class="b3-youtube-player">
-        <iframe title="재생 중: {{v.lawyer}}" src="https://www.youtube-nocookie.com/embed/{{v.id}}?{{params}}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+        <iframe title="재생 중: {{v.lawyer}}" src="https://www.youtube-nocookie.com/embed/{{v.id}}?{{params}}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation" referrerpolicy="strict-origin-when-cross-origin"></iframe>
       </div>
     </div>
   </div>
@@ -452,6 +452,6 @@
 </template>
 
 <script src="data.js?v=20261111-members"></script>
-<script src="binder3.js?v=youtube-tab"></script>
+<script src="binder3.js?v=next-float"></script>
 </body>
 </html>

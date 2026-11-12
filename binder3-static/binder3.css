@@ -340,13 +340,15 @@
 .yk-binder3 .b3-firm-names span {font-size:14px;font-weight:400;line-height:20px;color:var(--yk-muted-foreground);}
 .yk-binder3 .b3-firm-names.compact {grid-template-columns:repeat(5,minmax(0,1fr));}
 
-.yk-binder3 .b3-firm-next {display:none;justify-content:flex-end;margin-top:40px;padding-top:24px;}
+.yk-binder3 .b3-firm-next {display:flex;justify-content:flex-end;margin-top:40px;}
 .yk-binder3 .b3-firm-next button {
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  min-height:48px;padding:12px 8px;border:0;background:transparent;
-  font-size:16px;font-weight:500;line-height:24px;letter-spacing:0;color:var(--b3-link);
+  min-height:48px;padding:12px 20px 12px 24px;border:0;border-radius:8px;background:var(--yk-primary);
+  font-size:16px;font-weight:600;line-height:24px;letter-spacing:0;color:var(--yk-primary-foreground);
+  box-shadow:0 4px 12px rgba(16,33,105,.18);cursor:pointer;
 }
-.yk-binder3 .b3-firm-next button:hover,.yk-binder3 .b3-firm-next button:active {color:var(--yk-primary);}
+.yk-binder3 .b3-firm-next button:hover {background:var(--yk-primary-hover);}
+.yk-binder3 .b3-firm-next button:active {background:var(--yk-primary-pressed);}
 
 @container tablet (max-width:720px) {
   .yk-binder3 .b3-firm-hero h3 {font-size:32px;line-height:44px;}
@@ -421,7 +423,6 @@
     display:block;align-self:flex-start;width:128px;max-width:100%;height:auto;aspect-ratio:1;
     background:#fff;border:1px solid color-mix(in srgb,var(--yk-border) 40%,transparent);border-radius:8px;
   }
-  .yk-binder3 .b3-firm-next {display:flex;}
 }
 .yk-binder3 .b3-journey-qr > * {width:100%;}
 .yk-binder3 .b3-journey-qr-title {margin:0;font-size:14px;font-weight:500;line-height:22px;color:var(--yk-foreground);}
@@ -563,10 +564,7 @@
 .yk-binder3 .b3-career-toggle-count {color:var(--yk-muted-foreground);font-weight:400;}
 
 /* 하단 링크: 프로토타입처럼 가로형 좌측 메뉴가 보일 때만 */
-.yk-binder3 .b3-counsel-links {display:none;}
-@container tablet (min-width:900px) and (min-aspect-ratio:1/1) {
-  .yk-binder3 .b3-counsel-links {display:flex;margin-top:32px;}
-}
+.yk-binder3 .b3-counsel-links {display:flex;margin-top:32px;}
 .yk-binder3 .b3-counsel-previous {
   display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0;border:0;background:transparent;
   font-family:var(--b3-font);font-size:16px;font-weight:400;line-height:24px;color:var(--yk-muted-foreground);cursor:pointer;
@@ -701,11 +699,20 @@
 /* 상담 변호사 하단: 이전·다음 */
 .yk-binder3 .b3-counsel-links {justify-content:space-between;gap:16px;flex-wrap:wrap;}
 .yk-binder3 .b3-counsel-next {
-  display:inline-flex;align-items:center;gap:8px;min-height:48px;margin-left:auto;padding:0;border:0;background:transparent;
-  font-family:var(--b3-font);font-size:16px;font-weight:500;line-height:24px;color:var(--b3-link);cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;min-height:48px;margin-left:auto;padding:12px 20px 12px 24px;border:0;border-radius:8px;
+  background:var(--yk-primary);box-shadow:0 4px 12px rgba(16,33,105,.18);
+  font-family:var(--b3-font);font-size:16px;font-weight:600;line-height:24px;color:var(--yk-primary-foreground);cursor:pointer;
 }
-.yk-binder3 .b3-counsel-next:hover:not(:disabled) {color:var(--yk-primary);}
-.yk-binder3 .b3-counsel-next:disabled {color:var(--yk-disabled-foreground);cursor:default;}
+.yk-binder3 .b3-counsel-next:hover:not(:disabled) {background:var(--yk-primary-hover);}
+.yk-binder3 .b3-counsel-next:active:not(:disabled) {background:var(--yk-primary-pressed);}
+.yk-binder3 .b3-counsel-next:disabled {background:var(--yk-accent);box-shadow:none;color:var(--yk-disabled-foreground);cursor:default;}
+
+/* 다음 단계 버튼은 스크롤 아래에 떠 있어 어느 위치에서도 보인다(11-12 test3 피드백 1). */
+.yk-binder3 .b3-firm-next,
+.yk-binder3 .b3-counsel-links {
+  position:sticky;bottom:0;z-index:2;align-items:center;padding:24px 0 16px;
+  background:linear-gradient(to bottom,color-mix(in srgb,var(--yk-background) 0%,transparent),var(--yk-background) 24px);
+}
 
 /* 사건 요약 1뎁스: 확인 문답 */
 .yk-binder3 .b3-case-check {flex:1;min-height:0;padding:32px 40px 24px;overflow-y:auto;overscroll-behavior:contain;}
