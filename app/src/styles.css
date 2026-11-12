@@ -410,6 +410,8 @@ table.tb .tot{font-variant-numeric:tabular-nums; text-align:right; font-weight:7
 .vcard .vb.sign{border-color:var(--ink); color:var(--ink); font-weight:700;}
 .vcard .vb.share{cursor:pointer; border-color:var(--nv); background:var(--nv); color:#fff; font-weight:700;}
 .vcard .vb.share:hover{filter:brightness(1.15);}
+.vcard .vacts{flex-basis:100%; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-top:10px; border-top:1px solid var(--hair);}
+.vcard .vacts-after{display:inline-flex; gap:8px; margin-left:auto;}
 .vcard .vhint{flex-basis:100%; font-size:11px; line-height:16px; color:var(--mut);}
 .vcard .vb.share.on{background:var(--acc); border-color:var(--acc); color:#fff;}
 .vempty{font-size:13px; font-weight:400; color:var(--ink2); padding:20px 2px;}

@@ -120,38 +120,43 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                       <span className="vn">{x.name}</span><span className="alias">가명</span>
                       <span className="vt">{x.tel}</span>
                       <span className="vg">{x.cat1}&gt;{x.cat2}</span>
-                      {/* 실제 YK-OS 규칙. 상담 내용을 작성해야 선임 계약이 열린다. */}
-                      <span className="vb">{x.wrote ? "상담 내용 보기" : "상담 내용 작성"}</span>
-                      {x.wrote
-                        ? <button className="vb sign" onClick={() => { setPickFor(null); setSignId(x.id); }}>선임 계약</button>
-                        : <span className="vb off">선임 계약</span>}
-                      <button
-                        className={`vb counsel${assigned[x.id] ? "" : " need"}`}
-                        onClick={() => setPickFor(pickFor === x.id ? null : x.id)}
-                      >
-                        {assigned[x.id] ? `상담 변호사 ${assigned[x.id]}` : "상담 변호사 지정"}
-                      </button>
-                      {assigned[x.id] || on ? (
+                      {/* 11-12: 버튼은 상담 흐름 순서로 한 줄에 둔다. 왼쪽은 내방 전(변호사 지정 → 바인더 열기 → 체크리스트), 오른쪽은 상담 뒤 작업. */}
+                      <div className="vacts">
                         <button
-                          className={`vb share${on ? " on" : ""}`}
-                          onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id]))}
+                          className={`vb counsel${assigned[x.id] ? "" : " need"}`}
+                          onClick={() => setPickFor(pickFor === x.id ? null : x.id)}
                         >
-                          {on ? "바인더 띄움 · 해제" : "바인더 열기"}
+                          {assigned[x.id] ? `상담 변호사 ${assigned[x.id]}` : "상담 변호사 지정"}
                         </button>
-                      ) : (
-                        /* 11-12 test3 피드백 2: 태블릿에서는 말풍선이 안 보여 막힌 이유를 글로 둔다. */
-                        <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">바인더 열기</span>
-                      )}
-                      {!assigned[x.id] && !on && <span className="vhint">상담 변호사를 지정하면 바인더를 열 수 있습니다.</span>}
-                      {/* 10-29: 사건 요약 1뎁스가 있는 예약만 내방자 체크리스트(맞아요/아니요)를 연다. */}
-                      {x.summary?.length ? (
-                        <button
-                          className={`vb check${checkFor === x.id ? " open" : ""}${rowNo(x) ? " no" : ""}`}
-                          onClick={() => setCheckFor(checkFor === x.id ? null : x.id)}
-                        >
-                          체크리스트 확인{rowAnswered(x) ? ` · ${rowAnswered(x)}/${x.summary.length}` : ""}
-                        </button>
-                      ) : <span className="vb off" title="이 예약은 사건 요약을 고객에게 보여 주지 않습니다">체크리스트 확인</span>}
+                        {assigned[x.id] || on ? (
+                          <button
+                            className={`vb share${on ? " on" : ""}`}
+                            onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id]))}
+                          >
+                            {on ? "바인더 띄움 · 해제" : "바인더 열기"}
+                          </button>
+                        ) : (
+                          /* 11-12 test3 피드백 2: 태블릿에서는 말풍선이 안 보여 막힌 이유를 글로 둔다. */
+                          <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">바인더 열기</span>
+                        )}
+                        {/* 10-29: 사건 요약 1뎁스가 있는 예약만 내방자 체크리스트(맞아요/아니요)를 연다. */}
+                        {x.summary?.length ? (
+                          <button
+                            className={`vb check${checkFor === x.id ? " open" : ""}${rowNo(x) ? " no" : ""}`}
+                            onClick={() => setCheckFor(checkFor === x.id ? null : x.id)}
+                          >
+                            체크리스트 확인{rowAnswered(x) ? ` · ${rowAnswered(x)}/${x.summary.length}` : ""}
+                          </button>
+                        ) : <span className="vb off" title="이 예약은 사건 요약을 고객에게 보여 주지 않습니다">체크리스트 확인</span>}
+                        <span className="vacts-after">
+                          {/* 실제 YK-OS 규칙. 상담 내용을 작성해야 선임 계약이 열린다. */}
+                          <span className="vb">{x.wrote ? "상담 내용 보기" : "상담 내용 작성"}</span>
+                          {x.wrote
+                            ? <button className="vb sign" onClick={() => { setPickFor(null); setSignId(x.id); }}>선임 계약</button>
+                            : <span className="vb off">선임 계약</span>}
+                        </span>
+                        {!assigned[x.id] && !on && <span className="vhint">상담 변호사를 지정하면 바인더를 열 수 있습니다.</span>}
+                      </div>
                       {checkFor === x.id && x.summary?.length > 0 && (
                         <VisitorCheck rows={x.summary} answers={answersBy[x.id] || {}} onReset={() => onResetAnswers(x.id)} />
                       )}
