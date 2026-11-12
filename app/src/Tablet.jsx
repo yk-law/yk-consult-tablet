@@ -136,11 +136,11 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             </button>
           ))}
           <div className="journey-qr">
-            <p className="journey-qr-title">법률 과정을 더 쉽게,<br />의뢰인의 곁에 더 가까이</p>
-            <p className="journey-qr-description">상담과 사건 진행을 편리하게 확인하고 이어갈 수 있습니다.</p>
+            <p className="journey-qr-title">상담 기록과 사건 진행은<br />YourK에서 확인하세요</p>
+            <p className="journey-qr-description">상담 뒤에도 이어서 보실 수 있습니다.</p>
             <img src={`${import.meta.env.BASE_URL}consultation-room-tablet-qr.svg`} width="147" height="147" alt="YourK 접속 QR코드" />
             <a className="journey-qr-url" href="https://yourk.legal" target="_blank" rel="noreferrer" aria-label="https://yourk.legal (새 탭에서 열림)">https://yourk.legal</a>
-            <p className="journey-qr-caption">QR코드를 스캔해 만나보세요.</p>
+            <p className="journey-qr-caption">QR코드를 스캔하세요.</p>
           </div>
         </nav>
       )}
@@ -205,7 +205,7 @@ function WaitFlow({ b, step, onStep, onDone, autoAdvance = true }) {
           </div>
         ) : (
           <>
-        <h2 className="h1"><span className="client-name">{b.name}</span>고객님, 반갑습니다.</h2>
+        <h2 className="h1"><span className="client-name">{b.name}</span> 고객님, 반갑습니다.</h2>
         <div className="reservation-check" role="group" aria-labelledby="reservation-check-heading">
           <p id="reservation-check-heading" className="confirm-instruction">예약하신 시간과 장소를 확인해 주세요.</p>
           <div className="who-card">

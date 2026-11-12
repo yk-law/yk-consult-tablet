@@ -206,6 +206,8 @@ def main():
         "cases": out,
     }
     payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"), default=str).replace("</", "<\\/")
+    # 홈페이지 원본 학력 오타를 고객 화면에서만 바로잡는다(11-12 UI 점검).
+    payload = payload.replace("대학교  법학전문대학교", "대학교 법학전문대학원").replace("법학전문대학교", "법학전문대학원")
     OUT.write_text(f"window.BINDER3_DATA = {payload};\n", encoding="utf-8")
     print("저장", OUT, OUT.stat().st_size, flush=True)
 
