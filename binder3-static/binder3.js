@@ -20,7 +20,7 @@
     ['counsel', '상담 변호사'],
     ['seniors', '전문 인력'],
     // (임시) 시연용
-    ['youtube', '변호사 영상'],
+    ['youtube', '변호사 인터뷰'],
   ];
   /* (임시) 유튜브 탭 영상. 법무법인 YK 재생 목록 「The Lawyer On Your Side」를 2026-11-11 에 옮겼다(YK-OS binder3YoutubeVideos.ts 와 같다).
      https://www.youtube.com/playlist?list=PL0dUw0MrEgaospa1FtIbfR6w1Hmph9NR4 (재생할 수 없는 1편은 뺐다) */
