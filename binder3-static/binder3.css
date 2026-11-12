@@ -213,7 +213,6 @@
 .yk-binder3 .b3-youtube-head {margin-bottom:28px;}
 .yk-binder3 .b3-youtube-eyebrow {margin:0 0 8px;font-size:14px;font-weight:600;line-height:20px;letter-spacing:.04em;color:var(--b3-accent);}
 .yk-binder3 .b3-youtube-head h2 {margin:0;font-family:var(--b3-font-serif);font-size:36px;font-weight:600;line-height:48px;color:var(--yk-primary);}
-.yk-binder3 .b3-youtube-tagline {margin:8px 0 0;font-size:18px;line-height:28px;color:var(--yk-muted-foreground);}
 /* 고른 영상: 업무 사례 팝업(b3-case-modal)과 같은 바탕. 머리말 없이 16:9 영상만 두고, 닫기는 바탕 오른쪽 위에 둔다. 영상이 화면 안에 들어오게 크기를 잡아 가운데에 둔다. */
 .yk-binder3 .b3-youtube-layer {
   position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:32px 80px;

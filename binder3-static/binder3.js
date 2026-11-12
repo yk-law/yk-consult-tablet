@@ -20,11 +20,11 @@
     ['counsel', '상담 변호사'],
     ['seniors', '전문 인력'],
     // (임시) 시연용
-    ['youtube', '(임시)유튜브'],
+    ['youtube', '변호사 영상'],
   ];
   /* (임시) 유튜브 탭 영상. 법무법인 YK 재생 목록 「The Lawyer On Your Side」를 2026-11-11 에 옮겼다(YK-OS binder3YoutubeVideos.ts 와 같다).
      https://www.youtube.com/playlist?list=PL0dUw0MrEgaospa1FtIbfR6w1Hmph9NR4 (재생할 수 없는 1편은 뺐다) */
-  const YOUTUBE_PLAYLIST = { title: 'The Lawyer On Your Side', tagline: '배우 아닙니다. 변호사입니다.' };
+  const YOUTUBE_PLAYLIST = { title: 'The Lawyer On Your Side' };
   const YOUTUBE_VIDEOS = [
     { id: 't8sQ_SUJpFU', headline: '감정을 흔드는 가사사건, 균형 있는 판단으로 답합니다', lawyer: '김윤정 파트너변호사' },
     { id: 'OTCXZQqCUNM', headline: '전쟁 같은 기업분쟁, 최적의 전략으로 답합니다', lawyer: '강진구 변호사' },
