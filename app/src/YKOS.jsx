@@ -136,9 +136,13 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                           className={`vb share${on ? " on" : ""}`}
                           onClick={() => (on ? act.unshare() : act.share(x.id, assigned[x.id]))}
                         >
-                          {on ? "공유 중 · 해제" : "화면 공유"}
+                          {on ? "바인더 띄움 · 해제" : "바인더 열기"}
                         </button>
-                      ) : <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">화면 공유</span>}
+                      ) : (
+                        /* 11-12 test3 피드백 2: 태블릿에서는 말풍선이 안 보여 막힌 이유를 글로 둔다. */
+                        <span className="vb off" title="상담 변호사를 먼저 지정해 주세요">바인더 열기</span>
+                      )}
+                      {!assigned[x.id] && !on && <span className="vhint">상담 변호사를 지정하면 바인더를 열 수 있습니다.</span>}
                       {/* 10-29: 사건 요약 1뎁스가 있는 예약만 내방자 체크리스트(맞아요/아니요)를 연다. */}
                       {x.summary?.length ? (
                         <button
@@ -210,7 +214,7 @@ export default function YKOS({ cat, data, booking, connected, screen, act, answe
                 </div>
               ) : (
                 <p className="sub" style={{ fontSize: 10, marginTop: 12 }}>
-                  내방 전에 행마다 <b>상담 변호사</b>를 지정하면 <b>화면 공유</b>가 열립니다. 화면 공유를 누르면 그 고객의 태블릿에 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
+                  내방 전에 행마다 <b>상담 변호사</b>를 지정하면 <b>바인더 열기</b>가 켜집니다. 누르면 예약된 상담실 태블릿에 그 고객의 인사 화면이 뜹니다. 누르기 전까지 태블릿은 브랜드 영상만 재생합니다.
                 </p>
               )}
               </>}
