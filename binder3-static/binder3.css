@@ -707,11 +707,15 @@
 .yk-binder3 .b3-counsel-next:active:not(:disabled) {background:var(--yk-primary-pressed);}
 .yk-binder3 .b3-counsel-next:disabled {background:var(--yk-accent);box-shadow:none;color:var(--yk-disabled-foreground);cursor:default;}
 
-/* 다음 단계 버튼은 스크롤 아래에 떠 있어 어느 위치에서도 보인다(11-12 test3 피드백 1). */
+/* 다음 단계 버튼은 스크롤 아래에 떠 있어 어느 위치에서도 보인다(11-12 test3 피드백 1).
+   띠를 깔지 않고 버튼만 띄운다. 버튼 사이 빈 곳은 아래 내용을 그대로 누를 수 있다. */
 .yk-binder3 .b3-firm-next,
-.yk-binder3 .b3-counsel-links {
-  position:sticky;bottom:0;z-index:2;align-items:center;padding:24px 0 16px;
-  background:linear-gradient(to bottom,color-mix(in srgb,var(--yk-background) 0%,transparent),var(--yk-background) 24px);
+.yk-binder3 .b3-counsel-links {position:sticky;bottom:0;z-index:2;align-items:center;padding:24px 0 16px;pointer-events:none;}
+.yk-binder3 .b3-firm-next button,
+.yk-binder3 .b3-counsel-links button {pointer-events:auto;}
+.yk-binder3 .b3-counsel-links .b3-counsel-previous {
+  padding:0 16px;border:1px solid var(--yk-border);border-radius:8px;background:var(--yk-background);
+  box-shadow:0 4px 12px rgba(16,33,105,.08);
 }
 
 /* 사건 요약 1뎁스: 확인 문답 */
