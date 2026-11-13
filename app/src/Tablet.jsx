@@ -1399,7 +1399,8 @@ function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext, o
     <div className="senior-pages">
     <section className={`pane on seniorpane${shown ? " is-detail-hidden" : ""}`} aria-hidden={shown ? true : undefined} inert={shown ? "" : undefined}>
       <div className="senior-content">
-      <h2 className="h1">전문 인력</h2>
+      <h2 className="h1">다양한 경험을 갖춘 전문 인력을 소개합니다.</h2>
+      <p className="sub">주요 업무 분야와 경력입니다.<br />프로필을 누르면 자세한 정보를 확인하실 수 있습니다.</p>
       <div className={`senior-stage${changing ? " is-changing" : ""}`}>
       {count > 1 && <div className="senior-side-navigation">
         {[-1, 1].map((direction) => <button key={direction} type="button"
