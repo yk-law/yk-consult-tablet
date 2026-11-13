@@ -1,4 +1,6 @@
-"""바인더#3 검토본(binder3-static/data.js) 사건 26건으로 시연 예약을 다시 만든다(2026-11-13).
+"""바인더#3 검토본 사건 26건(data/binder3_cases.json)으로 시연 예약을 다시 만든다(2026-11-13).
+
+원본은 binder3-static/data.js 였다. 정적 검토본을 지우면서 사건·구성원만 data/ 로 옮겼다.
 
 검토본은 26건이 모두 「홍길동 · 11-01 14:00 · 서초 본사 3번 상담실」이라 YK-OS 방문 예정 목록에서
 구분되지 않는다. 사건 내용(문항·지위·맞춤 설명·상담 변호사·전문 인력 명단)은 그대로 두고
@@ -32,9 +34,7 @@ UNASSIGNED = {"inherit", "admin", "religion", "gambling", "juvenile"}
 
 
 def load_binder3() -> dict:
-    text = (ROOT / "binder3-static" / "data.js").read_text(encoding="utf-8").strip()
-    text = text.removeprefix("window.BINDER3_DATA =").strip().removesuffix(";")
-    return json.loads(text)
+    return json.loads((ROOT / "data" / "binder3_cases.json").read_text(encoding="utf-8"))
 
 
 def read(name: str):
