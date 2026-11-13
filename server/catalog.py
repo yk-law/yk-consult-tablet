@@ -522,10 +522,7 @@ def _advisor_card(a: dict, portraits: dict) -> dict:
     titles = prominent_titles([t for t in (a.get("titles") or ([label] if label else [])) if t])
     career = list(a.get("career") or [])
     quote = " ".join((a.get("quote") or "").split())
-    highlight = next((line for line in career if line and line != label), "")
-    # 기업자문·경찰 경력 같은 분류 라벨 자리에는 경력 하이를 올린다.
-    if highlight and (not titles or set(titles) <= {label}):
-        titles = [highlight]
+    # 대표 경력 줄에는 홈페이지 대표 경력(분류 라벨)만 쓴다. 없으면 비운다(고재완 11-13, 경력 첫 줄을 올리지 않음).
     if quote and quote != label and quote not in titles:
         pitch = quote
     else:
