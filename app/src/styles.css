@@ -2603,6 +2603,7 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .reportpane .yh-pair li {position:relative;padding-left:16px;font-size:16px;font-weight:400;line-height:26px;color:var(--bt-text);word-break:keep-all;overflow-wrap:anywhere;}
 .reportpane .yh-pair li::before {content:"";position:absolute;left:0;top:12px;width:6px;height:2px;background:var(--bt-accent);}
 .reportpane .yh-pair-note {margin:16px 0 0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);word-break:keep-all;overflow-wrap:anywhere;}
+.reportpane .yh-flow-note {margin:16px 0 0;font-size:14px;font-weight:400;line-height:22px;color:var(--bt-muted);text-align:left;word-break:keep-all;}
 .reportpane .yh-cases {margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;width:100%;}
 .reportpane .yh-cases.yh-cases-one {grid-template-columns:minmax(0,1fr);}
 .reportpane .yh-cases li {min-width:0;padding:0;border:0;background:transparent;}

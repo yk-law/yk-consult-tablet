@@ -631,6 +631,7 @@ function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previous
                   </li>
                 ))}
               </ol>
+              <p className="yh-flow-note">실제 절차와 기간은 사건마다 다르며, 선임 계약 후 담당 변호사가 다시 안내합니다.</p>
             </section>
           )}
 
@@ -756,8 +757,9 @@ function CareerSection({ items }) {
 
 function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, specialist = false }) {
   const [caseItem, setCaseItem] = useState(null);
+  // 빈 문자열·빈 목록은 본문/소개 목차(h3·h4)에서 함께 빠지게 정리한다 (2026-11-13 시연 피드백 7).
+  l = cleanProfileContent(l);
   if (specialist) {
-    l = cleanProfileContent(l);
     hasFields = profileCategories(l, FIELD).length > 0;
   }
   const listSection = (title, items, className = "") => items?.length ? (
