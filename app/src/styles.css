@@ -2004,13 +2004,6 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .binder-theme .counsel-details .career-toggle svg {flex:none;}
 .binder-theme .counsel-details .career-toggle-count {color:var(--bt-muted);font-weight:400;}
 
-/* 가로형 본문 끝의 페이지 이동 영역 */
-@container tablet (min-width:900px) and (min-aspect-ratio:1/1) {
-  .reportpane .yh-body > .report-next,
-  .counsel-details > .counsel-page-links {
-    margin-top:40px;padding-top:24px;
-  }
-}
 
 /* 아이콘 정리 전 업무 분야는 캡슐 키워드로 표시 */
 .field-keywords {display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0;}
@@ -2500,7 +2493,6 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .firm-names span {font-size:14px;font-weight:400;line-height:20px;color:var(--bt-muted);}
 .firm-names.compact {grid-template-columns:repeat(5, minmax(0, 1fr));}
 
-.firmpane .report-next {margin-top:40px;padding-top:24px;}
 
 @container tablet (max-width:720px) {
   .reportpane .firm-hero h3 {font-size:32px;line-height:44px;}
@@ -2689,14 +2681,25 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 /* 11-13 YK-OS 바인더#3와 같게: 선택지는 늘 보이고 지금 지위를 채운 색으로 표시한다. */
 .yh-party-o button.on{border-color:var(--yk-primary); background:var(--yk-primary); color:var(--yk-primary-foreground);}
 
-/* 다음 단계 버튼: 채운 버튼으로 바꾸고 스크롤 아래에 띄워 어느 위치에서도 보이게 한다. 가로·세로 모두 보인다.
-   띠를 깔지 않고 버튼만 띄운다. 버튼 사이 빈 곳은 아래 내용을 그대로 누를 수 있다(YK-OS 바인더#3 1차 내부 피드백 1, 11-13). */
+/* 이전·다음 버튼: 모든 탭에서 본문 영역 바닥의 같은 자리에 띄운다(시연 피드백 3번, 11-13. YK-OS 강주용 09fb5560c와 같은 방식).
+   기준 상자는 .tablet-content 다. 업무 사례·영상 팝업의 기준 상자는 그대로 둔다.
+   하단 메뉴(세로형·좁은 폭)나 왼쪽 메뉴(넓은 가로형)를 덮지 않도록 그만큼 비켜 둔다.
+   버튼 줄 자리는 본문에 72px 비워 두어 맨 아래 내용이 버튼에 가리지 않는다. 띠는 깔지 않는다. */
+.tablet-content.has-journey {--float-left:0px; --float-bottom:calc(48px + env(safe-area-inset-bottom, 0px)); --float-side:40px;}
+@container tablet (max-aspect-ratio:1/1) {
+  .tablet-content.has-journey {--float-bottom:calc(56px + env(safe-area-inset-bottom, 0px));}
+}
+@container tablet (min-width:900px) and (min-aspect-ratio:1/1) {
+  .tablet-content.has-journey {--float-left:200px; --float-bottom:0px;}
+}
+@container tablet (max-width:720px) {
+  .tablet-content.has-journey {--float-side:24px;}
+}
 .report-next,
-.counsel-page-links {display:flex;position:sticky;bottom:0;z-index:2;align-items:center;margin-top:32px;padding:24px 0 16px;pointer-events:none;}
-.report-next {justify-content:flex-end;}
-.counsel-page-links {justify-content:space-between;gap:16px;flex-wrap:wrap;}
-.counsel-page-links .report-next {position:static;margin-top:0;padding:0;}
+.counsel-page-links {display:block;position:static;height:72px;margin-top:32px;padding:0;pointer-events:none;}
+.counsel-page-links .report-next {height:auto;margin:0;}
 .report-next button {
+  position:absolute;z-index:30;bottom:calc(24px + var(--float-bottom, 0px));right:var(--float-side, 40px);
   pointer-events:auto;padding:12px 20px 12px 24px;border-radius:8px;background:var(--yk-primary);
   box-shadow:0 4px 12px rgba(16,33,105,.18);font-weight:600;color:var(--yk-primary-foreground);
 }
@@ -2704,6 +2707,7 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .report-next button:active {background:var(--yk-primary-pressed);color:var(--yk-primary-foreground);}
 .report-next.report-previous button,
 .counsel-page-links .report-previous button {
+  right:auto;left:calc(var(--float-left, 0px) + var(--float-side, 40px));
   padding:0 16px;border:1px solid var(--yk-border);background:var(--yk-background);
   box-shadow:0 4px 12px rgba(16,33,105,.08);font-weight:400;color:var(--bt-muted);
 }
@@ -3190,3 +3194,18 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
   border:1px solid #C8D0E6; border-radius:4px; background:#F8FAFC; font-size:14px; white-space:nowrap;}
 .os .vteam-chip b{font-weight:700; color:#000;}
 .os .vteam-chip .pos{font-size:12px; color:var(--yo-mut2);}
+
+/* 법무법인 YK 소개 탭(시연 피드백 5·6번, 11-13): 법원 경력 변호사 / 검찰 경력 변호사 / 고문 및 전문위원 / 업무사례 */
+.firm-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:40px 0 0; padding:0; border-bottom:1px solid var(--bt-line);}
+.firm-tabs button{min-height:48px; padding:0 16px; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; background:transparent;
+  font:inherit; font-size:16px; font-weight:500; line-height:24px; color:var(--bt-muted); cursor:pointer; word-break:keep-all;}
+.firm-tabs button.on{border-bottom-color:var(--yk-primary); color:var(--bt-text); font-weight:600;}
+.firm-tabs button:focus-visible{outline:2px solid var(--yk-ring); outline-offset:-2px;}
+.firm-tabpanel{margin-top:0;}
+.firm-tabpanel > .firm-people:first-child{margin-top:24px;}
+.firm-person{display:flex; flex-direction:column; align-items:stretch; min-width:0; padding:0; border:0; background:transparent; font:inherit; text-align:left; cursor:pointer;}
+.firm-person:focus-visible{outline:2px solid var(--yk-ring); outline-offset:4px; border-radius:8px;}
+.firm-more{display:block; min-height:44px; margin:24px auto 0; padding:0 24px; border:1px solid var(--bt-line); border-radius:8px; background:var(--yk-background);
+  font:inherit; font-size:15px; color:var(--bt-text); cursor:pointer;}
+.firm-empty{margin:24px 0 0; font-size:15px; line-height:24px; color:var(--bt-muted);}
+.firm-tabpanel .yh-cases{margin-top:24px;}

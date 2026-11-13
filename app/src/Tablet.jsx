@@ -4,6 +4,7 @@ import HeroBackdrop from "./HeroBackdrop.jsx";
 import { relatedCaseWorks } from "./caseWorks.js";
 import YoutubeStories from "./YoutubeStories.jsx";
 import CaseModal from "./CaseModal.jsx";
+import { api } from "./api.js";
 import { customerDateParts } from "./customerDate.js";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
@@ -87,7 +88,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           />
         )}
         {screen === "firm" && (
-          <FirmIntro firm={data.firm} portraits={data.portraits} onNext={() => onScreen("report")} />
+          <FirmIntro firm={data.firm} portraits={data.portraits} helper={data.helper} FIELD={FIELD} NEAR={NEAR} b={b} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && hasSummary && (
           <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} onPrevious={() => onScreen("firm")} />
@@ -388,11 +389,76 @@ function CounselVideo({ l, onDone }) {
 
 /** YK 소개 — 센터 구성과 구성원 면면. 고객이 이 로펌의 규모와 경력을 한 화면에서 본다(2026-10-28).
  *  수치는 홈페이지 기준만 쓰고, 법원·검찰 근무는 「역임」 사실로만 적는다. */
-function FirmIntro({ firm, portraits, onNext }) {
+/** 법무법인 YK 소개 인물 탭(시연 피드백 5·6번, 고재완 11-13). 분야별 전문 센터는 어느 탭이든 맨 아래 공통. */
+const FIRM_TABS = [
+  ["bench", "법원 경력 변호사"],
+  ["prosecution", "검찰 경력 변호사"],
+  ["advisors", "고문 및 전문위원"],
+  ["cases", "업무사례"],
+];
+const FIRM_PEOPLE_FIRST = 12;
+
+function FirmPeople({ rows, firm, portraits, onPerson }) {
+  const [all, setAll] = useState(false);
+  if (!rows?.length) return null;
+  const shown = all ? rows : rows.slice(0, FIRM_PEOPLE_FIRST);
+  return (
+    <>
+      <ul className="firm-people">
+        {shown.map((l) => {
+          const photo = firm.photos?.[l.n] || portraits?.[l.n];
+          return (
+            <li key={l.n}>
+              <button type="button" className="firm-person" onClick={() => onPerson(l.n)}>
+                <span className="firm-ph">
+                  {photo ? <img src={photo} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
+                </span>
+                <strong>{l.n}</strong>
+                {l.pos && <span className="firm-people-pos">{l.pos}</span>}
+                {(l.title || l.c) && <span className="firm-people-t">{l.title || l.c}</span>}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {rows.length > FIRM_PEOPLE_FIRST && (
+        <button type="button" className="firm-more" aria-expanded={all} onClick={() => setAll(!all)}>
+          {all ? "접기" : "더 보기"}
+        </button>
+      )}
+    </>
+  );
+}
+
+function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
+  const [tab, setTab] = useState("bench");
+  const [caseItem, setCaseItem] = useState(null);
+  const [person, setPerson] = useState(null);
+  const tabsId = useId();
   if (!firm) return null;
-  const people = [
-    ["법원 경력 변호사", firm.bench],
-    ["검찰 경력 변호사", firm.prosecution],
+  const cases = helper?.cases || [];
+  // 카드를 누르면 상담 변호사 화면과 같은 상세로 간다. 상세에서 돌아오면 고르던 탭 그대로다.
+  const openPerson = (name) => api.counsel(name).then((p) => p && setPerson(p));
+  if (person) {
+    return (
+      <section className="pane on counselpane">
+        <ProfileBody
+          key={person.counsel.n}
+          l={person.counsel}
+          portraits={{ ...portraits, ...person.portraits }}
+          FIELD={FIELD}
+          NEAR={NEAR}
+          b={b}
+          counselHero
+          onBack={() => setPerson(null)}
+          backLabel="법무법인 YK 소개로"
+        />
+      </section>
+    );
+  }
+  const advisors = [
+    ["고문", (firm.advisors || []).map((a) => ({ n: a.n, pos: "고문", c: a.c }))],
+    ["경찰 경력 전문위원", (firm.police || []).map((a) => ({ n: a.n, pos: "전문위원" }))],
   ];
   const [year, month] = (firm.asOf || "").split("-");
   return (
@@ -413,48 +479,46 @@ function FirmIntro({ firm, portraits, onNext }) {
             {year && month && <p className="firm-note">({year}년 {Number(month)}월 기준)</p>}
           </header>
 
-          {people.map(([title, rows]) => rows?.length > 0 && (
-            <section className="firm-sec" key={title} aria-label={title}>
-              <h4>{title}</h4>
-              <ul className="firm-people">
-                {rows.map((l) => (
-                  <li key={l.n}>
-                    <span className="firm-ph">
-                      {(firm.photos?.[l.n] || portraits?.[l.n]) ? <img src={firm.photos?.[l.n] || portraits[l.n]} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
-                    </span>
-                    <strong>{l.n}</strong>
-                    <span className="firm-people-pos">{l.pos}</span>
-                    <span className="firm-people-t">{l.title}</span>
+          <div className="firm-tabs" role="tablist" aria-label="법무법인 YK 구성원과 업무사례">
+            {FIRM_TABS.map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                id={`${tabsId}-${key}`}
+                aria-selected={tab === key}
+                aria-controls={`${tabsId}-${key}-panel`}
+                className={tab === key ? "on" : ""}
+                onClick={() => setTab(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <section className="firm-sec firm-tabpanel" role="tabpanel" id={`${tabsId}-${tab}-panel`} aria-labelledby={`${tabsId}-${tab}`}>
+            {tab === "bench" && <FirmPeople key="bench" rows={firm.bench} firm={firm} portraits={portraits} onPerson={openPerson} />}
+            {tab === "prosecution" && <FirmPeople key="prosecution" rows={firm.prosecution} firm={firm} portraits={portraits} onPerson={openPerson} />}
+            {tab === "advisors" && advisors.map(([title, rows]) => rows.length > 0 && (
+              <div className="firm-subgroup" key={title}>
+                <h5>{title}</h5>
+                <FirmPeople rows={rows} firm={firm} portraits={portraits} onPerson={openPerson} />
+              </div>
+            ))}
+            {tab === "cases" && (cases.length > 0 ? (
+              <ul className={`yh-cases${cases.length === 1 ? " yh-cases-one" : ""}`}>
+                {cases.map((c) => (
+                  <li key={c.href || c.t}>
+                    <button type="button" className="yh-case-btn" onClick={() => setCaseItem(c)}>
+                      {c.tag ? <span className="yh-case-tag">{c.tag}</span> : null}
+                      {c.t ? <strong>{c.t}</strong> : null}
+                      {c.s ? <p>{c.s}</p> : null}
+                      {c.r ? <span className="yh-case-r">{c.r}</span> : null}
+                    </button>
                   </li>
                 ))}
               </ul>
-            </section>
-          ))}
-
-          {(firm.advisors?.length > 0 || firm.police?.length > 0) && (
-            <section className="firm-sec" aria-labelledby="firm-advisors">
-              <h4 id="firm-advisors">고문 및 전문위원</h4>
-              <p className="firm-sec-lead">정부기관·경찰·입법 분야의 실무 경험을 바탕으로, 사안 검토에 필요한 전문적 관점을 더합니다.</p>
-              {firm.advisors?.length > 0 && (
-                <div className="firm-subgroup">
-                  <h5>고문</h5>
-                  <ul className="firm-names">
-                    {firm.advisors.map((a) => (
-                      <li key={a.n}><strong>{a.n}</strong>{a.c && <span>{a.c}</span>}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {firm.police?.length > 0 && (
-                <div className="firm-subgroup">
-                  <h5>경찰 경력 전문위원</h5>
-                  <ul className="firm-names compact">
-                    {firm.police.map((a) => <li key={a.n}><strong>{a.n}</strong></li>)}
-                  </ul>
-                </div>
-              )}
-            </section>
-          )}
+            ) : <p className="firm-empty">이 사건과 비슷한 업무사례가 아직 없습니다.</p>)}
+          </section>
 
           <section className="firm-sec" aria-labelledby="firm-centers">
             <h4 id="firm-centers">분야별 전문 센터</h4>
@@ -478,6 +542,7 @@ function FirmIntro({ firm, portraits, onNext }) {
           <ReportNext onClick={onNext} label="사건 요약 보기" />
         </div>
       </div>
+      <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
     </section>
   );
 }
@@ -825,7 +890,7 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
   </>;
 }
 
-function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specialist = false, onBack, onNext, onPrevious }) {
+function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specialist = false, onBack, backLabel = "전문 인력 목록", onNext, onPrevious }) {
   const heroRef = useRef(null);
   const profileRef = useRef(null);
   const indexId = useId();
@@ -1041,7 +1106,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
         <div className="counsel-page-links">
           {onPrevious && <ReportNext onClick={onPrevious} label="사건 요약으로" previous />}
           {/* 전문 인력 상세: 목록으로 돌아가는 버튼은 하단 왼쪽 플로팅 하나다(YK-OS 바인더#3 1차 내부 피드백 1). */}
-          {!onPrevious && onBack && <ReportNext onClick={onBack} label="전문 인력 목록" previous />}
+          {!onPrevious && onBack && <ReportNext onClick={onBack} label={backLabel} previous />}
           {onNext && <ReportNext onClick={onNext} label="전문 인력 살펴보기" />}
         </div>
       ) : null}
