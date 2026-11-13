@@ -120,7 +120,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             onPrevious={() => onScreen(hasSummary ? "topics" : "report")}
           />
         )}
-        {screen === "youtube" && <YoutubeStories />}
+        {screen === "youtube" && <YoutubeStories onPrevious={() => onScreen("seniors")} />}
         {screen === "seniors" && (
           <Seniors
             list={data.seniors}
@@ -130,6 +130,8 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             FIELD={FIELD}
             NEAR={NEAR}
             b={b}
+            onPreviousStep={() => onScreen("counsel")}
+            onNextStep={() => onScreen("youtube")}
           />
         )}
       </div>
@@ -396,7 +398,6 @@ const FIRM_TABS = [
   ["advisors", "고문 및 전문위원"],
   ["cases", "업무사례"],
 ];
-const FIRM_PEOPLE_FIRST = 12;
 /** 사건 분야(fields.json FIELD 첫 이름) → 분야별 전문 센터 묶음(firm_intro.json centerGroups.t). */
 const CENTER_GROUP_OF = {
   형사: "형사", 성범죄: "형사", 학교폭력: "형사", 마약: "형사", 교통사고: "형사", 군형사: "형사",
@@ -407,18 +408,17 @@ const CENTER_GROUP_OF = {
 };
 
 function FirmPeople({ rows, firm, portraits, onPerson }) {
-  const [all, setAll] = useState(false);
   if (!rows?.length) return null;
-  const shown = all ? rows : rows.slice(0, FIRM_PEOPLE_FIRST);
+  // 탭 안에서는 전부 보인다(고재완 11-13 「접기 빼라」).
   return (
     <>
       <ul className="firm-people">
-        {shown.map((l) => {
+        {rows.map((l) => {
           const photo = firm.photos?.[l.n] || portraits?.[l.n];
           return (
             <li key={l.n}>
-              <button type="button" className="firm-person" onClick={() => onPerson(l.n)}>
-                <span className="firm-ph">
+              <button type="button" className="firm-person" onClick={() => onPerson(l)}>
+                <span className="firm-ph" style={firm.photoZoom?.[l.n] ? { "--firm-ph-zoom": firm.photoZoom[l.n] } : undefined}>
                   {photo ? <img src={photo} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
                 </span>
                 <strong>{l.n}</strong>
@@ -429,11 +429,6 @@ function FirmPeople({ rows, firm, portraits, onPerson }) {
           );
         })}
       </ul>
-      {rows.length > FIRM_PEOPLE_FIRST && (
-        <button type="button" className="firm-more" aria-expanded={all} onClick={() => setAll(!all)}>
-          {all ? "접기" : "더 보기"}
-        </button>
-      )}
     </>
   );
 }
@@ -450,7 +445,12 @@ function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
   const caseGroup = CENTER_GROUP_OF[FIELD?.[b?.field]?.[0]] || "";
   const caseWord = caseLabel.slice(0, 2);
   // 카드를 누르면 상담 변호사 화면과 같은 상세로 간다. 상세에서 돌아오면 고르던 탭 그대로다.
-  const openPerson = (name) => api.counsel(name).then((p) => p && setPerson(p));
+  // 상세 파일이 없는 사람(홈페이지 상세가 없는 고문 등)도 카드의 이름·직함·경력으로 상세를 연다.
+  const openPerson = (row) => api.counsel(row.n).catch(() => null).then((p) => setPerson(p?.counsel ? p : {
+    counsel: { n: row.n, pos: row.pos || "", kind: row.pos === "고문" || row.pos === "전문위원" ? "advisor" : "lawyer",
+      f: [], career: row.c || row.title ? [row.c || row.title] : [], cases: [], titles: [], photo: Boolean(firm.photos?.[row.n]) },
+    portraits: firm.photos?.[row.n] ? { [row.n]: firm.photos[row.n] } : {},
+  }));
   if (person) {
     return (
       <section className="pane on counselpane">
@@ -534,7 +534,6 @@ function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
 
           <section className="firm-sec" aria-labelledby="firm-centers">
             <h4 id="firm-centers">분야별 전문 센터</h4>
-            <p className="firm-sec-lead">형사·가사·민사·기업 등 각 분야의 실무 경험을 바탕으로, 사건의 주요 쟁점과 대응 절차를 살핍니다.</p>
             <div className="firm-centers">
               {firm.centerGroups.map((g) => {
                 const related = g.t === caseGroup;
@@ -566,7 +565,7 @@ function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
   );
 }
 
-function ReportNext({ onClick, label = "상담 변호사 확인하기", previous = false, disabled = false }) {
+export function ReportNext({ onClick, label = "상담 변호사 확인하기", previous = false, disabled = false }) {
   return (
     <div className={`report-next${previous ? " report-previous" : ""}`}>
       <button type="button" onClick={onClick} disabled={disabled}>
@@ -866,12 +865,6 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
   const relatedWorks = relatedCaseWorks(l.works, b?.field);
   const hasWorks = l.kind === "lawyer" && relatedWorks.length;
   return <>
-    <header className="counsel-intro">
-      {/* 상담에 고문·전문위원이 함께하면(시연 피드백 4번) 「변호사」 대신 그 사람의 직함으로 부른다. */}
-      <h2>{specialist ? "다양한 경험을 갖춘 전문 인력을 소개합니다." : l.kind === "advisor" ? "고객님과 함께할 전문가를 소개합니다." : "고객님과 함께할 변호사를 소개합니다."}</h2>
-      <p>{l.n} {specialist ? (l.pos || "전문 인력") : l.kind === "advisor" ? (l.pos || "전문위원") : "변호사"}의 주요 업무 분야와 이력을 정리했습니다.<br />
-        고객님의 상황과 관련된 경험과 사례를 살펴보세요.</p>
-    </header>
     {(hasFields || hasCases || hasWorks) ? <section className="xsec detail-group">
       <h3>업무 분야 및 사례</h3>
       <div className="detail-group-body">
@@ -1267,7 +1260,7 @@ function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen, focused, clone, offs
   );
 }
 
-function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext }) {
+function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext, onPreviousStep, onNextStep }) {
   const [open, setOpen] = useState(null);
   const visibleList = list.filter((person) => !counsel?.n || person.n !== counsel.n).slice(0, 6);
   const shown = open ? visibleList.find((x) => x.n === open) : null;
@@ -1406,8 +1399,7 @@ function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext })
     <div className="senior-pages">
     <section className={`pane on seniorpane${shown ? " is-detail-hidden" : ""}`} aria-hidden={shown ? true : undefined} inert={shown ? "" : undefined}>
       <div className="senior-content">
-      <h2 className="h1">다양한 경험을 갖춘 전문 인력을 소개합니다.</h2>
-      <p className="sub">주요 업무 분야와 경력입니다.<br />프로필을 누르면 자세한 정보를 확인하실 수 있습니다.</p>
+      <h2 className="h1">전문 인력</h2>
       <div className={`senior-stage${changing ? " is-changing" : ""}`}>
       {count > 1 && <div className="senior-side-navigation">
         {[-1, 1].map((direction) => <button key={direction} type="button"
@@ -1466,6 +1458,13 @@ function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext })
           <button type="button" className="go counsel-go" onClick={onNext}>설문 참여하기</button>
         </div>
       ) : null}
+      {/* 이전·다음 버튼은 모든 탭이 같은 자리(시연 피드백 3번, 고재완 11-13 「전문 인력·YK 변호사 이야기도 넣어」) */}
+      {(onPreviousStep || onNextStep) && (
+        <div className="counsel-page-links">
+          {onPreviousStep && <ReportNext onClick={onPreviousStep} label="상담 변호사로" previous />}
+          {onNextStep && <ReportNext onClick={onNextStep} label="YK 변호사 이야기" />}
+        </div>
+      )}
       </div>
     </section>
       {shown && <section className="pane on counselpane specialist-detail-page" aria-label={`${shown.n} 프로필 상세`}>

@@ -15,11 +15,12 @@ describe("상담에 함께하는 분이 여러 명일 때", () => {
     const tabs = within(list).getAllByRole("tab");
     expect(tabs).toHaveLength(2);
     expect(tabs[0].getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByText(/임효진 변호사의 주요 업무 분야/)).toBeTruthy();
+    expect(document.querySelector(".profile").textContent).toContain("임효진");
 
     fireEvent.click(tabs[1]);
     expect(within(list).getAllByRole("tab")[1].getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByText(/고기동 고문의 주요 업무 분야/)).toBeTruthy();
+    expect(document.querySelector(".profile").textContent).toContain("고기동");
+    expect(document.querySelector(".profile").textContent).not.toContain("임효진");
   });
 
   it("한 명이면 탭을 두지 않는다", () => {
