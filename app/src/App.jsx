@@ -19,6 +19,10 @@ const DEEP = new Set(["film", "counsel-video", "topics", ...SCREENS.map(([id]) =
 const ANSWER_KEY = "ykct.answers.v1";
 const VIEWS = [["tab", "고객 태블릿"], ["os", "상담실장 YK-OS"], ["both", "나란히"]];
 
+/** 상담 변호사 목록 ↔ URL l 값. 한 명이면 이름 그대로, 여러 명이면 쉼표로 잇는다. */
+const pickValue = (names) => (Array.isArray(names) ? names : names ? [names] : []).filter(Boolean).join(",");
+const pickNames = (value) => (value || "").split(",").map((n) => n.trim()).filter(Boolean);
+
 export default function App() {
   const q = new URLSearchParams(location.search);
   const [data, setData] = useState(null);
@@ -143,7 +147,15 @@ export default function App() {
   useEffect(() => {
     if (!pick) { setPickData(null); return; }
     let live = true;
-    api.counsel(pick).then((p) => live && setPickData(p));
+    // 상담 변호사는 여러 명일 수 있다(시연 피드백 4번). URL l 에는 쉼표로 잇는다.
+    Promise.all(pickNames(pick).map((n) => api.counsel(n))).then((list) => {
+      if (!live) return;
+      const found = list.filter(Boolean);
+      setPickData(found.length ? {
+        counsels: found.map((p) => p.counsel),
+        portraits: Object.assign({}, ...found.map((p) => p.portraits || {})),
+      } : null);
+    });
     return () => { live = false; };
   }, [pick]);
 
@@ -173,7 +185,7 @@ export default function App() {
 
   const share = useCallback((id, counselName = "") => {
     setCid(id);
-    setPick(counselName);
+    setPick(pickValue(counselName));
     setParty("");
     setConnected(true);
     setScreen("wait");
@@ -201,12 +213,14 @@ export default function App() {
   // 실장이 고른 상담 변호사로 바꿔 끼운다. 전문 인력 목록에서는 그 사람을 뺀다.
   // 실장이 고른 지위로 사건 요약 2뎁스를 바꿔 끼운다.
   const base = partyData && partyData.booking.id === data.booking.id ? partyData : data;
-  const shown = pickData && pickData.counsel.n !== data.counsel?.n
+  const picked = new Set(pickData?.counsels.map((c) => c.n) || []);
+  const shown = pickData && (pickData.counsels.length > 1 || pickData.counsels[0].n !== data.counsel?.n)
     ? {
         ...base,
-        counsel: pickData.counsel,
+        counsel: pickData.counsels[0],
+        counsels: pickData.counsels,
         portraits: { ...data.portraits, ...pickData.portraits },
-        seniors: data.seniors.filter((s) => s.n !== pickData.counsel.n),
+        seniors: data.seniors.filter((s) => !picked.has(s.n)),
       }
     : base;
   const answers = answersBy[data.booking.id] || {};
@@ -214,7 +228,7 @@ export default function App() {
   const resetAnswers = (bid) => { const next = { ...answersBy }; delete next[bid]; saveAnswers(next); };
   const booking = cat.bookings.find((b) => b.id === data.booking.id) || data.booking;
   const displayView = fullscreen ? "tab" : view;
-  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: setPick };
+  const act = { share, unshare, screen: setScreen, pushLawyer, counsel: (names) => setPick(pickValue(names)) };
 
   return (
     <div className={`shell ${fullscreen ? "customer-fullscreen" : ""} ${controlsOpen ? "controls-open" : ""}`} onClickCapture={handleCornerTap}>

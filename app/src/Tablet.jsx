@@ -34,7 +34,12 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
     : b.branch;
   const FIELD = data.FIELD || {};
   const NEAR = data.NEAR || {};
-  const counsel = data.counsel;
+  // 상담 변호사가 여러 명이면(고문·전문위원 포함, 시연 피드백 4번) 상담 변호사 화면 위에서 한 명씩 골라 본다.
+  const team = data.counsels?.length ? data.counsels : data.counsel ? [data.counsel] : [];
+  const teamKey = team.map((c) => c.n).join(",");
+  const [teamIndex, setTeamIndex] = useState(0);
+  useEffect(() => { setTeamIndex(0); }, [b.id, teamKey]);
+  const counsel = team[teamIndex] || data.counsel;
   const [waitStep, setWaitStep] = useState("confirm");
 
   useEffect(() => {
@@ -103,6 +108,9 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
         {(screen === "counsel" || (screen === "counsel-video" && !counsel?.videoId)) && (
           <Counsel
             l={counsel}
+            team={team}
+            teamIndex={teamIndex}
+            onTeam={setTeamIndex}
             portraits={data.portraits}
             FIELD={FIELD}
             NEAR={NEAR}
@@ -771,8 +779,9 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
   const hasWorks = l.kind === "lawyer" && relatedWorks.length;
   return <>
     <header className="counsel-intro">
-      <h2>{specialist ? "다양한 경험을 갖춘 전문 인력을 소개합니다." : "고객님과 함께할 변호사를 소개합니다."}</h2>
-      <p>{l.n} {specialist ? (l.pos || "전문 인력") : "변호사"}의 주요 업무 분야와 이력을 정리했습니다.<br />
+      {/* 상담에 고문·전문위원이 함께하면(시연 피드백 4번) 「변호사」 대신 그 사람의 직함으로 부른다. */}
+      <h2>{specialist ? "다양한 경험을 갖춘 전문 인력을 소개합니다." : l.kind === "advisor" ? "고객님과 함께할 전문가를 소개합니다." : "고객님과 함께할 변호사를 소개합니다."}</h2>
+      <p>{l.n} {specialist ? (l.pos || "전문 인력") : l.kind === "advisor" ? (l.pos || "전문위원") : "변호사"}의 주요 업무 분야와 이력을 정리했습니다.<br />
         고객님의 상황과 관련된 경험과 사례를 살펴보세요.</p>
     </header>
     {(hasFields || hasCases || hasWorks) ? <section className="xsec detail-group">
@@ -1039,7 +1048,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
   );
 }
 
-function Counsel({ l, portraits, FIELD, NEAR, b, onNext, onPrevious }) {
+function Counsel({ l, team = [], teamIndex = 0, onTeam = () => {}, portraits, FIELD, NEAR, b, onNext, onPrevious }) {
   if (!l) {
     return (
       <section className="pane on">
@@ -1049,7 +1058,17 @@ function Counsel({ l, portraits, FIELD, NEAR, b, onNext, onPrevious }) {
   }
   return (
     <section className="pane on counselpane">
-      <ProfileBody l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero onNext={onNext} onPrevious={onPrevious} />
+      {team.length > 1 && (
+        <div className="counsel-team" role="tablist" aria-label="상담에 함께하는 분">
+          {team.map((c, i) => (
+            <button key={c.n} type="button" role="tab" aria-selected={i === teamIndex} className={i === teamIndex ? "on" : ""} onClick={() => onTeam(i)}>
+              <span className="counsel-team-ph">{portraits?.[c.n] ? <img src={portraits[c.n]} alt="" /> : <span aria-hidden="true">{c.n[0]}</span>}</span>
+              <span className="counsel-team-t"><b>{c.n}</b><span>{c.pos}</span></span>
+            </button>
+          ))}
+        </div>
+      )}
+      <ProfileBody key={l.n} l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero onNext={onNext} onPrevious={onPrevious} />
     </section>
   );
 }

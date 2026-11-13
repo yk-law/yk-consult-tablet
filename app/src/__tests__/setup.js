@@ -81,3 +81,8 @@ if (typeof HTMLIFrameElement !== "undefined") {
     },
   });
 }
+
+// 상담 변호사 상세(ProfileBody)가 높이 변화·화면 진입을 지켜본다. jsdom에는 없어 빈 것으로 둔다.
+class NoopObserver { observe() {} unobserve() {} disconnect() {} takeRecords() { return []; } }
+if (!globalThis.ResizeObserver) globalThis.ResizeObserver = NoopObserver;
+if (!globalThis.IntersectionObserver) globalThis.IntersectionObserver = NoopObserver;

@@ -70,10 +70,16 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
   const [tab, setTab] = useKept("tab", "전체");
   const [signId, setSignId] = useState(null);
 
-  /** 상담 변호사. 콜 단계에서 정해 둔 변호사가 있으면 채워 둔다. */
-  const [assigned, setAssigned] = useKept("assigned", () => Object.fromEntries(
-    bookings.filter((b) => b.counsel && b.counselAssigned !== false).map((b) => [b.id, b.counsel]),
+  /** 상담 변호사(여러 명, 고문·전문위원 포함 — 시연 피드백 4번). 콜 단계에서 정해 둔 변호사가 있으면 채워 둔다. */
+  const [assigned, setAssigned] = useKept("assigned2", () => Object.fromEntries(
+    bookings.filter((b) => b.counsel && b.counselAssigned !== false).map((b) => [b.id, [b.counsel]]),
   ));
+  const team = (id) => assigned[id] || [];
+  /** 고를 수 있는 사람: 변호사 전체 + 고문·전문위원. */
+  const people = useMemo(() => {
+    const names = new Set((cat?.lawyers || []).map((l) => l.n));
+    return [...(cat?.lawyers || []), ...(cat?.advisors || []).filter((a) => !names.has(a.n)).map((a) => ({ n: a.n, pos: a.r, f: [] }))];
+  }, [cat]);
   /** 상담 태블릿. 실제는 태블릿 앱에서 이름을 넣고 입장한다. 시연은 예약의 상담실로 만든다. */
   const [tablets, setTablets] = useKept("tablets", () => [...new Set(bookings.map((b) => b.branch).filter(Boolean))].sort());
   const [mirror, setMirror] = useKept("mirror", "");
@@ -140,7 +146,7 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
     setShownId(x.id);
     setDisplayOn(true);
     setBinderIds((ids) => (ids.includes(x.id) ? ids : [...ids, x.id]));
-    act.share(x.id, assigned[x.id]);
+    act.share(x.id, team(x.id));
   };
 
   const onOpenBinder = (x) => {
@@ -183,7 +189,7 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
   };
 
   const sign = signId ? byId(signId) : null;
-  const block = (x) => (!assigned[x.id] ? "counsel" : !mirror ? "tablet" : null);
+  const block = (x) => (!team(x.id).length ? "counsel" : !mirror ? "tablet" : null);
 
   /* 화면 비율 조절(실제 0.28~0.72) */
   const splitRef = useRef(null);
@@ -305,15 +311,15 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                       <div className="vacts" onClick={(e) => e.stopPropagation()}>
                         <div className="vbind">
                         <div className="vbind-row">
-                        <CounselSelect
-                          lawyers={cat.lawyers}
+                        <CounselTeam
+                          people={people}
                           FIELD={cat.FIELD}
-                          value={assigned[x.id] || ""}
-                          onChange={(name) => {
+                          value={team(x.id)}
+                          onChange={(names) => {
                             const next = { ...assigned };
-                            if (name) next[x.id] = name; else delete next[x.id];
+                            if (names.length) next[x.id] = names; else delete next[x.id];
                             setAssigned(next);
-                            if (on && binderOn && name) act.counsel(name);
+                            if (on && binderOn && names.length) act.counsel(names);
                           }}
                         />
                         <button className="vb share" disabled={why != null} onClick={() => onOpenBinder(x)}>
@@ -490,8 +496,30 @@ function YkDialog({ dialog, shown, onCancel, onConfirm }) {
   );
 }
 
+/** 상담에 함께하는 사람들. 고른 사람은 칩(이름·직함·지우기 X)으로 두고, 옆 검색칸으로 한 명씩 더한다(시연 피드백 4번). */
+function CounselTeam({ people = [], FIELD, value = [], onChange }) {
+  const byName = new Map(people.map((p) => [p.n, p]));
+  return (
+    <div className="vteam">
+      {value.map((n) => (
+        <span key={n} className="vteam-chip">
+          <b>{n}</b>{byName.get(n)?.pos && <span className="pos">{byName.get(n).pos}</span>}
+          <button type="button" className="vcounsel-x" aria-label={`${n} 빼기`} onClick={() => onChange(value.filter((v) => v !== n))}><Icon d={ICON.x} /></button>
+        </span>
+      ))}
+      <CounselSelect
+        lawyers={people.filter((p) => !value.includes(p.n))}
+        FIELD={FIELD}
+        value=""
+        placeholder={value.length ? "상담 변호사 추가" : "상담 변호사 지정"}
+        onChange={(name) => name && onChange([...value, name])}
+      />
+    </div>
+  );
+}
+
 /** 상담 변호사 칸. 실제 VisitCounselSelect: 고르면 이름과 지우기 X, 누르면 검색 입력으로 바뀌어 목록에서 고른다. */
-function CounselSelect({ lawyers = [], FIELD, value, onChange }) {
+function CounselSelect({ lawyers = [], FIELD, value, onChange, placeholder }) {
   const [editing, setEditing] = useState(false);
   const [q, setQ] = useState("");
   const hits = useMemo(() => {
@@ -518,8 +546,8 @@ function CounselSelect({ lawyers = [], FIELD, value, onChange }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         onFocus={() => setEditing(true)}
-        placeholder={value ? "상담 변호사" : "상담 변호사 지정"}
-        aria-label="상담 변호사 지정"
+        placeholder={placeholder || (value ? "상담 변호사" : "상담 변호사 지정")}
+        aria-label={placeholder || "상담 변호사 지정"}
         autoFocus={editing}
       />
       <Icon d={ICON.down} className="vcounsel-chev" />
