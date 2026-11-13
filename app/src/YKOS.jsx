@@ -144,7 +144,7 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
   };
 
   const onOpenBinder = (x) => {
-    if (!displayOn) { setDialog({ kind: "display" }); return; }
+    // 고객화면이 꺼져 있어도 묻지 않는다. openBinder 가 화면을 켜고 바로 연다.
     const action = !shownId ? "show" : shownId === x.id ? "release" : "switch";
     if (action === "switch" && needsConfirm(shownId)) { setDialog({ kind: "switch", row: x, openBinder: true }); return; }
     if (action === "switch") resetCase(shownId);
@@ -303,6 +303,8 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                         <span className="vt">{x.tel}</span>
                       </div>
                       <div className="vacts" onClick={(e) => e.stopPropagation()}>
+                        <div className="vbind">
+                        <div className="vbind-row">
                         <CounselSelect
                           lawyers={cat.lawyers}
                           FIELD={cat.FIELD}
@@ -317,7 +319,10 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                         <button className="vb share" disabled={why != null} onClick={() => onOpenBinder(x)}>
                           <Icon d={ICON.book} />바인더 열기
                         </button>
-                        <span className="vsep" role="separator" aria-orientation="vertical" />
+                        </div>
+                        {why && <p className="vhint">{why === "counsel" ? "상담 변호사를 지정하면 바인더를 열 수 있습니다." : "태블릿(상담실)을 먼저 선택해 주세요."}</p>}
+                        </div>
+                        <div className="vacts-r">
                         {/* 바인더가 문항을 보내 온 행에만. 닫아 두어도 아니오는 놓치지 않게 붉게. */}
                         {items.length > 0 && (
                           <button
@@ -337,8 +342,8 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                           선임 계약
                         </button>
                         <button className="vb icon" aria-label="상담 메모" title="상담 메모"><Icon d={ICON.memo} /></button>
+                        </div>
                       </div>
-                      {why && <p className="vhint">{why === "counsel" ? "상담 변호사를 지정하면 바인더를 열 수 있습니다." : "태블릿(상담실)을 먼저 선택해 주세요."}</p>}
                       {items.length > 0 && openCheck[x.id] && (
                         <ConfirmList rows={items} answers={answers} />
                       )}
@@ -453,10 +458,8 @@ function YkDialog({ dialog, shown, onCancel, onConfirm }) {
     );
   }
 
-  if (dialog.kind === "display" || dialog.kind === "contract") {
-    const body = dialog.kind === "display"
-      ? "고객화면이 꺼져 있습니다.\n미리보기 위 「고객화면」을 먼저 켜 주세요."
-      : "먼저 상담 내용 작성 후 상담 완료를 해 주세요.\n상담 완료 시 선임 계약 버튼이 활성화됩니다.";
+  if (dialog.kind === "contract") {
+    const body = "먼저 상담 내용 작성 후 상담 완료를 해 주세요.\n상담 완료 시 선임 계약 버튼이 활성화됩니다.";
     return (
       <div className="ydlg" role="presentation" onClick={onCancel}>
         <div className="ydlg-panel modal" role="dialog" aria-modal="true" aria-labelledby="ydlg-t" onClick={(e) => e.stopPropagation()}>

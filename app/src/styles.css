@@ -2881,8 +2881,11 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .os .vcard .vt{flex:none; min-width:0; font-size:16px; font-weight:500; color:var(--yo-mut);}
 .os .vcard.muted .vt{color:var(--yo-mut2);}
 
-/* 행 버튼: 오른쪽 정렬. 변호사 지정 · 바인더 열기 | 체크리스트 · 상담 내용 · 선임 계약 · 메모 */
-.os .vcard .vacts{display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:10px; padding:0; border:0;}
+/* 행 버튼: 이름 줄 아래 한 줄. 왼쪽 변호사 지정 · 바인더 열기(막힌 이유는 바로 아래) | 오른쪽 체크리스트 · 상담 내용 · 선임 계약 · 메모 */
+.os .vcard .vacts{display:flex; align-items:flex-start; gap:8px; flex-wrap:wrap; margin-top:12px; padding:12px 0 0; border:0; border-top:1px solid #EEF1F5;}
+.os .vbind{display:flex; flex-direction:column; align-items:flex-start; min-width:0;}
+.os .vbind-row{display:flex; align-items:center; gap:8px;}
+.os .vacts-r{display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-left:auto;}
 .os .vcounsel{display:flex; align-items:center; gap:4px; min-width:220px; height:40px; box-sizing:border-box; padding:0 4px 0 0;
   border:1px solid #D7DDE8; border-radius:4px; background:#fff;}
 .os .vcounsel:hover{border-color:#B8C2D6;}
@@ -2910,7 +2913,6 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .os .vcard .vb.check.open{background:#F1F5F9;}
 .os .vcard .vb.check.no{border-color:#B91C1C; color:#B91C1C; background:#fff;}
 .os .vcard .vb.check.no.open{background:#F1F5F9;}
-.os .vsep{align-self:center; width:0; height:28px; margin:0 2px; border-right:1px solid #CBD5E1;}
 .os .vcard .vhint{flex-basis:auto; margin:6px 0 0; font-size:13px; line-height:1.4; color:var(--yo-mut2);}
 
 /* 행 아래 펼침: 내방자 체크리스트 · 상담 변호사 지정 (실제 VisitBinder3ConfirmList 색) */
