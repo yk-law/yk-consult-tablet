@@ -473,10 +473,10 @@ function FirmIntro({ firm, portraits, onNext }) {
   );
 }
 
-function ReportNext({ onClick, label = "상담 변호사 확인하기", previous = false }) {
+function ReportNext({ onClick, label = "상담 변호사 확인하기", previous = false, disabled = false }) {
   return (
     <div className={`report-next${previous ? " report-previous" : ""}`}>
-      <button type="button" onClick={onClick}>
+      <button type="button" onClick={onClick} disabled={disabled}>
         <span>{label}</span>
         <svg className={`lucide ${previous ? "lucide-arrow-left" : "lucide-arrow-right"}`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
           <path d="M5 12h14" /><path d={previous ? "m12 19-7-7 7-7" : "m12 5 7 7-7 7"} />
@@ -486,10 +486,12 @@ function ReportNext({ onClick, label = "상담 변호사 확인하기", previous
   );
 }
 
-/** 사건 요약 1뎁스(10-28 미팅). 노출 가능한 예약에만 짧은 요약을 띄우고 문장마다 맞아요/아니요를 받는다.
- *  고객이 고른 값은 상담실장 YK-OS에 그대로 보인다. 아니요는 상담에서 다시 여쭤본다. */
+/** 사건 요약 1뎁스(10-28 미팅). 노출 가능한 예약에만 확인 문항을 띄우고 문항마다 네/아니오를 받는다.
+ *  고객이 고른 값은 상담실장 YK-OS에 그대로 보인다. 아니오는 상담에서 다시 여쭤본다.
+ *  11-13: YK-OS 바인더#3와 같게 답은 풀리지 않고(다른 쪽을 누르면 바뀜), 모두 골라야 2뎁스로 간다. */
 function Summary({ helper, answers, onAnswer, onNext, onPrevious }) {
   const rows = helper.summary;
+  const done = rows.every((_, i) => answers[i]);
   return (
     <section className="pane on reportpane">
       <div className="ykhelper">
@@ -504,24 +506,24 @@ function Summary({ helper, answers, onAnswer, onNext, onPrevious }) {
               <li key={t}>
                 <p>{t}</p>
                 <div className="yh-check-a" role="group" aria-label={`${i + 1}번 확인`}>
-                  {[["yes", "맞아요"], ["no", "아니요"]].map(([v, l]) => (
+                  {[["yes", "네"], ["no", "아니오"]].map(([v, l]) => (
                     <button
                       type="button"
                       key={v}
                       className={answers[i] === v ? `on ${v}` : v}
                       aria-pressed={answers[i] === v}
-                      onClick={() => onAnswer(i, answers[i] === v ? null : v)}
+                      onClick={() => onAnswer(i, v)}
                     >{l}</button>
                   ))}
                 </div>
               </li>
             ))}
           </ol>
-          <p className="yh-src">모두 고르지 않으셔도 괜찮습니다. 고르신 답은 다시 누르면 바뀝니다.</p>
+          <p className="yh-src">모든 항목에 네 또는 아니오를 골라 주세요. 고르신 답은 다른 쪽을 누르면 바뀝니다.</p>
           {/* 11-03 재완님: 1뎁스에서 돌아갈 길이 없었다. 2뎁스와 같은 앞/뒤 버튼 줄을 둔다. */}
           <div className="counsel-page-links">
             <ReportNext onClick={onPrevious} label="법무법인 YK 소개로" previous />
-            <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" />
+            <ReportNext onClick={onNext} label="상담에서 함께 볼 내용" disabled={!done} />
           </div>
         </div>
       </div>
@@ -539,31 +541,22 @@ const PARTY_ASK = {
   피고: "소장이나 청구를 받았어요",
 };
 
+/** YK-OS 바인더#3(11-06)와 같게 선택지는 늘 보이고 지금 지위를 선택 색으로 표시한다. 다른 것을 누르면 바로 바뀐다(「다시 고르기」 없음). */
 function PartyAsk({ helper, onParty }) {
-  const [again, setAgain] = useState(false);
   const parties = helper?.parties || [];
   if (!onParty || parties.length < 2) return null;
-  if (helper.partyKnown && !again) {
-    return (
-      <p className="yh-party-now">
-        <span>{helper.party === "공통" ? "모든 경우에 맞는 내용으로 보여드리고 있습니다." : `‘${PARTY_ASK[helper.party] || helper.party}’에 맞춰 보여드리고 있습니다.`}</span>
-        <button type="button" onClick={() => setAgain(true)}>
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5" /><path d="M4 3.5V6.5H7" /></svg>
-          다시 고르기
-        </button>
-      </p>
-    );
-  }
-  const pick = (p) => { setAgain(false); onParty(p); };
+  const chosen = helper.partyKnown ? helper.party : null;
+  const option = (p, label, skip = false) => (
+    <button key={p} type="button" className={[skip ? "skip" : "", chosen === p ? "on" : ""].filter(Boolean).join(" ") || undefined}
+      aria-pressed={chosen === p} onClick={() => onParty(p)}>{label}</button>
+  );
   return (
     <section className="yh-party" aria-labelledby="yh-party-t">
       <h4 id="yh-party-t">어떤 경우에 해당하시나요?</h4>
       <p>고르시면 그에 맞는 내용으로 보여드립니다. 모르시면 넘어가셔도 됩니다.</p>
       <div className="yh-party-o">
-        {parties.map((p) => (
-          <button key={p} type="button" onClick={() => pick(p)}>{PARTY_ASK[p] || p}</button>
-        ))}
-        <button type="button" className="skip" onClick={() => pick("공통")}>잘 모르겠어요</button>
+        {parties.map((p) => option(p, PARTY_ASK[p] || p))}
+        {option("공통", "잘 모르겠어요", true)}
       </div>
     </section>
   );
@@ -577,13 +570,16 @@ function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previous
   const ask = helper?.ask?.length ? helper.ask : [];
   const bring = helper?.bring?.length ? helper.bring : [];
   const cases = helper?.cases?.length ? helper.cases : [];
-  // 1뎁스(summary)가 있는 예약만 2뎁스에 조합. 없으면 화면 변화 없음.
+  // 1뎁스 아니오는 여쭤볼 내용 맨 앞에 건수만. 문장은 YK-OS 체크리스트에서만 본다.
   const summary = helper?.summary || [];
-  const hasDepth1 = summary.length > 0;
-  const confirmed = hasDepth1 ? summary.filter((_, i) => answers[i] !== "no") : [];
-  const noCount = hasDepth1 ? summary.filter((_, i) => answers[i] === "no").length : 0;
-  const agenda = hasDepth1 ? (helper?.agenda || []) : [];
+  const noCount = summary.filter((_, i) => answers[i] === "no").length;
   const askRows = noCount > 0 ? [`앞에서 다르다고 하신 부분(${noCount}건)`, ...ask] : ask;
+  // 맞춤 설명(바인더#3, 11-13): 콜로 고른 지위(rewriteRole)를 보고 있고, 그 단계에 쓰인 문항에 모두 「네」면 설명을 바꾼다.
+  const rewritten = (i) => {
+    if (!helper?.rewriteRole || helper.party !== helper.rewriteRole) return null;
+    const hit = (helper.rewrites || []).find((r) => r.step === i);
+    return hit && hit.questions.every((q) => answers[q] === "yes") ? hit.text : null;
+  };
   const pairCount = (askRows.length > 0 ? 1 : 0) + (bring.length > 0 ? 1 : 0);
   const [caseItem, setCaseItem] = useState(null);
 
@@ -604,33 +600,6 @@ function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previous
             </div>
           )}
           <PartyAsk helper={helper} onParty={onParty} />
-          {/* 1뎁스 문장 중 아니요가 아닌 것만. 전부 아니요면 섹션 자체 생략. */}
-          {confirmed.length > 0 && (
-            <section className="yh-said" aria-labelledby="yh-said">
-              <h4 className="yh-sec-t" id="yh-said">말씀해 주신 내용</h4>
-              <ol className="yh-said-list">
-                {confirmed.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ol>
-            </section>
-          )}
-          {/* agenda는 1뎁스 있는 예약만 helper에 실림. steps 앞에 소제목으로. */}
-          {agenda.length > 0 && (
-            <section className="yh-agenda-sec" aria-labelledby="yh-agenda">
-              <h4 className="yh-sec-t yh-sec-sub" id="yh-agenda">말씀하신 궁금한 점</h4>
-              <ol className="yh-agenda">
-                {agenda.map((t, i) => (
-                  <li key={t}>
-                    <div className="yh-sec-h">
-                      <span className="n">{String(i + 1).padStart(2, "0")}</span>
-                      <h4>{t}</h4>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          )}
           {topics.length > 0 && <h4 className="yh-sec-t">상담에서 함께 볼 내용</h4>}
           {steps.length > 0 && (
             <ol className="yh-steps">
@@ -639,7 +608,7 @@ function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previous
                   <span className="n">{String(i + 1).padStart(2, "0")}</span>
                   <div>
                     <h4>{t}</h4>
-                    <p>{d}</p>
+                    <p>{rewritten(i) || d}</p>
                   </div>
                 </li>
               ))}
@@ -951,14 +920,6 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     <div className="profile" ref={profileRef}>
       <div ref={heroRef} className={counselHero ? "counsel-hero" : "profile-hero-pass"}>
       {counselHero && <HeroBackdrop />}
-      {onBack && (
-        <div className="specialist-back-row">
-          <button type="button" autoFocus onClick={onBack}>
-            <svg className="lucide lucide-arrow-left" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14" /></svg>
-            전문 인력 목록
-          </button>
-        </div>
-      )}
       <div className="xlead">
         <Portrait l={l} portraits={portraits} size="hero" />
         <div className="xident xmeta">
@@ -1063,9 +1024,11 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
         </section>
       ) : null}
       </>}
-      {counselHero && (onPrevious || onNext) ? (
+      {counselHero && (onPrevious || onNext || onBack) ? (
         <div className="counsel-page-links">
           {onPrevious && <ReportNext onClick={onPrevious} label="사건 요약으로" previous />}
+          {/* 전문 인력 상세: 목록으로 돌아가는 버튼은 하단 왼쪽 플로팅 하나다(YK-OS 바인더#3 1차 내부 피드백 1). */}
+          {!onPrevious && onBack && <ReportNext onClick={onBack} label="전문 인력 목록" previous />}
           {onNext && <ReportNext onClick={onNext} label="전문 인력 살펴보기" />}
         </div>
       ) : null}

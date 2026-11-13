@@ -29,9 +29,9 @@ def test_catalog_loads_expected_sizes():
     assert isinstance(c["bookings"], list)
     assert len(c["lawyers"]) == EXPECT["lawyers"]
     assert len(c["advisors"]) == EXPECT["advisors"]
-    assert len(c["bookings"]) == 8
+    assert len(c["bookings"]) == EXPECT["bookings"]
     assert "FIELD" in c and "NEAR" in c
-    assert c["counts"]["advisors"] == 98
+    assert c["counts"]["advisors"] == 98  # 홈페이지 공개 수치(고정), 명단 수와 다르다
 
 
 def test_booking_and_lawyer_lookup():

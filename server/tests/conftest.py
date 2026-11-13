@@ -19,7 +19,7 @@ from server import main as main_mod  # noqa: E402
 from server.main import app  # noqa: E402
 
 # tools/check.mjs EXPECT 와 동일
-EXPECT = {"lawyers": 316, "advisors": 98, "bookings": 7}
+EXPECT = {"lawyers": 318, "advisors": 99, "bookings": 26}  # 11-13 바인더#3 검토본 26건
 
 
 @pytest.fixture(autouse=True)

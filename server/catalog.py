@@ -499,6 +499,9 @@ def helper_view(b: dict) -> dict:
         "parties": parties,
         "partyKnown": known or len(parties) < 2,
         "summary": b.get("summary") or [],
+        # 맞춤 설명(바인더#3, 11-13): rewriteRole 지위에서 쓰인 1뎁스 문항에 모두 「네」면 그 단계 설명을 바꾼다. 조합은 화면에서 한다.
+        "rewriteRole": b.get("rewriteRole") or "",
+        "rewrites": b.get("rewrites") or [],
         # 1뎁스가 있는 예약만 2뎁스에 agenda를 실어 「말씀하신 궁금한 점」으로 보여 준다.
         "agenda": (b.get("agenda") or []) if b.get("summary") else [],
         "topics": template["steps"] if template else [],
@@ -598,6 +601,7 @@ def seniors_for(
     counsel_name: str | None = None,
     roster: list | None = None,
     seed: str = "",
+    fixed: bool = False,
 ) -> tuple[list[dict], str]:
     """전문인력 탭 6슬롯(2026-11-04 재완님).
 
@@ -610,6 +614,21 @@ def seniors_for(
     by_name = {l["n"]: l for l in cat["lawyers"]}
     pool = advisor_pool()
     pool_by_name = {a["n"]: a for a in pool}
+
+    if roster and fixed:
+        # 바인더#3 검토본 예약(11-13): YK-OS가 이미 6칸 규칙으로 고른 명단이라 순서까지 그대로 쓴다.
+        out = []
+        for name in roster:
+            if name == counsel_name:
+                continue
+            if name in by_name:
+                p = public_profile(by_name[name])
+                p["reasons"] = reasons(by_name[name], field, court) if field else []
+                p["match"] = "roster"
+                out.append(p)
+            elif name in pool_by_name:
+                out.append(pool_by_name[name])
+        return out[:EXPERT_SLOTS], "법무법인 YK의 전문인력입니다"
 
     lawyers, named_advisors = [], []
     if roster:
@@ -672,6 +691,7 @@ def visit_for(bid: str | None = None) -> dict:
         b.get("court") or "",
         counsel_name=b.get("counsel"),
         roster=b.get("seniors"),
+        fixed=bool(b.get("seniorsFixed")),
         seed=b.get("id") or "",
     )
     portraits = c["portraits"]

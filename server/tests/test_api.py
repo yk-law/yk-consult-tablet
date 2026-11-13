@@ -39,7 +39,7 @@ def test_catalog_shape_and_counts(client, expect):
     assert isinstance(data["FIELD"], dict)
     assert len(data["lawyers"]) == expect["lawyers"]
     assert len(data["advisors"]) == expect["advisors"]
-    assert len(data["bookings"]) == 8
+    assert len(data["bookings"]) == 26  # 11-13 바인더#3 검토본
     # 목록 응답에서 상세 본문 d 는 빠진다
     if data["lawyers"]:
         assert "d" not in data["lawyers"][0]
