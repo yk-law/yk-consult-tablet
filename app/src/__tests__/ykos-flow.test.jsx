@@ -72,7 +72,7 @@ describe("상담실장 YK-OS 바인더 흐름", () => {
     fireEvent.click(binder);
 
     await waitFor(() => {
-      expect(screen.queryByRole("alertdialog")).toBeNull();
+      expect(screen.queryByRole("dialog")).toBeNull();
       expect(displaySwitch.getAttribute("aria-checked")).toBe("true");
     });
     expect(act.share).toHaveBeenCalled();
