@@ -12,8 +12,8 @@ import { DEMO_TODAY, addDays } from "./util.jsx";
 const DAY_LABEL = { "-1": "어제", 0: "오늘", 1: "내일" };
 
 /** 시연 시각. 머리줄 시계와 방문 상태(예정·곧 시작·미방문 상담) 계산에 같이 쓴다. */
-const DEMO_NOW = `${DEMO_TODAY}T13:20`;
-const CLOCK = "2026.09.04 13:20";
+const DEMO_NOW = `${DEMO_TODAY}T08:50`;
+const CLOCK = `${DEMO_TODAY.replaceAll("-", ".")} 08:50`;
 
 /** 실제 YK-OS getVisitStatus: 지난 시각은 미방문 상담, 30분 안이면 곧 시작, 그 밖은 예정. */
 function visitStatus(x) {
@@ -24,9 +24,9 @@ function visitStatus(x) {
   return ["예정", "plan"];
 }
 
-/** 전체·형사·민·가사 탭. 실제는 서버가 major_category 로 거른다. 여기서는 사건 대분류로 나눈다. */
-const CIVIL = new Set(["민사", "가사", "부동산", "노동", "의료", "기업"]);
-const tabOf = (x) => (CIVIL.has(x.cat1) ? "민·가사" : "형사");
+/** 전체·형사·민·가사 탭. 실제는 서버가 major_category 로 거른다. 여기서는 YK-OS 콜 중분류로 나눈다. */
+const CRIMINAL = new Set(["강력범죄", "경제범죄", "고소, 고발", "고소·고발", "교통범죄", "군형사", "도박", "마약범죄", "부패범죄", "성범죄", "소년사건", "일반형사", "학교폭력"]);
+const tabOf = (x) => (CRIMINAL.has(x.cat1) ? "형사" : "민·가사");
 
 /** 실제 YK-OS(lucide) 아이콘. 선 굵기 2, 24 격자. */
 const ICON = {
@@ -500,12 +500,12 @@ function CounselSelect({ lawyers = [], FIELD, value, onChange }) {
 /** 방문 예정 행 아래 「고객 확인」. 실제 VisitBinder3ConfirmList. 다시 만들기(리롤)는 데이터가 없어 모양만 둔다. */
 function ConfirmList({ rows, answers }) {
   const count = (v) => rows.filter((_, i) => (answers[i] || null) === v).length;
-  const view = { yes: ["맞아요", "yes"], no: ["아니요", "no"], none: ["미응답", "none"] };
+  const view = { yes: ["네", "yes"], no: ["아니오", "no"], none: ["미응답", "none"] };
   return (
     <div className="ccheck" onClick={(e) => e.stopPropagation()}>
       <div className="ccheck-h">
         <span className="l">고객 확인</span>
-        <span className="cnt-t">맞아요 {count("yes")} · 아니요 {count("no")} · 미응답 {count(null)}</span>
+        <span className="cnt-t">네 {count("yes")} · 아니오 {count("no")} · 미응답 {count(null)}</span>
         <button type="button" className="ccheck-reroll" aria-label="문항 다시 만들기" title="문항 다시 만들기"><Icon d={ICON.refresh} /></button>
       </div>
       <ul className="conn-check">

@@ -3071,3 +3071,5 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .os .ydlg-a .ghost:hover{background:#F3F4F6;}
 .os .ydlg-a .ok{border:0; background:var(--yo-blue); color:#fff;}
 .os .ydlg-a button{text-decoration:none;}
+/* 1뎁스 답을 모두 고르기 전 「상담에서 함께 볼 내용」(YK-OS 바인더#3 b3-counsel-next:disabled) */
+.report-next button:disabled,.report-next button:disabled:hover{background:var(--yk-accent); box-shadow:none; color:var(--yk-disabled-foreground); cursor:default;}

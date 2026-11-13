@@ -1,6 +1,6 @@
 import React from "react";
 
-export const DEMO_TODAY = "2026-09-04";
+export const DEMO_TODAY = "2026-11-02";
 export const YOIL = ["일", "월", "화", "수", "목", "금", "토"];
 export const ST_CLS = { "상담 중": "now", "곧 시작": "soon" };
 export const WTABS = ["콜", "상담", "선임", "부서 배당", "사건 수행", "종료"];
