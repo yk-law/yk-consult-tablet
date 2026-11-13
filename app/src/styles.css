@@ -3061,15 +3061,42 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .os .mwait{position:absolute; left:0; right:0; bottom:28px; margin:0; text-align:center; font-size:14px; font-weight:700; color:#CBD5E1;}
 
 /* 확인·안내 창(실제 ConfirmModal · TemplateMissingFieldDialog) */
-.os .ydlg{position:fixed; inset:0; z-index:60; display:grid; place-items:center; padding:16px; background:rgba(0,0,0,.5);}
-.os .ydlg-panel{width:100%; max-width:444px; box-sizing:border-box; padding:20px 24px; background:#fff; border-radius:8px; box-shadow:0 20px 50px rgba(15,23,42,.25);}
-.os .ydlg-panel h2{margin:0 0 12px; font-size:18px; font-weight:700; color:#111827;}
-.os .ydlg-panel p{margin:0; white-space:pre-line; font-size:14px; line-height:1.6; color:#374151;}
-.os .ydlg-a{display:flex; justify-content:flex-end; gap:8px; margin-top:20px;}
-.os .ydlg-a button{min-width:64px; height:36px; padding:0 16px; border-radius:6px; font:inherit; font-size:14px; font-weight:700; cursor:pointer;}
-.os .ydlg-a .ghost{border:0; background:transparent; color:#6B7280;}
-.os .ydlg-a .ghost:hover{background:#F3F4F6;}
-.os .ydlg-a .ok{border:0; background:var(--yo-blue); color:#fff;}
-.os .ydlg-a button{text-decoration:none;}
+.os .ydlg{position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.3);}
+.os .ydlg-panel{width:100%; box-sizing:border-box; background:#fff; box-shadow:0 20px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.1); overflow:hidden;}
+.os .ydlg-panel h2{margin:0; font-size:18px; line-height:28px; color:#0F172A;}
+.os .ydlg-panel p{margin:0; white-space:pre-line; word-break:keep-all; font-size:14px;}
+.os .ydlg-a{display:flex; align-items:center; justify-content:flex-end; gap:8px;}
+.os .ydlg-a button{font:inherit; font-size:14px; cursor:pointer; text-decoration:none;}
+
+/* ConfirmModal(바꾸기·해제): 384px · 16px 모서리 · 경고 원 아이콘 + 제목 · 회색 버튼줄 */
+.os .ydlg-panel.confirm{max-width:384px; border-radius:16px;}
+.os .ydlg-body{padding:24px 24px 20px;}
+.os .ydlg-head{display:flex; align-items:center; gap:10px;}
+.os .ydlg-head h2{font-weight:600; letter-spacing:-.025em;}
+.os .ydlg-warn{width:32px; height:32px; flex:none; display:grid; place-items:center; border-radius:50%; background:#F1F5F9; color:#0F172A;}
+.os .ydlg-warn .yo-i{width:18px; height:18px; stroke-width:1.5;}
+.os .ydlg-body p{margin-top:8px; line-height:24px; color:#475569;}
+.os .confirm .ydlg-a{padding:16px 24px; border-top:1px solid #E5E7EB; background:#F8FAFC;}
+.os .confirm .ydlg-a button{height:40px; padding:0 16px; border-radius:8px; font-weight:600;}
+.os .confirm .ydlg-a .cancel{border:1px solid #E5E7EB; background:#fff; color:#0F172A;}
+.os .confirm .ydlg-a .cancel:hover{background:#F1F5F9;}
+.os .confirm .ydlg-a .ok{border:0; background:#020617; color:#fff;}
+.os .confirm .ydlg-a .ok:hover{background:#1E293B;}
+
+/* Modal·TemplateMissingFieldDialog(안내·나가기·태블릿 삭제): 444px · 6px 모서리 · 알약 버튼 */
+.os .ydlg-panel.modal{max-width:444px; border-radius:6px;}
+.os .modal h2{padding:20px 24px 12px; font-weight:700;}
+.os .ydlg-text{display:flex; align-items:flex-start; gap:8px; padding:0 24px 20px;}
+.os .ydlg-text p{line-height:1.6; color:#374151;}
+.os .ydlg-text b{font-weight:800; color:#111827;}
+.os .ydlg-info{width:20px; height:20px; margin-top:2px; color:#9CA3AF; stroke-width:1.75;}
+.os .modal .ydlg-a{padding:8px 24px 20px;}
+.os .ydlg-a .pill{width:112px; min-width:64px; height:32px; padding:0 16px; border:0; border-radius:5em; font-size:14px; font-weight:700; line-height:1.75;
+  background:var(--yo-accent); color:rgba(0,0,0,.87);}
+.os .ydlg-a .pill:hover{opacity:.9;}
+.os .ydlg-a .pill.ghost{background:transparent; color:#6B7280;}
+.os .ydlg-a .pill.ghost:hover{background:#F0F3FA; opacity:1;}
+.os .ydlg-a .pill.danger{background:#D32F2F; color:#fff;}
+.os .ydlg-a .pill.danger:hover{background:#C62828; opacity:1;}
 /* 1뎁스 답을 모두 고르기 전 「상담에서 함께 볼 내용」(YK-OS 바인더#3 b3-counsel-next:disabled) */
 .report-next button:disabled,.report-next button:disabled:hover{background:var(--yk-accent); box-shadow:none; color:var(--yk-disabled-foreground); cursor:default;}

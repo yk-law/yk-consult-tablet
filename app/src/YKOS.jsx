@@ -43,6 +43,8 @@ const ICON = {
   memo: "M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z M15 3v4a2 2 0 0 0 2 2h4",
   tablet: "M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z M12 18h.01",
   trash: "M3 6h18 M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6 M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",
+  warn: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3 M12 9v4 M12 17h.01",
+  info: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 16v-4 M12 8h.01",
   refresh: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8 M21 3v5h-5 M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16 M8 16H3v5",
 };
 function Icon({ d, className = "" }) {
@@ -417,31 +419,68 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
   );
 }
 
-/** 실제 확인·안내 창 문구. */
+/** 확인·안내 창. 실제 YK-OS 세 가지 모양을 따른다.
+ *  confirm(바꾸기·해제) = ConfirmModal, notice(안내) = TemplateMissingFieldDialog, modal(나가기·태블릿 삭제) = Modal. */
 function YkDialog({ dialog, shown, onCancel, onConfirm }) {
   const current = shown?.name || "지금 고객";
   const next = dialog.row?.name || "이 고객";
-  const text = {
-    release: ["태블릿에서 고객을 해제할까요?", `${current} 고객을 태블릿에서 내리고 고객화면을 끕니다.\n${current} 고객의 바인더 진행 내역(보던 화면·답·체크리스트)은 초기화됩니다.`, "해제"],
-    switch: ["태블릿 고객을 바꿀까요?", `지금 태블릿에 ${current} 고객이 떠 있습니다.\n${next} 고객으로 바꾸면 태블릿이 그 고객의 첫 화면으로 바뀌고, ${current} 고객의 바인더 진행 내역(보던 화면·답·체크리스트)은 초기화됩니다.`, "바꾸기"],
-    exit: ["나가기", "상담태블릿 화면을 종료하시겠습니까?", "확인"],
-    destroy: ["태블릿 삭제", `${dialog.name} 태블릿 연결을 끊고 목록에서 제거합니다.`, "삭제"],
-    display: [null, "고객화면이 꺼져 있습니다.\n미리보기 위 「고객화면」을 먼저 켜 주세요.", null],
-    contract: [null, "먼저 상담 내용 작성 후 상담 완료를 해 주세요.\n상담 완료 시 선임 계약 버튼이 활성화됩니다.", null],
-  }[dialog.kind];
-  const [title, body, ok] = text;
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onCancel(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  if (dialog.kind === "release" || dialog.kind === "switch") {
+    const [title, body, ok] = dialog.kind === "release"
+      ? ["태블릿에서 고객을 해제할까요?", `${current} 고객을 태블릿에서 내리고 고객화면을 끕니다.\n${current} 고객의 바인더 진행 내역(보던 화면·답·체크리스트)은 초기화됩니다.`, "해제"]
+      : ["태블릿 고객을 바꿀까요?", `지금 태블릿에 ${current} 고객이 떠 있습니다.\n${next} 고객으로 바꾸면 태블릿이 그 고객의 첫 화면으로 바뀌고, ${current} 고객의 바인더 진행 내역(보던 화면·답·체크리스트)은 초기화됩니다.`, "바꾸기"];
+    return (
+      <div className="ydlg" role="presentation" onClick={onCancel}>
+        <div className="ydlg-panel confirm" role="alertdialog" aria-modal="true" aria-labelledby="ydlg-t" onClick={(e) => e.stopPropagation()}>
+          <div className="ydlg-body">
+            <div className="ydlg-head">
+              <span className="ydlg-warn"><Icon d={ICON.warn} /></span>
+              <h2 id="ydlg-t">{title}</h2>
+            </div>
+            <p>{body}</p>
+          </div>
+          <div className="ydlg-a">
+            <button type="button" className="cancel" onClick={onCancel}>취소</button>
+            <button type="button" className="ok" autoFocus onClick={onConfirm}>{ok}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (dialog.kind === "display" || dialog.kind === "contract") {
+    const body = dialog.kind === "display"
+      ? "고객화면이 꺼져 있습니다.\n미리보기 위 「고객화면」을 먼저 켜 주세요."
+      : "먼저 상담 내용 작성 후 상담 완료를 해 주세요.\n상담 완료 시 선임 계약 버튼이 활성화됩니다.";
+    return (
+      <div className="ydlg" role="presentation" onClick={onCancel}>
+        <div className="ydlg-panel modal" role="dialog" aria-modal="true" aria-labelledby="ydlg-t" onClick={(e) => e.stopPropagation()}>
+          <h2 id="ydlg-t">안내</h2>
+          <div className="ydlg-text"><Icon d={ICON.info} className="ydlg-info" /><p>{body}</p></div>
+          <div className="ydlg-a"><button type="button" className="pill" autoFocus onClick={onCancel}>확인</button></div>
+        </div>
+      </div>
+    );
+  }
+
+  const destroy = dialog.kind === "destroy";
   return (
     <div className="ydlg" role="presentation" onClick={onCancel}>
-      <div className="ydlg-panel" role="dialog" aria-modal="true" aria-label={title || "안내"} onClick={(e) => e.stopPropagation()}>
-        {title && <h2>{title}</h2>}
-        <p>{body}</p>
+      <div className="ydlg-panel modal" role="dialog" aria-modal="true" aria-labelledby="ydlg-t" onClick={(e) => e.stopPropagation()}>
+        <h2 id="ydlg-t">{destroy ? "태블릿 삭제" : "나가기"}</h2>
+        <div className="ydlg-text">
+          {destroy
+            ? <p><b>{dialog.name}</b> 삭제할까요?<br />태블릿 연결이 끊기고 목록에서 제거됩니다.</p>
+            : <p>상담태블릿 화면을 종료하시겠습니까?</p>}
+        </div>
         <div className="ydlg-a">
-          {ok ? (
-            <>
-              <button type="button" className="ghost" onClick={onCancel}>취소</button>
-              <button type="button" className="ok" autoFocus onClick={onConfirm}>{ok}</button>
-            </>
-          ) : <button type="button" className="ok" autoFocus onClick={onCancel}>확인</button>}
+          <button type="button" className="pill ghost" onClick={onCancel}>취소</button>
+          <button type="button" className={`pill${destroy ? " danger" : ""}`} autoFocus onClick={onConfirm}>{destroy ? "삭제" : "확인"}</button>
         </div>
       </div>
     </div>
