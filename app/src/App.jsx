@@ -12,6 +12,7 @@ const SCREENS = [
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문 인력"],
+  ["youtube", "YK 변호사 이야기"],
 ];
 /** 장면 딥링크용. 상단 세그에는 안 넣고 URL·흐름에서만 쓴다. */
 const DEEP = new Set(["film", "counsel-video", "topics", ...SCREENS.map(([id]) => id)]);
@@ -254,7 +255,7 @@ export default function App() {
         {(fullscreen || view !== "os") && (
           <div className="seg screen-controls" role="group" aria-label="페이지">
             {fullscreen && <h3 className="drawer-section-label">페이지</h3>}
-            {SCREENS.map(([id, l]) => (
+            {SCREENS.filter(([id]) => id !== "youtube" || theme !== "dark" || darkDesign !== "legacy").map(([id, l]) => (
               <button
                 key={id}
                 className={screen === id || (id === "counsel" && screen === "counsel-video") || (id === "report" && screen === "topics") ? "on" : ""}
@@ -264,7 +265,7 @@ export default function App() {
             ))}
           </div>
         )}
-        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "topics", "counsel", "seniors"].includes(screen))) && (
+        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "topics", "counsel", "seniors", "youtube"].includes(screen))) && (
           fullscreen ? <div className="theme-controls drawer-theme-row">
             <h3 className="drawer-section-label">화면 테마</h3>
             <div className="drawer-theme-setting">
@@ -326,7 +327,7 @@ export default function App() {
         {displayView !== "os" && (
           <div className={`tabwrap binder-theme theme-${theme}`}>
             {theme === "dark" && darkDesign === "legacy"
-              ? <LegacyPreview data={shown} screen={screen} onScreen={setScreen} />
+              ? <LegacyPreview data={shown} screen={screen === "youtube" ? "seniors" : screen} onScreen={setScreen} />
               : <Tablet data={shown} screen={screen} onScreen={setScreen} answers={answers} onAnswer={answer} onParty={setParty} />}
           </div>
         )}

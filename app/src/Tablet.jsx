@@ -2,6 +2,7 @@ import { cleanProfileContent, profileCategories } from "./profileContent.js";
 import { specialistHero, specialistHeadline } from "./specialistHero.js";
 import HeroBackdrop from "./HeroBackdrop.jsx";
 import { relatedCaseWorks } from "./caseWorks.js";
+import YoutubeStories from "./YoutubeStories.jsx";
 import CaseModal from "./CaseModal.jsx";
 import { customerDateParts } from "./customerDate.js";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
@@ -23,6 +24,7 @@ const JOURNEY = [
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
   ["seniors", "전문 인력"],
+  ["youtube", "YK 변호사 이야기"],
 ];
 
 export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer = () => {}, onParty = null }) {
@@ -109,6 +111,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             onPrevious={() => onScreen(hasSummary ? "topics" : "report")}
           />
         )}
+        {screen === "youtube" && <YoutubeStories />}
         {screen === "seniors" && (
           <Seniors
             list={data.seniors}
