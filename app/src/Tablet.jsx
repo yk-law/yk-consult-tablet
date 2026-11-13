@@ -539,31 +539,22 @@ const PARTY_ASK = {
   피고: "소장이나 청구를 받았어요",
 };
 
+/** YK-OS 바인더#3(11-06)와 같게 선택지는 늘 보이고 지금 지위를 선택 색으로 표시한다. 다른 것을 누르면 바로 바뀐다(「다시 고르기」 없음). */
 function PartyAsk({ helper, onParty }) {
-  const [again, setAgain] = useState(false);
   const parties = helper?.parties || [];
   if (!onParty || parties.length < 2) return null;
-  if (helper.partyKnown && !again) {
-    return (
-      <p className="yh-party-now">
-        <span>{helper.party === "공통" ? "모든 경우에 맞는 내용으로 보여드리고 있습니다." : `‘${PARTY_ASK[helper.party] || helper.party}’에 맞춰 보여드리고 있습니다.`}</span>
-        <button type="button" onClick={() => setAgain(true)}>
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5" /><path d="M4 3.5V6.5H7" /></svg>
-          다시 고르기
-        </button>
-      </p>
-    );
-  }
-  const pick = (p) => { setAgain(false); onParty(p); };
+  const chosen = helper.partyKnown ? helper.party : null;
+  const option = (p, label, skip = false) => (
+    <button key={p} type="button" className={[skip ? "skip" : "", chosen === p ? "on" : ""].filter(Boolean).join(" ") || undefined}
+      aria-pressed={chosen === p} onClick={() => onParty(p)}>{label}</button>
+  );
   return (
     <section className="yh-party" aria-labelledby="yh-party-t">
       <h4 id="yh-party-t">어떤 경우에 해당하시나요?</h4>
       <p>고르시면 그에 맞는 내용으로 보여드립니다. 모르시면 넘어가셔도 됩니다.</p>
       <div className="yh-party-o">
-        {parties.map((p) => (
-          <button key={p} type="button" onClick={() => pick(p)}>{PARTY_ASK[p] || p}</button>
-        ))}
-        <button type="button" className="skip" onClick={() => pick("공통")}>잘 모르겠어요</button>
+        {parties.map((p) => option(p, PARTY_ASK[p] || p))}
+        {option("공통", "잘 모르겠어요", true)}
       </div>
     </section>
   );
@@ -951,14 +942,6 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     <div className="profile" ref={profileRef}>
       <div ref={heroRef} className={counselHero ? "counsel-hero" : "profile-hero-pass"}>
       {counselHero && <HeroBackdrop />}
-      {onBack && (
-        <div className="specialist-back-row">
-          <button type="button" autoFocus onClick={onBack}>
-            <svg className="lucide lucide-arrow-left" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14" /></svg>
-            전문 인력 목록
-          </button>
-        </div>
-      )}
       <div className="xlead">
         <Portrait l={l} portraits={portraits} size="hero" />
         <div className="xident xmeta">
@@ -1063,9 +1046,11 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
         </section>
       ) : null}
       </>}
-      {counselHero && (onPrevious || onNext) ? (
+      {counselHero && (onPrevious || onNext || onBack) ? (
         <div className="counsel-page-links">
           {onPrevious && <ReportNext onClick={onPrevious} label="사건 요약으로" previous />}
+          {/* 전문 인력 상세: 목록으로 돌아가는 버튼은 하단 왼쪽 플로팅 하나다(YK-OS 바인더#3 1차 내부 피드백 1). */}
+          {!onPrevious && onBack && <ReportNext onClick={onBack} label="전문 인력 목록" previous />}
           {onNext && <ReportNext onClick={onNext} label="전문 인력 살펴보기" />}
         </div>
       ) : null}
