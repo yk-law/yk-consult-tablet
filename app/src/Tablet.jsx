@@ -202,7 +202,7 @@ function WaitFlow({ b, step, onStep, onDone, autoAdvance = true }) {
         {wrong ? (
           <div className="reservation-help" role="region" aria-labelledby="reservation-help-title">
             <div role="status">
-              <h2 id="reservation-help-title">예약 정보 확인을 도와드리겠습니다.</h2>
+              <h2 id="reservation-help-title">예약 정보를 확인합니다.</h2>
               <p className="reservation-help-description">담당 직원이 예약 정보를 확인해 드립니다.<br />이 화면을 그대로 두시면 됩니다.</p>
             </div>
             <div className="confirm-actions">
@@ -506,7 +506,7 @@ function Summary({ helper, answers, onAnswer, onNext, onPrevious }) {
         <div className="yh-body">
           <h3>예약하실 때 말씀하신 내용입니다.</h3>
           <p className="yh-lead">
-            저희가 이해한 내용이 맞는지 확인해 주세요.<br />
+            아래 내용이 맞는지 확인해 주세요.<br />
             다른 부분은 상담에서 다시 여쭤보겠습니다.
           </p>
           <ol className="yh-check">
@@ -1321,7 +1321,7 @@ function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext })
     <section className={`pane on seniorpane${shown ? " is-detail-hidden" : ""}`} aria-hidden={shown ? true : undefined} inert={shown ? "" : undefined}>
       <div className="senior-content">
       <h2 className="h1">다양한 경험을 갖춘 전문 인력을 소개합니다.</h2>
-      <p className="sub">주요 업무 분야와 경력을 살펴보세요.<br />프로필을 누르면 자세한 정보를 확인하실 수 있습니다.</p>
+      <p className="sub">주요 업무 분야와 경력입니다.<br />프로필을 누르면 자세한 정보를 확인하실 수 있습니다.</p>
       <div className={`senior-stage${changing ? " is-changing" : ""}`}>
       {count > 1 && <div className="senior-side-navigation">
         {[-1, 1].map((direction) => <button key={direction} type="button"
