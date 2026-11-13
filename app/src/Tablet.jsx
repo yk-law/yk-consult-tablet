@@ -150,7 +150,8 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             <p className="journey-qr-title">상담 기록과 사건 진행은<br />YourK에서 확인하세요</p>
             <p className="journey-qr-description">상담 뒤에도 이어서 보실 수 있습니다.</p>
             <img src={`${import.meta.env.BASE_URL}consultation-room-tablet-qr.svg`} width="147" height="147" alt="YourK 접속 QR코드" />
-            <a className="journey-qr-url" href="https://yourk.legal" target="_blank" rel="noreferrer" aria-label="https://yourk.legal (새 탭에서 열림)">https://yourk.legal</a>
+            {/* QR과 같은 유입 추적 주소(반석님 확인 11-13). 화면에는 짧은 주소만 보인다. */}
+            <a className="journey-qr-url" href="https://yourk.legal/home?qr=consultation-room-tablet" target="_blank" rel="noreferrer" aria-label="https://yourk.legal (새 탭에서 열림)">https://yourk.legal</a>
             <p className="journey-qr-caption">QR코드를 스캔하세요.</p>
           </div>
         </nav>
@@ -767,7 +768,8 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
   const [caseItem, setCaseItem] = useState(null);
   // 빈 문자열·빈 목록은 본문/소개 목차(h3·h4)에서 함께 빠지게 정리한다 (2026-11-13 시연 피드백 7).
   l = cleanProfileContent(l);
-  if (specialist) {
+  // 고문·전문위원은 분야 코드 대신 분류 라벨만 있어, 실제로 보일 분야가 있을 때만 「주요 업무 분야」를 둔다(시연 피드백 4번).
+  if (specialist || l.kind === "advisor") {
     hasFields = profileCategories(l, FIELD).length > 0;
   }
   const listSection = (title, items, className = "") => items?.length ? (
@@ -776,7 +778,7 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
       <ul className="clist">{items.map((text) => <li key={text}>{text}</li>)}</ul>
     </section>
   ) : null;
-  const hasCases = l.kind === "lawyer" && l.cases?.length;
+  const hasCases = (l.kind === "lawyer" || l.kind === "advisor") && l.cases?.length;
   const relatedWorks = relatedCaseWorks(l.works, b?.field);
   const hasWorks = l.kind === "lawyer" && relatedWorks.length;
   return <>
