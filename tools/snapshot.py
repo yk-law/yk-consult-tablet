@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from server.catalog import catalog, public_profile, visit_for  # noqa: E402
+from server.catalog import _advisor_card, catalog, public_profile, visit_for  # noqa: E402
 
 
 def main() -> None:
@@ -31,6 +31,16 @@ def main() -> None:
     for l in c["lawyers"]:
         n = l["n"]
         one = {"counsel": public_profile(l), "portraits": {n: c["portraits"][n]} if n in c["portraits"] else {}}
+        (out / "counsel" / f"{n}.json").write_text(json.dumps(one, ensure_ascii=False), encoding="utf-8")
+    # 고문·전문위원도 상담에 함께 들어올 수 있다(시연 피드백 4번). 변호사와 이름이 겹치면 변호사를 둔다.
+    photos = c.get("firmIntro", {}).get("photos", {})
+    lawyer_names = {l["n"] for l in c["lawyers"]}
+    for a in c["advisors"]:
+        n = a["n"]
+        if n in lawyer_names:
+            continue
+        pic = c["portraits"].get(n) or photos.get(n)
+        one = {"counsel": _advisor_card(a, c["portraits"]) | {"photo": bool(pic)}, "portraits": {n: pic} if pic else {}}
         (out / "counsel" / f"{n}.json").write_text(json.dumps(one, ensure_ascii=False), encoding="utf-8")
     print(f"snapshot {len(bookings)} → {out}")
 
