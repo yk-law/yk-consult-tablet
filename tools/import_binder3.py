@@ -33,6 +33,19 @@ WROTE = {"divorce", "dui"}
 UNASSIGNED = {"inherit", "admin", "religion", "gambling", "juvenile"}
 
 
+
+def lawyer_detail(p: dict) -> dict:
+    """검토본 구성원 한 명을 lawyers.json 의 상세(d) 모양으로 바꾼다."""
+    return {
+        "edu": " · ".join(p.get("education") or []),
+        "exam": p.get("qualification") or "",
+        "tr": "",
+        "career": p.get("career") or [],
+        "cases": p.get("performance") or [],
+        "quote": p.get("greeting") or "",
+        "titles": p.get("titles") or [],
+    }
+
 def load_binder3() -> dict:
     return json.loads((ROOT / "data" / "binder3_cases.json").read_text(encoding="utf-8"))
 
@@ -111,7 +124,11 @@ def main() -> None:
     lawyers = read("lawyers.json")
     advisors = read("advisors.json")
     known = {l["n"] for l in lawyers} | {a["n"] for a in advisors}
+    by_name = {l["n"]: l for l in lawyers}
     for p in people.values():
+        # 이미 있는 변호사라도 상세(d)가 비어 있으면 검토본 프로필로 채운다. 있는 상세는 덮어쓰지 않는다(2026-11-13).
+        if p.get("group") != "expert" and p["name"] in by_name and not by_name[p["name"]].get("d"):
+            by_name[p["name"]]["d"] = lawyer_detail(p)
         if p["name"] in known:
             continue
         known.add(p["name"])
@@ -125,15 +142,7 @@ def main() -> None:
                 "f": [field_code[f] for f in p.get("fields") or [] if f in field_code],
                 "pos": p["position"],
                 "o": "",
-                "d": {
-                    "edu": " · ".join(p.get("education") or []),
-                    "exam": p.get("qualification") or "",
-                    "tr": "",
-                    "career": p.get("career") or [],
-                    "cases": p.get("performance") or [],
-                    "quote": p.get("greeting") or "",
-                    "titles": p.get("titles") or [],
-                },
+                "d": lawyer_detail(p),
                 "photo": False,
             })
     write("lawyers.json", lawyers)
