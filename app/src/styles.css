@@ -3211,3 +3211,5 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .firm-center-group li.hit{background:var(--yk-primary); color:var(--yk-primary-foreground);}
 /* 전문 인력·YK 변호사 이야기 화면은 자체 상자(position)가 본문 영역과 같아, 메뉴를 다시 비켜 두지 않는다 */
 .seniorpane,.youtube-stories{--float-left:0px; --float-bottom:0px;}
+/* 대표 경력이 없는 사람은 그 줄 자리를 비워 두지 않는다. 이름이 사진 바로 아래로 붙는다(고재완 11-13 「가운데 여백 어색」) */
+.senior-focused-info .senior-focused-career:empty{display:none;}
