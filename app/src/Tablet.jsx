@@ -397,6 +397,14 @@ const FIRM_TABS = [
   ["cases", "업무사례"],
 ];
 const FIRM_PEOPLE_FIRST = 12;
+/** 사건 분야(fields.json FIELD 첫 이름) → 분야별 전문 센터 묶음(firm_intro.json centerGroups.t). */
+const CENTER_GROUP_OF = {
+  형사: "형사", 성범죄: "형사", 학교폭력: "형사", 마약: "형사", 교통사고: "형사", 군형사: "형사",
+  이혼: "가사", "가사·상속": "가사",
+  기업법무: "민사 · 기업", 지식재산권: "민사 · 기업", "회생·파산": "민사 · 기업", "부동산·건설": "민사 · 기업",
+  민사: "민사 · 기업", 행정: "민사 · 기업", 조세: "민사 · 기업", "금융·증권": "민사 · 기업",
+  "노동·산재": "노동 · 산업", 중대재해: "노동 · 산업", 의료: "노동 · 산업",
+};
 
 function FirmPeople({ rows, firm, portraits, onPerson }) {
   const [all, setAll] = useState(false);
@@ -437,6 +445,10 @@ function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
   const tabsId = useId();
   if (!firm) return null;
   const cases = helper?.cases || [];
+  // 이 사건의 분야가 속한 센터 묶음과 이름이 겹치는 센터를 짚어 준다(분야별 전문 센터 가독성, 11-13).
+  const caseLabel = (FIELD?.[b?.field]?.[0] || "").replace("·", "");
+  const caseGroup = CENTER_GROUP_OF[FIELD?.[b?.field]?.[0]] || "";
+  const caseWord = caseLabel.slice(0, 2);
   // 카드를 누르면 상담 변호사 화면과 같은 상세로 간다. 상세에서 돌아오면 고르던 탭 그대로다.
   const openPerson = (name) => api.counsel(name).then((p) => p && setPerson(p));
   if (person) {
@@ -524,18 +536,25 @@ function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
             <h4 id="firm-centers">분야별 전문 센터</h4>
             <p className="firm-sec-lead">형사·가사·민사·기업 등 각 분야의 실무 경험을 바탕으로, 사건의 주요 쟁점과 대응 절차를 살핍니다.</p>
             <div className="firm-centers">
-              {firm.centerGroups.map((g) => (
-                <div className="firm-center-group" key={g.t}>
-                  <p className="firm-group-t">{g.t}</p>
-                  <ul>
-                    {g.centers.map((c) => (
-                      <li key={c.n}>
-                        <span className="firm-center-n">{c.n}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              {firm.centerGroups.map((g) => {
+                const related = g.t === caseGroup;
+                return (
+                  <section className={`firm-center-group${related ? " related" : ""}`} key={g.t} aria-label={g.t}>
+                    <header className="firm-center-head">
+                      <p className="firm-group-t">{g.t}</p>
+                      <span className="firm-center-count">센터 {g.centers.length}곳</span>
+                    </header>
+                    {related && <p className="firm-center-badge">이 사건과 관련된 분야</p>}
+                    <ul>
+                      {g.centers.map((c) => (
+                        <li key={c.n} className={related && caseWord && c.n.includes(caseWord) ? "hit" : ""}>
+                          {c.n}
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })}
             </div>
           </section>
 
