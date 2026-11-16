@@ -531,6 +531,8 @@ function CounselTeam({ people = [], FIELD, value = [], onChange, children }) {
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => {
+            // 한글 조합 중 Enter는 조합 확정용이다. 이때 더하면 조합이 끝난 뒤 글자가 다시 들어와 Enter가 한 번 더 처리된다.
+            if (e.nativeEvent.isComposing || e.keyCode === 229) return;
             if (e.key === "Enter" && hits[0]) add(hits[0].n);
             if (e.key === "Backspace" && !q && value.length) onChange(value.slice(0, -1));
           }}

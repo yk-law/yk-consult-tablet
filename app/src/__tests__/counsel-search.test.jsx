@@ -28,3 +28,19 @@ describe("상담 변호사 검색", () => {
     expect(screen.getByRole("listbox").textContent).toContain("일치하는 임직원이 없습니다");
   });
 });
+
+describe("한글 입력 중 Enter", () => {
+  it("조합 중 Enter는 사람을 더하지 않고, 조합이 끝난 Enter에 한 명만 더한다", () => {
+    renderOS();
+    const input = screen.getAllByRole("textbox", { name: /상담 변호사/ })[0];
+    const box = input.closest(".vteam-box");
+    const before = box.querySelectorAll(".vteam-chip").length;
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "고기" } });
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 229, isComposing: true });
+    expect(box.querySelectorAll(".vteam-chip").length).toBe(before);
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+    expect(box.querySelectorAll(".vteam-chip").length).toBe(before + 1);
+    expect(box.textContent).toContain("고기동");
+  });
+});
