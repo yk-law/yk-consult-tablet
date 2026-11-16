@@ -321,10 +321,11 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                             setAssigned(next);
                             if (on && binderOn && names.length) act.counsel(names);
                           }}
-                        />
-                        <button className="vb share" disabled={why != null} onClick={() => onOpenBinder(x)}>
-                          <Icon d={ICON.book} />바인더 열기
-                        </button>
+                        >
+                          <button className="vb share" disabled={why != null} onClick={() => onOpenBinder(x)}>
+                            <Icon d={ICON.book} />바인더 열기
+                          </button>
+                        </CounselTeam>
                         </div>
                         {why && <p className="vhint">{why === "counsel" ? "상담 변호사를 지정하면 바인더를 열 수 있습니다." : "태블릿(상담실)을 먼저 선택해 주세요."}</p>}
                         </div>
@@ -496,8 +497,9 @@ function YkDialog({ dialog, shown, onCancel, onConfirm }) {
   );
 }
 
-/** 상담에 함께하는 사람들. 고른 사람은 칩(이름·직함·지우기 X)으로 두고, 옆 검색칸으로 한 명씩 더한다(시연 피드백 4번). */
-function CounselTeam({ people = [], FIELD, value = [], onChange }) {
+/** 상담에 함께하는 사람들. 고른 사람은 칩(이름·직함·지우기 X)으로 두고, 옆 검색칸으로 한 명씩 더한다(시연 피드백 4번).
+ *  children(바인더 열기)은 검색칸 바로 뒤에 붙여, 사람이 늘어 줄이 바뀌어도 함께 흐른다. */
+function CounselTeam({ people = [], FIELD, value = [], onChange, children }) {
   const byName = new Map(people.map((p) => [p.n, p]));
   return (
     <div className="vteam">
@@ -514,6 +516,7 @@ function CounselTeam({ people = [], FIELD, value = [], onChange }) {
         placeholder={value.length ? "상담 변호사 추가" : "상담 변호사 지정"}
         onChange={(name) => name && onChange([...value, name])}
       />
+      {children}
     </div>
   );
 }

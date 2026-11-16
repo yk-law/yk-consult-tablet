@@ -3187,6 +3187,14 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
   border:1px solid #C8D0E6; border-radius:4px; background:#F8FAFC; font-size:14px; white-space:nowrap;}
 .os .vteam-chip b{font-weight:700; color:#000;}
 .os .vteam-chip .pos{font-size:12px; color:var(--yo-mut2);}
+/* 상담 변호사는 몇 명이든 더할 수 있다. 사람이 늘면 왼쪽 칸 안에서만 줄을 바꾸고, 바인더 열기는 마지막 줄 끝, 오른쪽 버튼 묶음은 첫 줄 오른쪽에 그대로 둔다. */
+.os .vcard .vacts{flex-wrap:wrap; row-gap:10px;}
+.os .vbind{flex:1 1 320px; align-items:stretch;}
+.os .vbind-row{flex-wrap:nowrap;}
+.os .vteam{flex:1 1 0;}
+.os .vteam .vcounsel{flex:1 1 180px; min-width:180px; max-width:280px;}
+.os .vteam > .vb{flex:none;}
+.os .vacts-r{flex:none; flex-wrap:nowrap; margin-left:auto;}
 
 /* 법무법인 YK 소개 탭(시연 피드백 5·6번, 11-13): 법원 경력 변호사 / 검찰 경력 변호사 / 고문 및 전문위원 / 업무사례 */
 .firm-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:40px 0 0; padding:0; border-bottom:1px solid var(--bt-line);}
