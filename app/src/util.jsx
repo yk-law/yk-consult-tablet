@@ -151,6 +151,21 @@ export function frameGrade(l = {}) {
   return "assoc";
 }
 
+/** 사진이 없는 구성원 자리. 옅은 남색 바탕에 YK 마크를 흐리게 둔다.
+ *  이름 첫 글자는 사진 사이에서 빈칸처럼 보여 바꿨다(YK-OS 바인더#3 2차 내부 피드백 5, 2026-11-16). */
+export function NoPhoto() {
+  return (
+    <span className="no-photo" aria-hidden="true">
+      <svg viewBox="0 0 47 32" fill="currentColor" focusable="false">
+        <path d="M31.9077 25.2921L36.3365 32H46.7823L37.1288 17.3813L31.9077 25.2921Z" />
+        <path d="M11.3045 32H0.858643L18.7703 4.87415H29.2162L11.3045 32Z" />
+        <path d="M10.4459 0H0L9.65351 14.6187L14.8764 6.70974L10.4459 0Z" />
+        <path d="M28.0119 27.1259H17.5679L35.4777 0H45.9236L28.0119 27.1259Z" />
+      </svg>
+    </span>
+  );
+}
+
 // 회의 결정(09-28): 변호사 평가 개념을 없앤다. 직위에 따라 액자를 화려하게 하던 장식과
 // 빛번짐(포일) 효과를 걷어내고, 사진은 모두 같은 테두리로 담는다.
 export function Portrait({ l, portraits, size = "card" }) {
@@ -158,7 +173,7 @@ export function Portrait({ l, portraits, size = "card" }) {
   return (
     <figure className={`pframe ${size} bust`}>
       <span className="pmat">
-        {src ? <img src={src} alt={l.n} /> : <span className="mono">{l.n[0]}</span>}
+        {src ? <img src={src} alt={l.n} /> : <NoPhoto />}
       </span>
     </figure>
   );
