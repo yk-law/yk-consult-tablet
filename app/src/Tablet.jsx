@@ -940,6 +940,16 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       profile.style.setProperty("--counsel-scroll-height", `${pane.clientHeight}px`);
     };
     indexUpdate.current = update;
+    // 마지막 목차 항목도 눌렀을 때 화면 위까지 올라오도록, 내용이 모자란 만큼만 아래 여백을 더한다.
+    const details = profile.querySelector(".counsel-details");
+    const lastItem = items.filter((item) => !item.group).at(-1);
+    const fitTail = () => {
+      if (!details || !lastItem) return;
+      details.style.paddingBottom = "";
+      const below = pane.scrollHeight - (pane.scrollTop + lastItem.element.getBoundingClientRect().top - pane.getBoundingClientRect().top);
+      const extra = Math.max(0, pane.clientHeight - 24 - below);
+      if (extra) details.style.paddingBottom = `${parseFloat(getComputedStyle(details).paddingBottom) + extra}px`;
+    };
     const finish = () => {
       clearTimeout(indexSettleTimer.current);
       indexNavigation.current = null;
@@ -959,11 +969,12 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       if (event.type === "keydown" && !["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) return;
       finish();
     };
+    fitTail();
     update();
     pane.addEventListener("scroll", onScroll, { passive: true });
     pane.addEventListener("scrollend", onScrollEnd);
     for (const type of ["wheel", "touchmove", "pointerdown", "keydown"]) pane.addEventListener(type, onManualScroll, { passive: true });
-    const resize = new ResizeObserver(update);
+    const resize = new ResizeObserver(() => { fitTail(); update(); });
     resize.observe(pane);
     resize.observe(profile.querySelector(".counsel-details"));
     return () => {
@@ -974,6 +985,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       indexNavigation.current = null;
       indexUpdate.current = () => {};
       resize.disconnect();
+      if (details) details.style.paddingBottom = "";
     };
   }, [counselHero, l, b?.field, indexId]);
   const navigateIndex = (item) => {
@@ -985,6 +997,9 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     indexNavigation.current = { id: item.id, top };
     setActiveIndex(item.id);
     pane.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    // 키보드·화면낭독기 위치도 그 항목으로 옮긴다(스크롤은 위에서 부드럽게 한다).
+    item.element.tabIndex = -1;
+    item.element.focus({ preventScroll: true });
     // Also settle clicks that do not generate a scroll event (already at the destination).
     indexSettleTimer.current = setTimeout(() => {
       indexNavigation.current = null;
