@@ -14,7 +14,7 @@ function renderOS() {
 describe("상담 변호사 검색", () => {
   it("빈 칸이면 목록이 없고, 글자를 넣으면 이름·직함으로 찾는다", () => {
     renderOS();
-    const input = screen.getAllByRole("textbox", { name: /상담 변호사/ })[0];
+    const input = screen.getAllByRole("combobox", { name: /상담 변호사/ })[0];
     fireEvent.focus(input);
     expect(screen.queryByRole("listbox")).toBeNull();
 
@@ -32,7 +32,7 @@ describe("상담 변호사 검색", () => {
 describe("한글 입력 중 Enter", () => {
   it("조합 중 Enter는 사람을 더하지 않고, 조합이 끝난 Enter에 한 명만 더한다", () => {
     renderOS();
-    const input = screen.getAllByRole("textbox", { name: /상담 변호사/ })[0];
+    const input = screen.getAllByRole("combobox", { name: /상담 변호사/ })[0];
     const box = input.closest(".vteam-box");
     const before = box.querySelectorAll(".vteam-chip").length;
     fireEvent.focus(input);
@@ -42,5 +42,31 @@ describe("한글 입력 중 Enter", () => {
     fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
     expect(box.querySelectorAll(".vteam-chip").length).toBe(before + 1);
     expect(box.textContent).toContain("고기동");
+  });
+});
+
+describe("방향키로 고르기", () => {
+  it("아래·위 방향키로 줄을 옮기고 Enter로 그 사람을 더한다", () => {
+    renderOS();
+    const input = screen.getAllByRole("combobox", { name: /상담 변호사/ })[0];
+    const box = input.closest(".vteam-box");
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "고" } });
+    const opts = within(screen.getByRole("listbox")).getAllByRole("option");
+    expect(opts.length).toBeGreaterThan(1);
+    expect(opts[0].getAttribute("aria-selected")).toBe("true");
+
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    expect(opts[1].getAttribute("aria-selected")).toBe("true");
+    expect(input.getAttribute("aria-activedescendant")).toBe(opts[1].id);
+    fireEvent.keyDown(input, { key: "ArrowUp" });
+    fireEvent.keyDown(input, { key: "ArrowUp" });
+    expect(opts.at(-1).getAttribute("aria-selected")).toBe("true");
+
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    const second = opts[1].querySelector("b").textContent;
+    fireEvent.keyDown(input, { key: "Enter", keyCode: 13 });
+    expect([...box.querySelectorAll(".vteam-chip b")].map((b) => b.textContent)).toContain(second);
   });
 });

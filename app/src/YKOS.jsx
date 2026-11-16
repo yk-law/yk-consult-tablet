@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Logo from "./Logo.jsx";
 import Tablet from "./Tablet.jsx";
 import SignForm from "./SignForm.jsx";
@@ -509,6 +509,14 @@ function CounselTeam({ people = [], FIELD, value = [], onChange }) {
     const label = (l) => (l.f || []).map((k) => FIELD?.[k]?.[0] || "").join(" ");
     return people.filter((l) => !value.includes(l.n) && (l.n.includes(t) || (l.pos || "").includes(t) || label(l).includes(t))).slice(0, COUNSEL_MAX);
   }, [people, value, t, FIELD]);
+  // 방향키로 고르는 줄. 검색어가 바뀌면 첫 줄로 돌아간다.
+  const [active, setActive] = useState(0);
+  const listRef = useRef(null);
+  const listId = useId();
+  useEffect(() => { setActive(0); }, [t]);
+  useEffect(() => {
+    listRef.current?.querySelector(`[data-i="${active}"]`)?.scrollIntoView?.({ block: "nearest" });
+  }, [active]);
   const add = (name) => { onChange([...value, name]); setQ(""); inputRef.current?.focus(); };
   const label = value.length ? "상담 변호사 추가" : "상담 변호사 지정";
   return (
@@ -530,20 +538,37 @@ function CounselTeam({ people = [], FIELD, value = [], onChange }) {
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={(e) => {
+            if ((e.key === "ArrowDown" || e.key === "ArrowUp") && hits.length) {
+              e.preventDefault();
+              setOpen(true);
+              const step = e.key === "ArrowDown" ? 1 : -1;
+              setActive((i) => (i + step + hits.length) % hits.length);
+              return;
+            }
+            if (e.key === "Escape") { setOpen(false); return; }
             // 한글 조합 중 Enter는 조합 확정용이다. 이때 더하면 조합이 끝난 뒤 글자가 다시 들어와 Enter가 한 번 더 처리된다.
             if (e.nativeEvent.isComposing || e.keyCode === 229) return;
-            if (e.key === "Enter" && hits[0]) add(hits[0].n);
+            if (e.key === "Enter" && hits[active]) { e.preventDefault(); add(hits[active].n); }
             if (e.key === "Backspace" && !q && value.length) onChange(value.slice(0, -1));
           }}
           placeholder={value.length ? "" : label}
           aria-label={label}
+          role="combobox"
+          aria-expanded={open && !!t}
+          aria-controls={listId}
+          aria-activedescendant={open && hits[active] ? `${listId}-${active}` : undefined}
         />
         <Icon d={ICON.down} className="vcounsel-chev" />
         {open && t && (
-          <ul className="vcounsel-list" role="listbox">
-            {hits.map((l) => (
+          <ul className="vcounsel-list" role="listbox" id={listId} ref={listRef}>
+            {hits.map((l, i) => (
               <li key={l.n}>
-                <button type="button" role="option" aria-selected={false} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); add(l.n); }}>
+                <button
+                  type="button" role="option" id={`${listId}-${i}`} data-i={i} tabIndex={-1}
+                  aria-selected={i === active} className={i === active ? "active" : undefined}
+                  onMouseEnter={() => setActive(i)}
+                  onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); add(l.n); }}
+                >
                   <b>{l.n}</b>{l.pos && <span className="pos-chip">{l.pos}</span>}
                 </button>
               </li>
