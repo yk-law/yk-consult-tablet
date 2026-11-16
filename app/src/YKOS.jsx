@@ -497,81 +497,67 @@ function YkDialog({ dialog, shown, onCancel, onConfirm }) {
   );
 }
 
-/** 상담에 함께하는 사람들. 고른 사람은 칩(이름·직함·지우기 X)으로 두고, 옆 검색칸으로 한 명씩 더한다(시연 피드백 4번).
- *  children(바인더 열기)은 검색칸 바로 뒤에 붙여, 사람이 늘어 줄이 바뀌어도 함께 흐른다. */
+/** 상담에 함께하는 사람들(시연 피드백 4번, 몇 명이든). 실제 상담 변호사 셀렉 한 칸 안에 고른 사람을 칩으로 쌓고 칸 끝에서 바로 검색한다.
+ *  칸 폭은 고정이라 사람이 늘면 칸만 아래로 늘고, 바인더 열기(children)와 오른쪽 버튼 묶음은 첫 줄에 그대로 있다. */
 function CounselTeam({ people = [], FIELD, value = [], onChange, children }) {
   const byName = new Map(people.map((p) => [p.n, p]));
-  return (
-    <div className="vteam">
-      {value.map((n) => (
-        <span key={n} className="vteam-chip">
-          <b>{n}</b>{byName.get(n)?.pos && <span className="pos">{byName.get(n).pos}</span>}
-          <button type="button" className="vcounsel-x" aria-label={`${n} 빼기`} onClick={() => onChange(value.filter((v) => v !== n))}><Icon d={ICON.x} /></button>
-        </span>
-      ))}
-      <CounselSelect
-        lawyers={people.filter((p) => !value.includes(p.n))}
-        FIELD={FIELD}
-        value=""
-        placeholder={value.length ? "상담 변호사 추가" : "상담 변호사 지정"}
-        onChange={(name) => name && onChange([...value, name])}
-      />
-      {children}
-    </div>
-  );
-}
-
-/** 상담 변호사 칸. 실제 VisitCounselSelect(ModalEmployeeSelector): 고르면 이름과 지우기 X, 누르면 검색 입력으로 바뀐다.
- *  실제처럼 글자를 넣어야 목록이 뜨고 최대 50명까지 보인다. 이름·직함(고문·전문위원 등)·업무 분야로 찾는다. */
-const COUNSEL_MAX = 50;
-function CounselSelect({ lawyers = [], FIELD, value, onChange, placeholder }) {
-  const [editing, setEditing] = useState(false);
+  const inputRef = useRef(null);
+  const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const t = q.trim();
   const hits = useMemo(() => {
     if (!t) return [];
     const label = (l) => (l.f || []).map((k) => FIELD?.[k]?.[0] || "").join(" ");
-    return lawyers.filter((l) => l.n.includes(t) || (l.pos || "").includes(t) || label(l).includes(t)).slice(0, COUNSEL_MAX);
-  }, [lawyers, t, FIELD]);
-  const chosen = lawyers.find((l) => l.n === value);
-  const pick = (name) => { onChange(name); setEditing(false); setQ(""); };
-
-  if (value && !editing) {
-    return (
-      <div className="vcounsel set">
-        <button type="button" className="vcounsel-pick" aria-label={`상담 변호사 변경 (${value})`} onClick={() => setEditing(true)}>
-          <b>{value}</b>{chosen?.pos && <span className="pos">{chosen.pos}</span>}
-        </button>
-        <button type="button" className="vcounsel-x" aria-label="상담 변호사 지우기" onClick={() => onChange("")}><Icon d={ICON.x} /></button>
-      </div>
-    );
-  }
+    return people.filter((l) => !value.includes(l.n) && (l.n.includes(t) || (l.pos || "").includes(t) || label(l).includes(t))).slice(0, COUNSEL_MAX);
+  }, [people, value, t, FIELD]);
+  const add = (name) => { onChange([...value, name]); setQ(""); inputRef.current?.focus(); };
+  const label = value.length ? "상담 변호사 추가" : "상담 변호사 지정";
   return (
-    <div className="vcounsel" onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) { setEditing(false); setQ(""); } }}>
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        onFocus={() => setEditing(true)}
-        placeholder={placeholder || (value ? "상담 변호사" : "상담 변호사 지정")}
-        aria-label={placeholder || "상담 변호사 지정"}
-        autoFocus={editing}
-      />
-      <Icon d={ICON.down} className="vcounsel-chev" />
-      {editing && t && (
-        <ul className="vcounsel-list" role="listbox">
-          {hits.map((l) => (
-            <li key={l.n}>
-              <button type="button" role="option" aria-selected={l.n === value} onMouseDown={(e) => e.preventDefault()} onClick={() => pick(l.n)}>
-                <b>{l.n}</b>{l.pos && <span className="pos-chip">{l.pos}</span>}
-              </button>
-            </li>
-          ))}
-          {!hits.length && <li className="none">일치하는 임직원이 없습니다</li>}
-        </ul>
-      )}
+    <div className="vteam">
+      <div
+        className={`vteam-box${open ? " open" : ""}${value.length ? " has-people" : ""}`}
+        onClick={() => inputRef.current?.focus()}
+        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) { setOpen(false); setQ(""); } }}
+      >
+        {value.map((n) => (
+          <span key={n} className="vteam-chip">
+            <b>{n}</b>{byName.get(n)?.pos && <span className="pos">{byName.get(n).pos}</span>}
+            <button type="button" className="vcounsel-x" aria-label={`${n} 빼기`} onClick={(e) => { e.stopPropagation(); onChange(value.filter((v) => v !== n)); }}><Icon d={ICON.x} /></button>
+          </span>
+        ))}
+        <input
+          ref={inputRef}
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && hits[0]) add(hits[0].n);
+            if (e.key === "Backspace" && !q && value.length) onChange(value.slice(0, -1));
+          }}
+          placeholder={value.length ? "" : label}
+          aria-label={label}
+        />
+        <Icon d={ICON.down} className="vcounsel-chev" />
+        {open && t && (
+          <ul className="vcounsel-list" role="listbox">
+            {hits.map((l) => (
+              <li key={l.n}>
+                <button type="button" role="option" aria-selected={false} onMouseDown={(e) => e.preventDefault()} onClick={(e) => { e.stopPropagation(); add(l.n); }}>
+                  <b>{l.n}</b>{l.pos && <span className="pos-chip">{l.pos}</span>}
+                </button>
+              </li>
+            ))}
+            {!hits.length && <li className="none">일치하는 임직원이 없습니다</li>}
+          </ul>
+        )}
+      </div>
+      {children}
     </div>
   );
 }
+
+/** 실제 상담 변호사 셀렉(ModalEmployeeSelector)처럼 글자를 넣어야 목록이 뜨고 최대 50명까지 보인다. */
+const COUNSEL_MAX = 50;
 
 /** 방문 예정 행 아래 「고객 확인」. 실제 VisitBinder3ConfirmList. 다시 만들기(리롤)는 데이터가 없어 모양만 둔다. */
 function ConfirmList({ rows, answers }) {
