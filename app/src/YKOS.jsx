@@ -518,15 +518,18 @@ function CounselTeam({ people = [], FIELD, value = [], onChange }) {
   );
 }
 
-/** 상담 변호사 칸. 실제 VisitCounselSelect: 고르면 이름과 지우기 X, 누르면 검색 입력으로 바뀌어 목록에서 고른다. */
+/** 상담 변호사 칸. 실제 VisitCounselSelect(ModalEmployeeSelector): 고르면 이름과 지우기 X, 누르면 검색 입력으로 바뀐다.
+ *  실제처럼 글자를 넣어야 목록이 뜨고 최대 50명까지 보인다. 이름·직함(고문·전문위원 등)·업무 분야로 찾는다. */
+const COUNSEL_MAX = 50;
 function CounselSelect({ lawyers = [], FIELD, value, onChange, placeholder }) {
   const [editing, setEditing] = useState(false);
   const [q, setQ] = useState("");
+  const t = q.trim();
   const hits = useMemo(() => {
-    const t = q.trim();
+    if (!t) return [];
     const label = (l) => (l.f || []).map((k) => FIELD?.[k]?.[0] || "").join(" ");
-    return (t ? lawyers.filter((l) => l.n.includes(t) || label(l).includes(t)) : lawyers).slice(0, 8);
-  }, [lawyers, q, FIELD]);
+    return lawyers.filter((l) => l.n.includes(t) || (l.pos || "").includes(t) || label(l).includes(t)).slice(0, COUNSEL_MAX);
+  }, [lawyers, t, FIELD]);
   const chosen = lawyers.find((l) => l.n === value);
   const pick = (name) => { onChange(name); setEditing(false); setQ(""); };
 
@@ -551,16 +554,16 @@ function CounselSelect({ lawyers = [], FIELD, value, onChange, placeholder }) {
         autoFocus={editing}
       />
       <Icon d={ICON.down} className="vcounsel-chev" />
-      {editing && (
+      {editing && t && (
         <ul className="vcounsel-list" role="listbox">
           {hits.map((l) => (
             <li key={l.n}>
               <button type="button" role="option" aria-selected={l.n === value} onMouseDown={(e) => e.preventDefault()} onClick={() => pick(l.n)}>
-                <b>{l.n}</b><span>{l.pos}</span>
+                <b>{l.n}</b>{l.pos && <span className="pos-chip">{l.pos}</span>}
               </button>
             </li>
           ))}
-          {!hits.length && <li className="none">검색 결과가 없습니다.</li>}
+          {!hits.length && <li className="none">일치하는 임직원이 없습니다</li>}
         </ul>
       )}
     </div>

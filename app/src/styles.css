@@ -3020,6 +3020,8 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .os .vcounsel-list button:hover,.os .vcounsel-list button[aria-selected="true"]{background:#F1F5F9;}
 .os .vcounsel-list b{font-weight:700; color:#111827;}
 .os .vcounsel-list span{font-size:13px; color:#6B7280;}
+.os .vcounsel-list button{align-items:center;}
+.os .vcounsel-list .pos-chip{height:20px; padding:0 8px; border-radius:10px; background:#E3F2FD; color:#0C447C; font-size:11px; font-weight:700; line-height:20px;}
 .os .vcounsel-list .none{padding:8px 12px; font-size:13px; color:var(--yo-mut2);}
 
 /* 고객 확인(행 아래) */
