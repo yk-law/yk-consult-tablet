@@ -88,7 +88,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           />
         )}
         {screen === "firm" && (
-          <FirmIntro firm={data.firm} portraits={data.portraits} helper={data.helper} FIELD={FIELD} NEAR={NEAR} b={b} onNext={() => onScreen("report")} />
+          <FirmIntro firm={data.firm} firmCases={data.firmCases} portraits={data.portraits} helper={data.helper} FIELD={FIELD} NEAR={NEAR} b={b} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && hasSummary && (
           <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} onPrevious={() => onScreen("firm")} />
@@ -433,13 +433,58 @@ function FirmPeople({ rows, firm, portraits, onPerson }) {
   );
 }
 
-function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
+/** YK 소개 「업무사례」 탭. 분야별 전문 센터(테두리 카드)와 겹쳐 보이지 않게 줄 목록으로 둔다.
+ *  줄 하나 = 결과 · 분류/의뢰인 지위 · 제목 · 부제 · 담당 변호사 · 날짜. 누르면 사례 상세 창.
+ *  rows: null(불러오는 중) | [](없음) | 사례 배열. 데이터 모양은 tools/firm_cases_refresh.py. */
+const FIRM_CASES_STEP = 5;
+/** 「이혼 / 이혼」처럼 대분류와 소분류가 같으면 한 번만. */
+const caseCat = (cat = "") => { const [a, b] = cat.split(" / "); return b && a !== b ? `${a} / ${b}` : a; };
+function FirmCases({ rows, label, onOpen }) {
+  const [shown, setShown] = useState(FIRM_CASES_STEP);
+  if (rows == null) {
+    return <ul className="firm-cases is-loading" aria-busy="true" aria-label="업무사례 불러오는 중">{[0, 1, 2].map((i) => <li key={i}><span className="firm-case-skel" /></li>)}</ul>;
+  }
+  if (!rows.length) return <p className="firm-empty">이 사건 분야의 업무사례가 아직 없습니다.</p>;
+  const left = rows.length - shown;
+  return (
+    <>
+      <p className="firm-cases-count">{label ? `${label} 업무사례 ` : "업무사례 "}<b>{rows.length}건</b></p>
+      <ul className="firm-cases">
+        {rows.slice(0, shown).map((c) => (
+          <li key={c.id || c.href}>
+            <button type="button" className="firm-case" onClick={() => onOpen(c)}>
+              <span className="firm-case-result">{c.result}</span>
+              <span className="firm-case-main">
+                <span className="firm-case-meta">{[caseCat(c.cat), c.role].filter(Boolean).join(" · ")}</span>
+                <strong>{c.title}</strong>
+                {c.sub ? <span className="firm-case-sub">{c.sub}</span> : null}
+              </span>
+              <span className="firm-case-side">
+                {c.lawyers?.length ? <span>{c.lawyers.join(" · ")} 변호사</span> : null}
+                {c.date ? <span className="firm-case-date">{c.date}</span> : null}
+              </span>
+              <svg className="firm-case-go" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {left > 0 && (
+        <button type="button" className="firm-cases-more" onClick={() => setShown((n) => n + FIRM_CASES_STEP)}>
+          업무사례 더 보기 <span>{left}건</span>
+        </button>
+      )}
+    </>
+  );
+}
+
+function FirmIntro({ firm, firmCases, portraits, helper, FIELD, NEAR, b, onNext }) {
   const [tab, setTab] = useState("bench");
   const [caseItem, setCaseItem] = useState(null);
   const [person, setPerson] = useState(null);
   const tabsId = useId();
   if (!firm) return null;
-  const cases = helper?.cases || [];
+  // 업무사례 탭: 이 사건 분야의 홈페이지 업무사례. 실제는 YK-OS가 사건 태그로 불러온다(강주용). 받지 못했으면 null.
+  const cases = firmCases;
   // 이 사건의 분야가 속한 센터 묶음과 이름이 겹치는 센터를 짚어 준다(분야별 전문 센터 가독성, 11-13).
   const caseLabel = (FIELD?.[b?.field]?.[0] || "").replace("·", "");
   const caseGroup = CENTER_GROUP_OF[FIELD?.[b?.field]?.[0]] || "";
@@ -516,20 +561,7 @@ function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
                 <FirmPeople rows={rows} firm={firm} portraits={portraits} onPerson={openPerson} />
               </div>
             ))}
-            {tab === "cases" && (cases.length > 0 ? (
-              <ul className={`yh-cases${cases.length === 1 ? " yh-cases-one" : ""}`}>
-                {cases.map((c) => (
-                  <li key={c.href || c.t}>
-                    <button type="button" className="yh-case-btn" onClick={() => setCaseItem(c)}>
-                      {c.tag ? <span className="yh-case-tag">{c.tag}</span> : null}
-                      {c.t ? <strong>{c.t}</strong> : null}
-                      {c.s ? <p>{c.s}</p> : null}
-                      {c.r ? <span className="yh-case-r">{c.r}</span> : null}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : <p className="firm-empty">이 사건과 비슷한 업무사례가 아직 없습니다.</p>)}
+            {tab === "cases" && <FirmCases rows={cases} label={caseLabel} onOpen={setCaseItem} />}
           </section>
 
           <section className="firm-sec" aria-labelledby="firm-centers">

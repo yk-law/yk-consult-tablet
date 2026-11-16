@@ -34,6 +34,8 @@ def catalog() -> dict:
         "topics": load("topics.json"),
         "firm": load("firm.json"),
         "firmIntro": load("firm_intro.json"),
+        # YK 소개 업무사례 탭. 홈페이지 업무사례 상세(tools/firm_cases_refresh.py).
+        "firmCases": load("firm_cases.json"),
         "sign": load("sign.json"),
         "cases": load("cases.json"),
         "reviews": load("reviews.json"),
@@ -574,6 +576,18 @@ def firm_view() -> dict:
     return catalog()["firmIntro"]
 
 
+# 홈페이지 업무사례 URL 분류 → 사건 분야. app/src/caseWorks.js CATEGORY_FIELDS 와 같다. 없는 분류는 보이지 않는다.
+CASE_CATEGORY_FIELDS = {
+    "detective": "A", "sexual-assault": "B", "traffic": "E", "estate": "I",
+    "divorce": "J", "civil": "K", "inherit": "L", "military": "M",
+}
+
+
+def firm_cases_for(field: str) -> list:
+    """YK 소개 업무사례 탭: 그 사건 분야의 홈페이지 업무사례, 최신순. 실제는 YK-OS가 사건 태그로 불러온다."""
+    return [c for c in catalog()["firmCases"] if CASE_CATEGORY_FIELDS.get(c["key"]) == field]
+
+
 def bar_seniority(p: dict) -> tuple[int, str]:
     """기수를 정렬용 숫자로 바꾼다. 작을수록 오래된 기수다.
 
@@ -698,6 +712,7 @@ def visit_for(bid: str | None = None) -> dict:
         "booking": b,
         "helper": helper_view(b),
         "firm": firm,
+        "firmCases": firm_cases_for(b.get("field") or ""),
         "counsel": public_profile(counsel) if counsel else None,
         "seniors": senior_rows,
         "seniorHeadline": senior_headline,

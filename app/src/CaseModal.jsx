@@ -23,10 +23,18 @@ export default function CaseModal({ item, onClose }) {
   const [host, setHost] = useState(null);
 
   const rawTitle = item?.t || item?.title || "";
-  const { title, subtitle } = splitTitle(rawTitle);
-  const tag = item?.tag || "";
+  const split = splitTitle(rawTitle);
+  const title = split.title;
+  const subtitle = item?.sub || split.subtitle;
+  const [catA, catB] = (item?.cat || "").split(" / ");
+  const cat = catB && catA !== catB ? `${catA} / ${catB}` : catA;
+  const tag = item?.tag || [cat, item?.role].filter(Boolean).join(" · ");
   const summary = item?.s || "";
-  const result = item?.r || "";
+  const result = item?.r || item?.result || "";
+  // 홈페이지 업무사례 상세(YK 소개 업무사례 탭): 사건 결과 요약 표와 본문 문단.
+  const facts = [["사건 유형", item?.kind], ["쟁점", item?.issue], ["결과", item?.result], ["대응 포인트", item?.point]].filter(([, v]) => v);
+  const body = item?.body || [];
+  const by = [item?.lawyers?.length ? `${item.lawyers.join(" · ")} 변호사` : "", item?.date || ""].filter(Boolean).join(" · ");
 
   useEffect(() => {
     setHost(document.getElementById("tabDev"));
@@ -88,9 +96,15 @@ export default function CaseModal({ item, onClose }) {
           {tag ? <p className="case-modal-tag">{tag}</p> : null}
           {subtitle ? <p className="case-modal-sub">{subtitle}</p> : null}
           {result ? <p className="case-modal-result">{result}</p> : null}
-          <p className="case-modal-summary">
-            {summary || "자세한 내용은 상담에서 안내해 드립니다."}
-          </p>
+          {by ? <p className="case-modal-by">{by}</p> : null}
+          {facts.length > 0 && (
+            <dl className="case-modal-facts">
+              {facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+            </dl>
+          )}
+          {body.length > 0
+            ? body.map((p) => <p className="case-modal-text" key={p}>{p}</p>)
+            : <p className="case-modal-summary">{summary || "자세한 내용은 상담에서 안내해 드립니다."}</p>}
         </div>
       </article>
     </div>,
