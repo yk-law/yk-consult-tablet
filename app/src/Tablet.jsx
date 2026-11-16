@@ -10,7 +10,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import Logo from "./Logo.jsx";
 import WelcomeBackdrop from "./WelcomeBackdrop.jsx";
 import Myk from "./Myk.jsx";
-import { Portrait, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
+import { NoPhoto, Portrait, areaLabel, fieldLabelsOf, groupMatchesFieldLabels, areaCaseMark } from "./util.jsx";
 
 // 브랜드 영상은 앱에 동봉한다. 외부(YK-OS) 참조는 상담실 회선이 느리거나
 // 그 서버가 점검 중이면 대기 화면이 비어 버리고, 태블릿 오프라인에서도 못 쓴다.
@@ -419,7 +419,7 @@ function FirmPeople({ rows, firm, portraits, onPerson }) {
             <li key={l.n}>
               <button type="button" className="firm-person" onClick={() => onPerson(l)}>
                 <span className="firm-ph" style={firm.photoZoom?.[l.n] ? { "--firm-ph-zoom": firm.photoZoom[l.n] } : undefined}>
-                  {photo ? <img src={photo} alt="" /> : <span aria-hidden="true">{l.n[0]}</span>}
+                  {photo ? <img src={photo} alt="" /> : <NoPhoto />}
                 </span>
                 <strong>{l.n}</strong>
                 {l.pos && <span className="firm-people-pos">{l.pos}</span>}
@@ -906,13 +906,11 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
   const heroRef = useRef(null);
   const profileRef = useRef(null);
   const indexId = useId();
-  const indexNavigation = useRef(null);
-  const indexSettleTimer = useRef(null);
-  const indexUpdate = useRef(() => {});
   const [indexItems, setIndexItems] = useState([]);
-  const [activeIndex, setActiveIndex] = useState("");
   const [heroHidden, setHeroHidden] = useState(false);
   const [caseItem, setCaseItem] = useState(null);
+  // 목차: 묶음 제목(h3)과 소제목(h4). 누르면 그곳으로 이동만 한다.
+  // 현재 위치는 표시하지 않는다 — 이력이 짧으면 표시가 연달아 바뀌어 거슬렸다(YK-OS 2차 내부 피드백 3, 2026-11-16).
   useEffect(() => {
     const profile = profileRef.current;
     const pane = profile?.closest(".counselpane");
@@ -923,23 +921,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       return { id: element.id, label: element.textContent, group: element.tagName === "H3", element };
     });
     setIndexItems(items);
-    indexNavigation.current = null;
-    const update = () => {
-      const top = pane.getBoundingClientRect().top + 48;
-      let active = items.find((item) => !item.group)?.id || "";
-      for (const [index, item] of items.entries()) {
-        if (item.element.getBoundingClientRect().top <= top) {
-          active = item.group ? (items.slice(index + 1).find((next) => !next.group)?.id || active) : item.id;
-        }
-      }
-      const maxScroll = pane.scrollHeight - pane.clientHeight;
-      if (maxScroll > 0 && pane.scrollTop >= maxScroll - 2) {
-        active = items.filter((item) => !item.group).at(-1)?.id || active;
-      }
-      setActiveIndex(indexNavigation.current?.id || active);
-      profile.style.setProperty("--counsel-scroll-height", `${pane.clientHeight}px`);
-    };
-    indexUpdate.current = update;
+    const update = () => profile.style.setProperty("--counsel-scroll-height", `${pane.clientHeight}px`);
     // 마지막 목차 항목도 눌렀을 때 화면 위까지 올라오도록, 내용이 모자란 만큼만 아래 여백을 더한다.
     const details = profile.querySelector(".counsel-details");
     const lastItem = items.filter((item) => !item.group).at(-1);
@@ -950,40 +932,12 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       const extra = Math.max(0, pane.clientHeight - 24 - below);
       if (extra) details.style.paddingBottom = `${parseFloat(getComputedStyle(details).paddingBottom) + extra}px`;
     };
-    const finish = () => {
-      clearTimeout(indexSettleTimer.current);
-      indexNavigation.current = null;
-      update();
-    };
-    const onScroll = () => {
-      update();
-      clearTimeout(indexSettleTimer.current);
-      if (indexNavigation.current) indexSettleTimer.current = setTimeout(finish, 180);
-    };
-    const onScrollEnd = () => {
-      const navigation = indexNavigation.current;
-      if (!navigation || Math.abs(pane.scrollTop - navigation.top) < 2) finish();
-    };
-    const onManualScroll = (event) => {
-      if (event.target.closest?.(".counsel-profile-card")) return;
-      if (event.type === "keydown" && !["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) return;
-      finish();
-    };
     fitTail();
     update();
-    pane.addEventListener("scroll", onScroll, { passive: true });
-    pane.addEventListener("scrollend", onScrollEnd);
-    for (const type of ["wheel", "touchmove", "pointerdown", "keydown"]) pane.addEventListener(type, onManualScroll, { passive: true });
     const resize = new ResizeObserver(() => { fitTail(); update(); });
     resize.observe(pane);
-    resize.observe(profile.querySelector(".counsel-details"));
+    if (details) resize.observe(details);
     return () => {
-      pane.removeEventListener("scroll", onScroll);
-      pane.removeEventListener("scrollend", onScrollEnd);
-      for (const type of ["wheel", "touchmove", "pointerdown", "keydown"]) pane.removeEventListener(type, onManualScroll);
-      clearTimeout(indexSettleTimer.current);
-      indexNavigation.current = null;
-      indexUpdate.current = () => {};
       resize.disconnect();
       if (details) details.style.paddingBottom = "";
     };
@@ -993,18 +947,10 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     if (!pane) return;
     const top = Math.max(0, Math.min(pane.scrollHeight - pane.clientHeight,
       pane.scrollTop + item.element.getBoundingClientRect().top - pane.getBoundingClientRect().top - 24));
-    clearTimeout(indexSettleTimer.current);
-    indexNavigation.current = { id: item.id, top };
-    setActiveIndex(item.id);
     pane.scrollTo({ top, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     // 키보드·화면낭독기 위치도 그 항목으로 옮긴다(스크롤은 위에서 부드럽게 한다).
     item.element.tabIndex = -1;
     item.element.focus({ preventScroll: true });
-    // Also settle clicks that do not generate a scroll event (already at the destination).
-    indexSettleTimer.current = setTimeout(() => {
-      indexNavigation.current = null;
-      indexUpdate.current();
-    }, 180);
   };
   useEffect(() => {
     setHeroHidden(false);
@@ -1056,14 +1002,13 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
       <div className={counselHero ? "counsel-detail-layout" : "profile-detail-layout-pass"}>
       {counselHero && <aside className={`counsel-profile-card${heroHidden ? " is-visible" : ""}`} aria-hidden={!heroHidden} aria-label={specialist ? "전문 인력 프로필" : "상담 변호사 프로필"}>
         <div className="counsel-profile-card-photo">
-          {portraits?.[l.n] ? <img src={portraits[l.n]} alt={`${l.n} ${l.pos || ""}`} /> : <span>{l.n?.[0]}</span>}
+          {portraits?.[l.n] ? <img src={portraits[l.n]} alt={`${l.n} ${l.pos || ""}`} /> : <NoPhoto />}
         </div>
         <div className="counsel-card-content">
         <div className="counsel-card-identity"><strong>{l.n}</strong><span>{l.pos || "변호사"}</span></div>
         {indexItems.length > 0 && <nav className="counsel-index" aria-label="소개 목차">
           {indexItems.map((item) => item.group ? <p key={item.id} className="index-group">{item.label}</p> : <button key={item.id} type="button"
             className="index-section"
-            aria-current={activeIndex === item.id ? "location" : undefined}
             aria-controls={item.id} tabIndex={heroHidden ? 0 : -1}
             onClick={() => navigateIndex(item)}>{item.label}</button>)}
         </nav>}
@@ -1158,7 +1103,7 @@ function Counsel({ l, team = [], teamIndex = 0, onTeam = () => {}, portraits, FI
         <div className="counsel-team" role="tablist" aria-label="상담에 함께하는 분">
           {team.map((c, i) => (
             <button key={c.n} type="button" role="tab" aria-selected={i === teamIndex} className={i === teamIndex ? "on" : ""} onClick={() => onTeam(i)}>
-              <span className="counsel-team-ph">{portraits?.[c.n] ? <img src={portraits[c.n]} alt="" /> : <span aria-hidden="true">{c.n[0]}</span>}</span>
+              <span className="counsel-team-ph">{portraits?.[c.n] ? <img src={portraits[c.n]} alt="" /> : <NoPhoto />}</span>
               <span className="counsel-team-t"><b>{c.n}</b><span>{c.pos}</span></span>
             </button>
           ))}
@@ -1254,7 +1199,7 @@ function SeniorCard({ l, portraits, FIELD, NEAR, b, onOpen, focused, clone, offs
   return (
     <button type="button" className={`xcard${focused ? " is-focused" : ""}${clone ? " is-clone" : ""}`} aria-label={`${l.n} ${l.pos} 프로필`} onClick={onOpen}>
       <span className="xshot" style={{ "--portrait-offset": `${offset}px` }}>
-        {portraits?.[l.n] ? <img src={portraits[l.n]} alt={l.n} /> : <span className="xmono">{l.n[0]}</span>}
+        {portraits?.[l.n] ? <img src={portraits[l.n]} alt={l.n} /> : <NoPhoto />}
       </span>
       <span className="xbody">
         <span className="senior-identity">
@@ -1478,7 +1423,7 @@ function Seniors({ list, counsel, headline, portraits, FIELD, NEAR, b, onNext, o
       {(onPreviousStep || onNextStep) && (
         <div className="counsel-page-links">
           {onPreviousStep && <ReportNext onClick={onPreviousStep} label="상담 변호사로" previous />}
-          {onNextStep && <ReportNext onClick={onNextStep} label="YK 변호사 이야기" />}
+          {onNextStep && <ReportNext onClick={onNextStep} label="YK 변호사 이야기 보기" />}
         </div>
       )}
       </div>
