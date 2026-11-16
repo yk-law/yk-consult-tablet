@@ -321,15 +321,14 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                             setAssigned(next);
                             if (on && binderOn && names.length) act.counsel(names);
                           }}
-                        >
-                          <button className="vb share" disabled={why != null} onClick={() => onOpenBinder(x)}>
-                            <Icon d={ICON.book} />바인더 열기
-                          </button>
-                        </CounselTeam>
+                        />
                         </div>
                         {why && <p className="vhint">{why === "counsel" ? "상담 변호사를 지정하면 바인더를 열 수 있습니다." : "태블릿(상담실)을 먼저 선택해 주세요."}</p>}
                         </div>
                         <div className="vacts-r">
+                        <button className="vb share" disabled={why != null} onClick={() => onOpenBinder(x)}>
+                          <Icon d={ICON.book} />바인더 열기
+                        </button>
                         {/* 바인더가 문항을 보내 온 행에만. 닫아 두어도 아니오는 놓치지 않게 붉게. */}
                         {items.length > 0 && (
                           <button
@@ -498,8 +497,8 @@ function YkDialog({ dialog, shown, onCancel, onConfirm }) {
 }
 
 /** 상담에 함께하는 사람들(시연 피드백 4번, 몇 명이든). 실제 상담 변호사 셀렉 한 칸 안에 고른 사람을 칩으로 쌓고 칸 끝에서 바로 검색한다.
- *  칸 폭은 고정이라 사람이 늘면 칸만 아래로 늘고, 바인더 열기(children)와 오른쪽 버튼 묶음은 첫 줄에 그대로 있다. */
-function CounselTeam({ people = [], FIELD, value = [], onChange, children }) {
+ *  칸은 버튼 묶음을 뺀 남은 폭을 다 쓰고, 사람이 늘면 칸만 아래로 는다. 바인더 열기부터 메모까지 버튼은 오른쪽 한 묶음이다. */
+function CounselTeam({ people = [], FIELD, value = [], onChange }) {
   const byName = new Map(people.map((p) => [p.n, p]));
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -553,7 +552,6 @@ function CounselTeam({ people = [], FIELD, value = [], onChange, children }) {
           </ul>
         )}
       </div>
-      {children}
     </div>
   );
 }
