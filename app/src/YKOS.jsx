@@ -307,6 +307,10 @@ export default function YKOS({ cat, data, connected, screen, act, answersBy = {}
                           <span className="vg">{x.cat1}&gt;{x.cat2}</span>
                         </span>
                         <span className="vt">{x.tel}</span>
+                        {/* 카드를 누르면 이 고객이 태블릿에 뜬다는 것이 보이게, 태블릿을 고른 뒤에는 카드마다 띄우기 버튼을 둔다. */}
+                        {mirror && (on
+                          ? <span className="vcast on"><Icon d={ICON.tablet} />태블릿에 표시 중</span>
+                          : <button type="button" className="vcast" onClick={(e) => { e.stopPropagation(); onRowClick(x); }}><Icon d={ICON.tablet} />태블릿에 띄우기</button>)}
                       </div>
                       <div className="vacts" onClick={(e) => e.stopPropagation()}>
                         <div className="vbind">

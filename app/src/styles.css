@@ -3005,6 +3005,13 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 
 /* 행 누르기: 태블릿을 고른 뒤에만 */
 .os .vcard.pick{cursor:pointer;}
+/* 태블릿에 띄우기(카드 윗줄 오른쪽 끝). 띄운 카드는 같은 자리에 「태블릿에 표시 중」. */
+.os .vcast{margin-left:auto; display:inline-flex; align-items:center; gap:4px; height:32px; padding:0 12px; border:1px solid #C8D0E6; border-radius:16px; background:#fff;
+  font:inherit; font-size:13px; font-weight:600; color:#1E3A8A; cursor:pointer; white-space:nowrap;}
+.os .vcast .yo-i{width:14px; height:14px;}
+.os .vcast:hover{border-color:var(--yo-blue); background:#EFF6FF;}
+.os .vcast.on{border-color:transparent; background:var(--yo-blue); color:#fff; cursor:default;}
+.os .vcard.pick:hover:not(.cur){box-shadow:inset 0 0 0 1px #B8C2D6; border-radius:8px;}
 .os .vcard:not(.pick){cursor:default;}
 
 /* 상담 변호사 검색 칸 */
