@@ -6,6 +6,7 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -19,7 +20,7 @@ const WEB_PORT = Number(process.env.HANDOFF_WEB_PORT || 15173);
 const API = process.env.API_URL || `http://127.0.0.1:${API_PORT}`;
 const WEB = process.env.WEB_URL || `http://127.0.0.1:${WEB_PORT}`;
 const NODE = "/tmp/node-v22.14.0-darwin-arm64/bin";
-const LOG = "/tmp/orch-T142";
+const LOG = process.env.HANDOFF_LOG_DIR || join(tmpdir(), "yk-handoff");
 
 const require = createRequire(join(APP, "package.json"));
 const { chromium } = require("playwright");

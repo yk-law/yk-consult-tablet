@@ -171,58 +171,75 @@
 
 ---
 
-## 색 · 글자 · 간격 토큰 (실제 CSS)
+## 색 · 글자 · 간격 토큰 (golden = `.binder-theme.theme-light`)
 
-출처: `app/src/styles.css` `:root` 및 주요 규칙. 라이트 바인더 테마는 `colors.css`의 `--yk-*`로 덮일 수 있다. **golden과 다르면 golden 화면을 우선**하고, 토큰 불일치는 질문으로 남긴다.
+golden은 `?theme=light` → `.binder-theme.theme-light`. 아래 hex는 `app/src/colors.css`의 `--yk-*` 정의와 `.binder-theme` 139~158행 매핑을 풀어 적은 값이다. **golden과 다르면 golden을 우선**하고, 토큰 불일치는 질문으로 남긴다.
+
+### `.binder-theme` 별칭 → 실제 hex (light)
+
+| 별칭 | 매핑 | hex |
+|---|---|---|
+| `--ink` / `--ink2` | `--yk-foreground` | `#202631` |
+| `--mut` / `--mut2` | `--yk-muted-foreground` | `#626873` |
+| `--ivory` | `--yk-background` | `#FFFFFF` |
+| `--ivory2` | `--yk-muted` | `#EDEFF5` |
+| `--sf` | `--yk-card` | `#FFFFFF` |
+| `--hair` | `--yk-border` | `#D5DBE5` |
+| `--hair2` | `--yk-input` | `#80858D` |
+| `--gold` | `--yk-secondary-foreground` | `#102169` |
+| `--acc` | `--yk-primary` | `#102169` |
+| `--acc-d` | `--yk-primary-pressed` | `#081449` |
+| `--acc-s` | `--yk-selected` | `#F3F5FC` |
+| (글자) `--yk-primary-foreground` | — | `#FFFFFF` |
+| (hover) `--yk-primary-hover` | — | `#1B3074` |
+| (선택글자) `--yk-selected-foreground` | — | `#102169` |
+| (선택테두리) `--yk-selected-border` | — | `#3754A0` |
+| (링크) `--yk-link` / hover / pressed | — | `#263F86` / `#102169` / `#081449` |
+
+### CTA · 여정 내비 · radius (golden이 쓰는 값)
+
+| 항목 | 값 |
+|---|---|
+| CTA `.go` (`.binder-theme`) | solid 배경 `--yk-primary` `#102169`, 글자 `--yk-primary-foreground` `#FFFFFF`, border 동일. hover `#1B3074`, active `#081449` |
+| 여정 `.jnav button.on` | 배경 `#102169` / 글자 `#FFFFFF` / weight 600. hover `#1B3074`, active `#081449` |
+| 예약 확인 `.confirm-actions .go` / `.ghost` | `border-radius: 8px` |
+| 1뎁스 「네/아니오」 `.yh-check-a button` | `border-radius: 8px` |
+| 지위 칩 `.yh-party-o button` | `border-radius: 8px` |
+| 여정 foot·예약 복귀·주요 CTA 버튼 | 대체로 `border-radius: 8px` |
+| 전문인력 「프로필 보기」 등 pill | `border-radius: 999px` |
+| `.chip`(레거시) | radius 미지정(0에 가깝게). golden 둥근 버튼은 위 8px/999px를 따름 |
+| 구분선 | 1px `var(--hair)` → `#D5DBE5` (또는 `color-mix`로 60% 투명) |
+
+### 글자 · 간격
 
 | 토큰 | 값 |
 |---|---|
-| `--ink` | `#171C24` |
-| `--ink2` | `#2A313C` |
-| `--ivory` | `#FBFAF7` |
-| `--ivory2` | `#F4F2EC` |
-| `--sf` | `#FFFFFF` |
-| `--hair` | `#E9E5DC` |
-| `--hair2` | `#D8D3C7` |
-| `--mut` | `#8A8781` |
-| `--mut2` | `#B3AFA7` |
-| `--acc` | `#6E2739` |
-| `--acc-d` | `#4E1A28` |
-| `--acc-s` | `#F6EBEE` |
-| `--acc-l` | `#A85C6E` |
-| `--gold` | `#A98A4B` |
-| `--gold-s` | `#F7F1E3` |
-| `--ok` | `#38614A` |
-| `--ok-s` | `#E9F1EC` |
-| `--nv` | `#22344E` |
-| `--nv-s` | `#EDF1F7` |
-| `--shell` | `#0D1015` |
 | `--font` | `"SUIT Variable",-apple-system,BlinkMacSystemFont,system-ui,sans-serif` |
 | `--font-serif` | `"YK MaruBuri","MaruBuri",serif` |
-| `.lbl` | 10.5px / 700 / letter-spacing `.26em` / uppercase / `var(--gold)` |
-| `.h1` | serif 500 / 26px / line-height 1.42 / letter-spacing `-0.018em` / `var(--ink)` |
+| `.lbl` | 10.5px / 700 / letter-spacing `.26em` / uppercase / `var(--gold)` → `#102169` |
+| `.h1` | serif 500 / 26px / line-height 1.42 / letter-spacing `-0.018em` / `var(--ink)` → `#202631` |
 | `.sub` | 13.5px / `var(--ink2)` / line-height 1.85 |
 | `.pane` padding | `32px 26px 36px` |
-| 구분선 | 1px `var(--hair)` (골드 강조 시 `rgba(228,197,106,.28)` 등) |
-| CTA `.go` (기본) | border `#C4A15A` / gradient `#7A2E41`→`--acc`→`--acc-d` / 글자 `#F7F3EB` / radius 0 |
 | prep 제목 | serif 32px / line-height 44px / letter-spacing `-0.02em` |
-| 칩·배지 radius | 0~2px |
 | body letter-spacing | `-0.003em` |
+| 2뎁스 `.reportpane .yh-steps .n` | 14px / 500 / `var(--bt-muted)` `#626873` (테두리·배경 없음). 구 다크 시안의 골드 번호 아님 |
 
-라이트 역할 색(`colors.md` / `colors.css`): `--yk-primary #102169`, `--yk-foreground #202631`, `--yk-background #FFFFFF`, `--yk-border #D5DBE5`, `--yk-muted-foreground #626873` 등. `.binder-theme`에서 `--ink`/`--acc`/`--gold`가 이 역할색에 매핑된다.
+### `:root` 버건디 표 (golden 미사용 · 기본 테마)
+
+`styles.css` `:root`의 `--acc #6E2739` · `--gold #A98A4B` · `--ivory #FBFAF7` 등은 **golden(`theme=light`)에서 쓰이지 않는다.** 바인더 테마가 없을 때의 기본값으로만 남아 있다.
 
 ---
 
 ## 정렬 규칙
 
-- 예약 확인·준비: 본문 세로 가운데, 가로 중앙(`.confirm-main` 중앙 정렬). CTA는 주 버튼이 위/강조, ghost가 보조.
+- 예약 확인·준비: 본문 세로 가운데, 가로 중앙(`.confirm-main` 중앙 정렬). CTA는 주 버튼이 위/강조(radius 8px solid primary), ghost가 보조(radius 8px).
 - 사건 요약·YK 소개: `.yh-body` 최대 `min(920px, 100%)` 가운데. 제목 serif, lead 아래 헤어라인.
-- 1뎁스 확인: 문장 왼쪽, 「네/아니오」 오른쪽(좁은 폭에서는 세로 스택).
-- 2뎁스 단계: `01`… 골드 번호 + 제목/본문 2열.
+- 1뎁스 확인: 문장 왼쪽, 「네/아니오」 오른쪽(좁은 폭에서는 세로 스택). 버튼 radius 8px.
+- 2뎁스 단계: `01`… muted(`#626873`) 번호 + 제목/본문 2열. 항목 사이 구분선은 번호 열을 비운 채 본문 아래에만.
 - 상담 변호사: 상단 좌 사진(상반신 크롭) / 우 메타. 아래 전폭 섹션. 길면 스크롤.
-- 전문 인력: 가로 캐러셀, 포커스 카드 확대. 카드 안 사진은 상체 크롭. 등급 별은 카드 바깥 상단(이 시안의 캐러셀 UI를 따름).
-- 여정 구간: 상단 CI 헤더 + 하단/측면 내비·YourK QR. 대기·준비·필름에서는 여정 내비 숨김.
-- 위계는 선과 여백. 카드 그림자·큰 radius로 위계를 만들지 않는다(전문인력 프레임 예외).
+- 전문 인력: 가로 캐러셀, 포커스 카드 확대. 카드 안 사진은 상체 크롭. 등급 별은 카드 바깥 상단(이 시안의 캐러셀 UI를 따름). 「프로필 보기」는 pill(999px).
+- 여정 구간: 상단 CI 헤더 + 하단/측면 내비·YourK QR. on 상태는 navy `#102169`. 대기·준비·필름에서는 여정 내비 숨김.
+- 위계는 선과 여백. golden의 주 CTA·칩은 radius 8px(일부 pill 999px)이며, 레거시 「칩·배지 0~2px」 원칙을 golden에 억지로 맞추지 않는다(전문인력 프레임 예외는 유지).
 
 ---
 

@@ -15,7 +15,7 @@ const pixelmatch = require("pixelmatch").default || require("pixelmatch");
 const { PNG } = require("pngjs");
 
 const THRESHOLD = 0.005; // 0.5%
-const DIFF_DIR = process.env.HANDOFF_DIFF_DIR || join("/tmp/orch-T142", "diff");
+const DIFF_DIR = process.env.HANDOFF_DIFF_DIR || join(tmpdir(), "yk-handoff", "diff");
 
 function pct(n) {
   return `${(n * 100).toFixed(3)}%`;
