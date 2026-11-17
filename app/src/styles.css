@@ -3295,6 +3295,9 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 /* YK 소개 탭은 내려도 화면 위에 붙어 있다(고재완 11-17). 붙었을 때 아래 내용이 비치지 않게 바탕을 깐다. */
 /* 스크롤 영역(.reportpane .ykhelper) 위 여백만큼 올려 붙여야 그 틈으로 아래 내용이 비치지 않는다. */
 .firmpane .ykhelper{--firm-sticky-gap:32px;}
+/* 탭과 스크롤 영역 사이에 스크롤 컨테이너가 끼면 고정이 풀린다. overflow-x:clip을 모르는 구형 사파리는
+   .yh-body를 overflow-x:auto(좁은 화면 규칙)로 두어 그렇게 된다. YK 소개 본문은 가로로 넘치지 않으니 visible로 둔다. */
+.firmpane .yh-body.firm-body{overflow:visible;}
 .firmpane .firm-tabs{position:sticky; top:calc(-1 * var(--firm-sticky-gap)); z-index:3; margin-top:24px; padding-top:16px; background:var(--yk-background);}
 
 /* 업무사례 화면(「전문 인력」 자리, 11-17): 이 사건 분야 사례 줄 목록만. */
