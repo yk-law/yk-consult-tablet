@@ -1,5 +1,6 @@
 import { cleanProfileContent, profileCategories } from "./profileContent.js";
 import { specialistHero, specialistHeadline } from "./specialistHero.js";
+import { greetingOf, teamGreetings } from "./greeting.js";
 import HeroBackdrop from "./HeroBackdrop.jsx";
 import { relatedCaseWorks } from "./caseWorks.js";
 import YoutubeStories from "./YoutubeStories.jsx";
@@ -159,7 +160,6 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           ))}
           <div className="journey-qr">
             <p className="journey-qr-title">상담 기록과 사건 진행은<br />YourK에서 확인하세요</p>
-            <p className="journey-qr-description">상담 뒤에도 이어서 보실 수 있습니다.</p>
             <img src={`${import.meta.env.BASE_URL}consultation-room-tablet-qr.svg`} width="147" height="147" alt="YourK 접속 QR코드" />
             {/* QR과 같은 유입 추적 주소(반석님 확인 11-13). 화면에는 짧은 주소만 보인다. */}
             <a className="journey-qr-url" href="https://yourk.legal/home?qr=consultation-room-tablet" target="_blank" rel="noreferrer" aria-label="https://yourk.legal (새 탭에서 열림)">https://yourk.legal</a>
@@ -401,8 +401,8 @@ function CounselVideo({ l, onDone }) {
  *  수치는 홈페이지 기준만 쓰고, 법원·검찰 근무는 「역임」 사실로만 적는다. */
 /** 법무법인 YK 소개 인물 탭(시연 피드백 5·6번, 고재완 11-13). 분야별 전문 센터는 어느 탭이든 맨 아래 공통. */
 /** 고재완 11-17(2차 내부 시연): 법원·검찰·경찰 경력 변호사, 고문 및 전문위원, 그리고 고객이 방문한 분사무소의 변호사.
- *  분사무소 탭은 방문한 곳이 분사무소일 때만 「OO 분사무소 변호사」로 생긴다(주사무소는 홈페이지에 구성원 목록이 없다).
- *  순서는 홈페이지 구성원 순서(tools/firm_people_refresh.py). 업무사례는 「전문 인력」 자리의 업무사례 화면으로 옮겼다. */
+ *  방문 사무소 탭 「OO 변호사」는 공통 탭에 없는 그 사무소 소속 변호사. 순서는 탭마다 직함(대표 → 고문 → 파트너 → 변호사), 같은 직함 안은 연수원 기수 → 로스쿨 회차
+ *  (tools/firm_people_refresh.py). 업무사례는 「전문 인력」 자리의 업무사례 화면으로 옮겼다. */
 const FIRM_TABS = [
   ["bench", "법원 경력 변호사"],
   ["prosecution", "검찰 경력 변호사"],
@@ -826,7 +826,6 @@ function Report({ helper, answers = {}, onParty, onCounsel, onPrevious, previous
                   </li>
                 ))}
               </ul>
-              <p className="yh-pair-note">법무법인 YK 홈페이지 업무사례에서 골랐습니다. 사건마다 사정이 달라 결과도 다를 수 있습니다.</p>
             </section>
           )}
 
@@ -1033,7 +1032,8 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
   }, [counselHero, l]);
   const edu = [l.edu, l.exam, l.tr].filter(Boolean).join(" · ");
   const pos = [l.pos, l.o ? `${l.o} 역임` : ""].filter(Boolean).join(" · ");
-  const heroInfo = specialist ? specialistHero(l) : { greeting: l.pitch, titles: l.titles };
+  // 인사말: 상담 변호사 화면은 함께하는 분끼리 겹치지 않게 고른 것(Counsel), 그 밖은 greetingOf(greeting.js).
+  const heroInfo = specialist ? specialistHero(l) : { greeting: l.greeting || greetingOf(l), titles: l.titles };
   const hasFields = !!(l.areas?.length || l.f?.length || l.tags?.length);
   return (
     <div className="profile" ref={profileRef}>
@@ -1176,7 +1176,7 @@ function Counsel({ l, team = [], teamIndex = 0, onTeam = () => {}, portraits, FI
           ))}
         </div>
       )}
-      <ProfileBody key={l.n} l={l} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero onNext={onNext} onPrevious={onPrevious} />
+      <ProfileBody key={l.n} l={{ ...l, greeting: teamGreetings(team.length ? team : [l])[l.n] }} portraits={portraits} FIELD={FIELD} NEAR={NEAR} b={b} counselHero onNext={onNext} onPrevious={onPrevious} />
     </section>
   );
 }

@@ -1,7 +1,8 @@
 """YK 소개 탭(법원·검찰·경찰 경력 변호사, 지사 소속 변호사)과 분야별 전문 센터를 홈페이지 기준으로 채운다(2026-11-17).
 
-고재완 11-17(강주용 2차 내부 시연 피드백): 탭은 법원 경력 변호사 / 검찰 경력 변호사 / 경찰 경력 변호사 / 방문한 분사무소 변호사.
-법원·검찰·경찰은 한 사람이 한 탭에만(법원 > 검찰 > 경찰 순으로 먼저 걸린 곳). 순서는 홈페이지 구성원 목록 순서.
+고재완 11-17(강주용 2차 내부 시연 피드백): 탭은 법원 경력 변호사 / 검찰 경력 변호사 / 경찰 경력 변호사 / 고문 및 전문위원 / 방문한 사무소 변호사.
+법원·검찰·경찰은 한 사람이 한 탭에만(법원 > 검찰 > 경찰 순으로 먼저 걸린 곳). 방문 사무소 탭은 이 공통 탭과 겹치지 않는 사람.
+순서는 탭마다 직함(대표 → 고문 → 파트너 → 변호사), 같은 직함 안은 사법연수원 기수 → 로스쿨(변시 회차) → 기수 모름.
 - 구성원: https://www.yklawfirm.co.kr/member/lawyer 에 실린 JSON(lawyers 312명, 경력 구분·직함·사진).
 - 지사: /location/all 의 분사무소 링크 → /office/<지역>/<지사> 상세에 나온 분사무소장·변호사. 주사무소는 뺀다.
 - 센터: 홈페이지 아래 「센터」 목록 이름 그대로. 묶음(형사·가사·민사 · 기업·노동 · 산업)은 CENTER_GROUPS.
@@ -24,6 +25,7 @@ TABS = [
     ("prosecution", re.compile(r"(?<!군)검사 역임|(?<!군)검사장|고검장")),
     ("policeLawyers", re.compile(r"(?<!군사)경찰 경력")),
 ]
+MAIN_OFFICE = "서울 강남 주사무소"
 CENTER_GROUPS = {
     "형사": ["형사센터", "군형사센터", "교통사고센터", "성범죄센터", "마약센터", "학교폭력센터"],
     "가사": ["이혼센터", "가사상속센터"],
@@ -55,8 +57,12 @@ def lawyers() -> list[dict]:
         careers = [resolve(c)["name"] for c in r.get("careerClassification") or []]
         pos = resolve(r.get("commonCodeMembershipClassificationChild")) or {}
         out.append({"n": r["name"], "pos": pos.get("name", ""), "careers": careers,
+                    "tr": r.get("judicialTrainingClass") or 0, "bar": r.get("barExamClass") or 0,
                     "photo": f"{BASE}{r['imagesUrl']}" if r.get("imagesUrl") else ""})
-    return out
+    # 탭마다 직함 순(대표 → 고문 → 파트너 → 변호사), 같은 직함 안에서는 사법연수원 기수 → 로스쿨(변시 회차) → 기수 모름(고재완 11-17).
+    # 같은 기수는 홈페이지 구성원 순서. sorted는 안정 정렬이라 홈페이지 순서가 그대로 남는다.
+    rank = {"대표변호사": 0, "고문변호사": 1, "파트너변호사": 2, "변호사": 3}
+    return sorted(out, key=lambda p: (rank.get(p["pos"], 4),) + ((0, p["tr"]) if p["tr"] else (1, p["bar"]) if p["bar"] else (2, 0)))
 
 
 def offices() -> list[tuple[str, str]]:
@@ -103,18 +109,24 @@ def main() -> None:
                 rows.append({"n": p["n"], "pos": p["pos"], "title": hit})
                 placed.add(p["n"])
         firm[key] = rows
-    # 분사무소 탭은 고객이 방문한 분사무소 하나만 보인다(고재완 11-17). 그 분사무소 구성원 전부를 홈페이지 순서로 두고,
-    # 법원·검찰·경찰 탭과 겹쳐도 빼지 않는다(겹친다고 빼면 2명인 곳이 0명이 된다). 주사무소 상세에는 구성원 목록이 없다.
+    # 방문 사무소 탭(고재완 11-17): 위 공통 탭(법원·검찰·경찰, 고문 및 전문위원)과 겹치지 않는, 고객이 방문한 사무소의 변호사.
+    # 분사무소는 홈페이지 분사무소 상세의 구성원. 주사무소(서울 강남)는 상세에 구성원 목록이 없어,
+    # 어느 분사무소에도 없는 변호사를 주사무소 소속으로 본다(추정).
+    placed |= {a["n"] for a in (firm.get("advisors") or []) + (firm.get("police") or [])}
     branches = []
+    in_branch: set[str] = set()
     for office, href in offices():
         members = set(office_members(href, set(by_name)))
-        rows = [{"n": p["n"], "pos": p["pos"], "title": office} for p in people if p["n"] in members]
+        in_branch |= members
+        rows = [{"n": p["n"], "pos": p["pos"], "title": office} for p in people if p["n"] in members and p["n"] not in placed]
         if rows:
             branches.append({"office": office, "people": rows})
-            placed.update(r["n"] for r in rows)
         time.sleep(0.3)
+    main_rows = [{"n": p["n"], "pos": p["pos"], "title": MAIN_OFFICE} for p in people if p["n"] not in in_branch and p["n"] not in placed]
+    branches.insert(0, {"office": MAIN_OFFICE, "people": main_rows})
+    shown = {r["n"] for k, _ in TABS for r in firm[k]} | {r["n"] for g in branches for r in g["people"]}
     firm["branches"] = branches
-    for n in placed:
+    for n in shown:
         if by_name[n]["photo"]:
             photos[n] = by_name[n]["photo"]
     firm["photos"] = photos

@@ -1,6 +1,7 @@
-"""YK 소개 「업무사례」 탭에 보일 홈페이지 업무사례를 받아 firm_cases.json 에 채운다(2026-11-16).
+"""태블릿 「업무사례」 화면에 보일 홈페이지 업무사례를 받아 firm_cases.json 에 채운다(2026-11-16, 11-17 YK 전체 기준).
 
-실제 서비스에서는 강주용님이 사건 태그로 업무사례를 불러온다. POC는 profile_extra.works 에 모아 둔
+실제 서비스에서는 강주용님이 사건 태그로 업무사례를 불러온다. POC는 홈페이지 분야별 업무사례 목록(/case/<분류>)의
+최신 사례(상담 변호사 프로필과 무관한 YK 전체)와 프로필에 연결된 사례를 모아
 홈페이지 /case-study/<분류>/<번호> 상세에서 분류·의뢰인 지위·제목·부제·날짜·담당 변호사·태그·요약·
 사건 결과 요약(사건 유형·쟁점·결과·대응 포인트)을 가져와 같은 모양으로 둔다. HTML 원문은 저장하지 않는다.
 
@@ -66,9 +67,34 @@ def detail(href: str) -> dict:
     }
 
 
+# 분야마다 홈페이지 업무사례 목록(/case/<분류>) 앞쪽 페이지의 최신 사례도 받는다(고재완 11-17 「3건은 약하다」).
+# 프로필에 연결된 사례만으로는 이혼이 3건뿐이었다. 한 페이지 12건.
+LIST_KEYS = ["detective", "sexual-assault", "school-violence", "drug", "traffic", "corporate", "iprs", "regeneration",
+             "estate", "divorce", "civil", "inherit", "military", "sapa", "labor"]
+LIST_PAGES = 2
+
+
+def listed(key: str) -> list[str]:
+    out = []
+    for page in range(1, LIST_PAGES + 1):
+        try:
+            html = fetch(f"https://www.yklawfirm.co.kr/case/{key}?page={page}")
+        except Exception as e:  # 목록 한 곳 실패로 전체를 멈추지 않는다
+            print("skip list", key, page, e)
+            break
+        out += [f"https://www.yklawfirm.co.kr/case-study/{key}/{n}" for n in re.findall(rf"/case-study/{key}/(\d+)", html)]
+        time.sleep(0.3)
+    return out
+
+
 def main() -> None:
     extra = json.loads((OUTS[0] / "profile_extra.json").read_text(encoding="utf-8"))
-    hrefs = list(dict.fromkeys(w["href"] for v in extra.values() for w in v.get("works") or [] if CASE_RE.search(w["href"])))
+    # 상담 변호사 프로필에 연결된 사례가 아니라 YK 전체 업무사례 목록 기준(고재완 11-17). 프로필 사례는 뒤에 덧붙인다.
+    hrefs = []
+    for key in LIST_KEYS:
+        hrefs += listed(key)
+    hrefs += [w["href"] for v in extra.values() for w in v.get("works") or [] if CASE_RE.search(w["href"])]
+    hrefs = list(dict.fromkeys(hrefs))
     cases = []
     for href in hrefs:
         try:

@@ -1,6 +1,7 @@
 """목업 카탈로그 — 추천 점수와 계약서 초안은 여기서 계산한다."""
 from __future__ import annotations
 
+import html
 import json
 import random
 import re
@@ -409,11 +410,27 @@ def public_profile(l: dict) -> dict:
     }
 
 
+# 홈페이지 인사말 중 상담 화면 한 줄로 어색한 사람(고재완 11-17 전수 점검): 자기소개만, 고객에게 하는 말이 아님,
+# 특정 분야·지역에만 맞음, 영어·한자·뜻이 어려움, 경력 나열, 과한 약속·말투. 비워 보내면 태블릿이 후보 문구에서 고른다(app/src/greeting.js).
+PLAIN_PITCH = {
+    "조대권", "송세훈", "박성준", "전하영", "나찬기", "변광호", "김동연",
+    "김범한", "양동학", "손호용", "이준엽", "김세현", "정창호", "김현종", "김동섭",
+    "강진구", "장기철", "이정협", "이석원", "정영준",
+    # 고문·전문위원
+    "박성진", "송광근", "최양위", "유현철", "이용만", "김대익", "임영빈", "이상경", "장규호",
+}
+
+
+def clean_quote(text: str) -> str:
+    """홈페이지 인사말 정리: HTML 기호(&quot;)를 풀고, 문장 전체를 감싼 따옴표와 겹친 공백을 없앤다."""
+    q = " ".join(html.unescape(text or "").split())
+    return q.strip('"“”').strip()
+
+
 def pitch_of(l: dict) -> str:
-    q = " ".join(((l.get("d") or {}).get("quote") or l.get("quote") or "").split())
-    if q:
-        return q
-    return "내 일처럼 진심을 다하겠습니다."
+    if l.get("n") in PLAIN_PITCH:
+        return ""
+    return clean_quote((l.get("d") or {}).get("quote") or l.get("quote") or "")
 
 
 def _norm(s: str) -> str:
@@ -523,7 +540,7 @@ def _advisor_card(a: dict, portraits: dict) -> dict:
     label = (a.get("c") or "").strip()
     titles = prominent_titles([t for t in (a.get("titles") or ([label] if label else [])) if t])
     career = list(a.get("career") or [])
-    quote = " ".join((a.get("quote") or "").split())
+    quote = "" if a["n"] in PLAIN_PITCH else clean_quote(a.get("quote") or "")
     # 대표 경력 줄에는 홈페이지 대표 경력(분류 라벨)만 쓴다. 없으면 비운다(고재완 11-13, 경력 첫 줄을 올리지 않음).
     if quote and quote != label and quote not in titles:
         pitch = quote
@@ -578,8 +595,9 @@ def firm_view() -> dict:
 
 # 홈페이지 업무사례 URL 분류 → 사건 분야. app/src/caseWorks.js CATEGORY_FIELDS 와 같다. 없는 분류는 보이지 않는다.
 CASE_CATEGORY_FIELDS = {
-    "detective": "A", "sexual-assault": "B", "traffic": "E", "estate": "I",
-    "divorce": "J", "civil": "K", "inherit": "L", "military": "M",
+    "detective": "A", "sexual-assault": "B", "school-violence": "C", "drug": "D", "traffic": "E",
+    "corporate": "F", "iprs": "G", "regeneration": "H", "estate": "I", "divorce": "J", "civil": "K",
+    "inherit": "L", "military": "M", "sapa": "N", "labor": "O",
 }
 
 

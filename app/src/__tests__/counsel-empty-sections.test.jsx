@@ -26,7 +26,7 @@ function counselFromName(name) {
     areas: bits.areas || [],
     papers: bits.papers || [],
     titles: d.titles || [],
-    pitch: (d.quote || "").trim() || "내 일처럼 진심을 다하겠습니다.",
+    pitch: (d.quote || "").trim(),
     kind: "lawyer",
   };
 }

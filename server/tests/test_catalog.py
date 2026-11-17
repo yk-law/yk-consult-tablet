@@ -130,7 +130,10 @@ def test_prominent_titles_and_career_stars():
 
 def test_pitch_helper_visit_for():
     assert pitch_of({"d": {"quote": "  진심  "}}) == "진심"
-    assert pitch_of({}) == "내 일처럼 진심을 다하겠습니다."
+    # 인사말이 없거나 어색한 사람은 비워 보내고 태블릿이 후보 문구에서 고른다(11-17).
+    assert pitch_of({}) == ""
+    assert pitch_of({"n": "조대권", "d": {"quote": "안녕하세요 조대권 변호사입니다."}}) == ""
+    assert pitch_of({"d": {"quote": "&quot;도움&quot;"}}) == "도움"
 
     b = catalog()["bookings"][0]
     hv = helper_view(b)
