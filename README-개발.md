@@ -85,7 +85,7 @@ FastAPI는 `app/dist` 가 있으면 8000 포트에서 SPA도 같이 서빙합니
 
 ```bash
 node handoff/capture.mjs          # golden PNG (앱 자동 기동)
-node handoff/compare.mjs          # 재촬영 후 픽셀 비교, >0.5%면 exit 1
+node handoff/compare.mjs          # 재촬영 후 픽셀 비교, >0.1%면 exit 1
 ```
 명세는 `handoff/UI-SPEC.md`(첫 줄: 해석하지 말고 그대로 옮긴다). 기기 3종×주요 화면 PNG는 `handoff/golden/`.
 

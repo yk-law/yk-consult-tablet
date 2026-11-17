@@ -223,6 +223,10 @@ golden은 `?theme=light` → `.binder-theme.theme-light`. 아래 hex는 `app/src
 | prep 제목 | serif 32px / line-height 44px / letter-spacing `-0.02em` |
 | body letter-spacing | `-0.003em` |
 | 2뎁스 `.reportpane .yh-steps .n` | 14px / 500 / `var(--bt-muted)` `#626873` (테두리·배경 없음). 구 다크 시안의 골드 번호 아님 |
+| 상담 변호사 섹션 제목 `.detail-group > h3` | 24px / 700 / line-height 32px / letter-spacing `-0.01em`, 아래 24px |
+| 상담 변호사 소제목 `.detail-subsection > h4` | 18px / 700 / line-height 26px / letter-spacing `-0.01em`, 아래 12px |
+| 상담 변호사 간격 | 소제목 묶음 사이 32px, 섹션 사이 구분선 위아래 각 32px |
+| 프로필 목차 묶음 제목 `.counsel-index > .index-group` | 14px / 700 / `--bt-text`, 아래 10px + 1px `--bt-line` 선, 다음 묶음 위 32px |
 
 ### `:root` 버건디 표 (golden 미사용 · 기본 테마)
 
@@ -259,7 +263,7 @@ golden은 `?theme=light` → `.binder-theme.theme-light`. 아래 hex는 `app/src
 | YK 변호사 이야기 | `*-youtube.png` | 목록만(재생 레이어 제외) |
 | 대기 영상 | 제외 | `s=film` |
 
-비교: `node handoff/compare.mjs` — 동일 조건 재촬영 후 pixelmatch, **차이율 > 0.5%** 이면 실패(종료코드 1).
+비교: `node handoff/compare.mjs` — 동일 조건 재촬영 후 pixelmatch, **차이율 > 0.1%** 이면 실패(종료코드 1).
 
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* golden 과 동일 조건 재촬영 후 픽셀 비교.
-   차이 비율이 0.5%를 넘는 장면이 있으면 표로 출력하고 종료코드 1.
+   차이 비율이 0.1%를 넘는 장면이 있으면 표로 출력하고 종료코드 1.
    실행: node handoff/compare.mjs */
 import { createRequire } from "node:module";
 import { mkdtemp, readFile, rm, writeFile, mkdir } from "node:fs/promises";
@@ -14,7 +14,7 @@ const require = createRequire(join(ROOT, "app", "package.json"));
 const pixelmatch = require("pixelmatch").default || require("pixelmatch");
 const { PNG } = require("pngjs");
 
-const THRESHOLD = 0.005; // 0.5%
+const THRESHOLD = 0.001; // 0.1% — 0.5%에선 가로 태블릿 1px 이동(0.479%)이 통과했다(11-17 검수)
 const DIFF_DIR = process.env.HANDOFF_DIFF_DIR || join(tmpdir(), "yk-handoff", "diff");
 
 function pct(n) {
