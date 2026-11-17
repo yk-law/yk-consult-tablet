@@ -29,3 +29,15 @@ describe("상담에 함께하는 분이 여러 명일 때", () => {
     expect(screen.queryByRole("tablist", { name: "상담에 함께하는 분" })).toBeNull();
   });
 });
+
+describe("학력", () => {
+  // 고재완 11-17: 연수원 기수가 시험·연수원 두 칸에 같이 있으면(한만수) 「사법연수원 13기사법연수원 13기」로 붙어 보였다.
+  it("이력 사항 맨 아래에 두고 같은 줄은 한 번만", () => {
+    const l = { ...lawyer, n: "한만수", edu: "서울대학교 법학과", exam: "사법연수원 13기", tr: "사법연수원 13기" };
+    render(<Tablet data={{ ...tabletData("한지우"), counsel: l }} screen="counsel" onScreen={() => {}} />);
+    const sections = [...document.querySelectorAll(".counsel-history .detail-subsection")];
+    const last = sections.at(-1);
+    expect(last.querySelector("h4").textContent).toBe("학력");
+    expect([...last.querySelectorAll("li")].map((li) => li.textContent)).toEqual(["서울대학교 법학과", "사법연수원 13기"]);
+  });
+});

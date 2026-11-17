@@ -951,12 +951,13 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
   const listSection = (title, items, className = "") => items?.length ? (
     <section className={`detail-subsection ${className}`} key={title}>
       <h4>{title}</h4>
-      <ul className="clist">{items.map((text) => <li key={text}>{text}</li>)}</ul>
+      <ul className="clist">{items.map((text, i) => <li key={`${i}-${text}`}>{text}</li>)}</ul>
     </section>
   ) : null;
   const hasCases = (l.kind === "lawyer" || l.kind === "advisor") && l.cases?.length;
   // 학력은 이름 아래가 아니라 이력 사항 맨 아래에 둔다(고재완 11-17, 2차 내부 시연).
-  const edu = [...(l.edu ? l.edu.split(" · ") : []), l.exam, l.tr].filter(Boolean);
+  // 연수원 기수가 시험 칸에도 들어 있는 사람이 있어(한만수 등) 같은 줄은 한 번만.
+  const edu = [...new Set([...(l.edu ? l.edu.split(" · ") : []), l.exam, l.tr].map((x) => (x || "").trim()).filter(Boolean))];
   const relatedWorks = relatedCaseWorks(l.works, b?.field);
   const hasWorks = l.kind === "lawyer" && relatedWorks.length;
   return <>
@@ -1059,7 +1060,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
     observer.observe(hero);
     return () => observer.disconnect();
   }, [counselHero, l]);
-  const edu = [l.edu, l.exam, l.tr].filter(Boolean).join(" · ");
+  const edu = [...new Set([l.edu, l.exam, l.tr].filter(Boolean))].join(" · ");
   const pos = [l.pos, l.o ? `${l.o} 역임` : ""].filter(Boolean).join(" · ");
   // 인사말: 상담 변호사 화면은 함께하는 분끼리 겹치지 않게 고른 것(Counsel), 그 밖은 greetingOf(greeting.js).
   const heroInfo = specialist ? specialistHero(l) : { greeting: l.greeting || greetingOf(l), titles: l.titles };
