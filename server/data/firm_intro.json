@@ -15,7 +15,7 @@
       "label": "전국 사무소"
     },
     {
-      "n": 18,
+      "n": 16,
       "unit": "개",
       "label": "분야별 전문 센터"
     }
@@ -28,19 +28,16 @@
           "n": "형사센터"
         },
         {
-          "n": "국방법무센터"
+          "n": "군형사센터"
         },
         {
-          "n": "교통형사센터"
+          "n": "교통사고센터"
         },
         {
           "n": "성범죄센터"
         },
         {
           "n": "마약센터"
-        },
-        {
-          "n": "선거법센터"
         },
         {
           "n": "학교폭력센터"
@@ -54,7 +51,7 @@
           "n": "이혼센터"
         },
         {
-          "n": "가사상속&가업승계센터"
+          "n": "가사상속센터"
         }
       ]
     },
@@ -68,16 +65,13 @@
           "n": "법인 회생·파산센터"
         },
         {
-          "n": "부동산건설센터"
+          "n": "환경·에너지전략센터"
         },
         {
-          "n": "민사·행정센터"
+          "n": "부동산·건설센터"
         },
         {
-          "n": "해양법무센터"
-        },
-        {
-          "n": "DISCOVERY"
+          "n": "민사센터"
         }
       ]
     },
@@ -98,9 +92,9 @@
   ],
   "bench": [
     {
-      "n": "정창호",
+      "n": "박찬",
       "pos": "대표변호사",
-      "title": "국제형사재판소(ICC) 재판관 역임"
+      "title": "부장판사 역임"
     },
     {
       "n": "권순일",
@@ -108,27 +102,17 @@
       "title": "대법관 역임"
     },
     {
-      "n": "김경",
+      "n": "정창호",
       "pos": "대표변호사",
-      "title": "부장판사 역임"
-    },
-    {
-      "n": "김동진",
-      "pos": "파트너변호사",
-      "title": "부장판사 역임"
-    },
-    {
-      "n": "김윤정",
-      "pos": "파트너변호사",
-      "title": "부장판사 역임"
-    },
-    {
-      "n": "박찬",
-      "pos": "대표변호사",
-      "title": "부장판사 역임"
+      "title": "국제형사재판소(ICC) 재판관 역임"
     },
     {
       "n": "박춘기",
+      "pos": "대표변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "김경",
       "pos": "대표변호사",
       "title": "부장판사 역임"
     },
@@ -143,7 +127,12 @@
       "title": "부장판사 역임"
     },
     {
-      "n": "송각엽",
+      "n": "양동학",
+      "pos": "고문변호사",
+      "title": "판사 역임"
+    },
+    {
+      "n": "김동진",
       "pos": "파트너변호사",
       "title": "부장판사 역임"
     },
@@ -153,14 +142,69 @@
       "title": "부장판사 역임"
     },
     {
+      "n": "송각엽",
+      "pos": "파트너변호사",
+      "title": "부장판사 역임"
+    },
+    {
+      "n": "김윤정",
+      "pos": "파트너변호사",
+      "title": "부장판사 역임"
+    },
+    {
       "n": "김택형",
       "pos": "파트너변호사",
       "title": "판사 역임"
     },
     {
-      "n": "양동학",
-      "pos": "고문변호사",
-      "title": "판사 역임"
+      "n": "주승연",
+      "pos": "파트너변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "허세정",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "서진우",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "최현덕",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "김진주",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "오유진",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "윤은주",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "김예진",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "전하영",
+      "pos": "변호사",
+      "title": "법원 경력"
+    },
+    {
+      "n": "김인겸",
+      "pos": "변호사",
+      "title": "법원 경력"
     }
   ],
   "prosecution": [
@@ -170,14 +214,34 @@
       "title": "고검장 역임"
     },
     {
-      "n": "나찬기",
+      "n": "한상진",
       "pos": "대표변호사",
-      "title": "차장검사 역임"
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "양호산",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
     },
     {
       "n": "유병두",
       "pos": "대표변호사",
       "title": "차장검사 역임"
+    },
+    {
+      "n": "최영운",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
+    },
+    {
+      "n": "나찬기",
+      "pos": "대표변호사",
+      "title": "차장검사 역임"
+    },
+    {
+      "n": "천기홍",
+      "pos": "대표변호사",
+      "title": "부장검사 역임"
     },
     {
       "n": "김정헌",
@@ -190,12 +254,12 @@
       "title": "부장검사 역임"
     },
     {
-      "n": "양호산",
-      "pos": "대표변호사",
-      "title": "부장검사 역임"
+      "n": "진호식",
+      "pos": "파트너변호사",
+      "title": "부부장검사 역임"
     },
     {
-      "n": "이상목",
+      "n": "홍성준",
       "pos": "파트너변호사",
       "title": "부장검사 역임"
     },
@@ -205,29 +269,19 @@
       "title": "부장검사 역임"
     },
     {
-      "n": "천기홍",
-      "pos": "대표변호사",
-      "title": "부장검사 역임"
-    },
-    {
-      "n": "최영운",
-      "pos": "대표변호사",
-      "title": "부장검사 역임"
-    },
-    {
-      "n": "한상진",
-      "pos": "대표변호사",
-      "title": "부장검사 역임"
-    },
-    {
-      "n": "홍성준",
+      "n": "이상목",
       "pos": "파트너변호사",
       "title": "부장검사 역임"
     },
     {
-      "n": "진호식",
+      "n": "최진홍",
       "pos": "파트너변호사",
-      "title": "부부장검사 역임"
+      "title": "검사 역임"
+    },
+    {
+      "n": "이태훈",
+      "pos": "파트너변호사",
+      "title": "검사 역임"
     },
     {
       "n": "강형윤",
@@ -237,16 +291,6 @@
     {
       "n": "안태민",
       "pos": "변호사",
-      "title": "검사 역임"
-    },
-    {
-      "n": "이태훈",
-      "pos": "파트너변호사",
-      "title": "검사 역임"
-    },
-    {
-      "n": "최진홍",
-      "pos": "파트너변호사",
       "title": "검사 역임"
     }
   ],
@@ -335,7 +379,126 @@
     "최계원": "https://www.yklawfirm.co.kr/upload_file/lawyer/최계원.png",
     "최양위": "https://www.yklawfirm.co.kr/upload_file/lawyer/최양위.png",
     "하권삼": "https://www.yklawfirm.co.kr/upload_file/lawyer/하권삼.png",
-    "황광현": "https://www.yklawfirm.co.kr/upload_file/lawyer/황광현.png"
+    "황광현": "https://www.yklawfirm.co.kr/upload_file/lawyer/황광현.png",
+    "최현덕": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/28/20260428_060907996.png",
+    "박정원": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/13/20260413_061748280.png",
+    "김경태": "https://www.yklawfirm.co.kr/upload_file/lawyer/김경태.png",
+    "전하영": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/01/12/20260112_083626530.webp",
+    "제학근": "https://www.yklawfirm.co.kr/upload_file/lawyer/제학근.png",
+    "서진우": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/13/20260413_061254203.png",
+    "김인겸": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/03/17/20260317_040156990.png",
+    "김예진": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/05/29/20260529_131754918.png",
+    "허세정": "https://www.yklawfirm.co.kr/upload_file/lawyer/허세정.png",
+    "주승연": "https://www.yklawfirm.co.kr/upload_file/lawyer/주승연.png",
+    "김종민": "https://www.yklawfirm.co.kr/upload_file/lawyer/김종민.png",
+    "신우식": "https://www.yklawfirm.co.kr/upload_file/lawyer/신우식.png",
+    "윤은주": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/07/23/20260723_103653349.png",
+    "이채영": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/10/30/20261030_040042940.png",
+    "윤여헌": "https://www.yklawfirm.co.kr/upload_file/lawyer/윤여헌.png",
+    "이영한": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/09/17/20260917_163329677.png",
+    "이준혁": "https://www.yklawfirm.co.kr/upload_file/lawyer/이준혁.png",
+    "한수진": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/01/06/20260106_081318401.webp",
+    "곽노주": "https://www.yklawfirm.co.kr/upload_file/lawyer/곽노주.png",
+    "홍준표": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/10/28/20261028_040053110.png",
+    "김진주": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/01/20260401_051836843.png",
+    "김형원": "https://www.yklawfirm.co.kr/upload_file/lawyer/김형원.png",
+    "강상훈": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/13/20260413_061124332.png",
+    "배상윤": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/01/16/20260116_002448709.webp",
+    "조규원": "https://www.yklawfirm.co.kr/upload_file/lawyer/조규원.png",
+    "오유진": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/13/20260413_061406733.png",
+    "신유리": "https://www.yklawfirm.co.kr/upload_file/lawyer/신유리.png",
+    "장철원": "https://www.yklawfirm.co.kr/upload_file/lawyer/장철원.png",
+    "곽태영": "https://www.yklawfirm.co.kr/upload_file/lawyer/곽태영.png",
+    "최수환": "https://www.yklawfirm.co.kr/upload_file/lawyer/최수환.png",
+    "구태환": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/12/09/20251209_020750614.png",
+    "이동호": "https://www.yklawfirm.co.kr/upload_file/lawyer/이동호.png",
+    "박지연": "https://www.yklawfirm.co.kr/upload_file/20250623_003327463.png",
+    "김용운": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/10/27/20251027_022345345.png",
+    "김은정": "https://www.yklawfirm.co.kr/upload_file/lawyer/김은정.png",
+    "박해동": "https://www.yklawfirm.co.kr/upload_file/lawyer/박해동.png",
+    "김신아": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/28/20260428_060929505.png",
+    "서정화": "https://www.yklawfirm.co.kr/upload_file/lawyer/서정화.png",
+    "조희재": "https://www.yklawfirm.co.kr/upload_file/lawyer/조희재.png",
+    "양서인": "https://www.yklawfirm.co.kr/upload_file/lawyer/양서인.png",
+    "신정윤": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/01/12/20260112_083644032.webp",
+    "조재일": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/11/20250711_002742456.png",
+    "정대희": "https://www.yklawfirm.co.kr/upload_file/lawyer/정대희.png",
+    "배종윤": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/11/20250711_082026570.png",
+    "임채원": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/09/19/20250919_004102044.png",
+    "이솔": "https://www.yklawfirm.co.kr/upload_file/20250623_003738357.png",
+    "문정균": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/14/20250714_023758497.png",
+    "이주혁": "https://www.yklawfirm.co.kr/upload_file/lawyer/이주혁.png",
+    "신윤찬": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/11/20250711_070602493.png",
+    "조아라": "https://www.yklawfirm.co.kr/upload_file/lawyer/조아라.png",
+    "이동훈": "https://www.yklawfirm.co.kr/upload_file/lawyer/이동훈.png",
+    "유소희": "https://www.yklawfirm.co.kr/upload_file/lawyer/유소희.png",
+    "이정민": "https://www.yklawfirm.co.kr/upload_file/lawyer/이정민.png",
+    "송세훈": "https://www.yklawfirm.co.kr/upload_file/lawyer/송세훈.png",
+    "남화진": "https://www.yklawfirm.co.kr/upload_file/lawyer/남화진.png",
+    "이민주": "https://www.yklawfirm.co.kr/upload_file/lawyer/이민주.png",
+    "장원석": "https://www.yklawfirm.co.kr/upload_file/lawyer/장원석.png",
+    "정영준": "https://www.yklawfirm.co.kr/upload_file/lawyer/정영준.png",
+    "김광호": "https://www.yklawfirm.co.kr/upload_file/lawyer/김광호.png",
+    "안형록": "https://www.yklawfirm.co.kr/upload_file/lawyer/안형록.png",
+    "김수희": "https://www.yklawfirm.co.kr/upload_file/lawyer/김수희.png",
+    "김승모": "https://www.yklawfirm.co.kr/upload_file/lawyer/김승모.png",
+    "최학수": "https://www.yklawfirm.co.kr/upload_file/lawyer/최학수.png",
+    "홍정모": "https://www.yklawfirm.co.kr/upload_file/lawyer/홍정모.png",
+    "박지석": "https://www.yklawfirm.co.kr/upload_file/lawyer/박지석.png",
+    "최승준": "https://www.yklawfirm.co.kr/upload_file/lawyer/최승준.png",
+    "윤한진": "https://www.yklawfirm.co.kr/upload_file/lawyer/윤한진.png",
+    "권은진": "https://www.yklawfirm.co.kr/upload_file/lawyer/권은진.png",
+    "임수진": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/01/20260401_052047627.png",
+    "최고다": "https://www.yklawfirm.co.kr/upload_file/lawyer/최고다.png",
+    "박준환": "https://www.yklawfirm.co.kr/upload_file/lawyer/박준환.png",
+    "강봉철": "https://www.yklawfirm.co.kr/upload_file/lawyer/강봉철.png",
+    "신승민": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/08/05/20250805_022414709.png",
+    "박상은": "https://www.yklawfirm.co.kr/upload_file/lawyer/박상은.png",
+    "조혜정": "https://www.yklawfirm.co.kr/upload_file/lawyer/조혜정.png",
+    "이승엽": "https://www.yklawfirm.co.kr/upload_file/lawyer/이승엽.png",
+    "이선우": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/04/20250704_041537921.png",
+    "이희래": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/10/15/20251015_011654930.png",
+    "김세현": "https://www.yklawfirm.co.kr/upload_file/lawyer/김세현.png",
+    "박종선": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/14/20250714_023818386.png",
+    "성낙근": "https://www.yklawfirm.co.kr/upload_file/lawyer/성낙근.png",
+    "한태원": "https://www.yklawfirm.co.kr/upload_file/lawyer/한태원.png",
+    "조윤기": "https://www.yklawfirm.co.kr/upload_file/lawyer/조윤기.png",
+    "고병수": "https://www.yklawfirm.co.kr/upload_file/lawyer/고병수.png",
+    "김민건": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/02/11/20260211_002742093.png",
+    "노영실": "https://www.yklawfirm.co.kr/upload_file/lawyer/노영실.png",
+    "김성범": "https://www.yklawfirm.co.kr/upload_file/lawyer/김성범.png",
+    "양동건": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/12/09/20251209_022734073.png",
+    "김민순": "https://www.yklawfirm.co.kr/upload_file/lawyer/김민순.png",
+    "김선종": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/04/28/20260428_060948719.png",
+    "정우형": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/12/12/20251212_042955627.png",
+    "김승만": "https://www.yklawfirm.co.kr/upload_file/lawyer/김승만.png",
+    "김태연": "https://www.yklawfirm.co.kr/upload_file/lawyer/김태연.png",
+    "이정협": "https://www.yklawfirm.co.kr/upload_file/lawyer/이정협.png",
+    "최현욱": "https://www.yklawfirm.co.kr/upload_file/lawyer/최현욱.png",
+    "박훈석": "https://www.yklawfirm.co.kr/upload_file/lawyer/박훈석.png",
+    "신재은": "https://www.yklawfirm.co.kr/upload_file/lawyer/신재은.png",
+    "김다경": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/11/04/20251104_044818229.png",
+    "하이빈": "https://www.yklawfirm.co.kr/upload_file/lawyer/하이빈.png",
+    "박근열": "https://www.yklawfirm.co.kr/upload_file/lawyer/박근열.png",
+    "김선홍": "https://www.yklawfirm.co.kr/upload_file/lawyer/김선홍.png",
+    "백승일": "https://www.yklawfirm.co.kr/upload_file/lawyer/백승일.png",
+    "조정현": "https://www.yklawfirm.co.kr/upload_file/lawyer/조정현.png",
+    "은지민": "https://www.yklawfirm.co.kr/upload_file/lawyer/은지민.png",
+    "이경호": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/01/16/20260116_002500546.webp",
+    "손현태": "https://www.yklawfirm.co.kr/upload_file/lawyer/손현태.png",
+    "신덕범": "https://www.yklawfirm.co.kr/upload_file/lawyer/신덕범.png",
+    "서승범": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/02/10/20260210_041204835.png",
+    "홍의진": "https://www.yklawfirm.co.kr/upload_file/lawyer/2026/02/05/20260205_075410168.png",
+    "김수경": "https://www.yklawfirm.co.kr/upload_file/lawyer/김수경.png",
+    "김윤희": "https://www.yklawfirm.co.kr/upload_file/lawyer/김윤희.png",
+    "손석진": "https://www.yklawfirm.co.kr/upload_file/lawyer/손석진.png",
+    "임도연": "https://www.yklawfirm.co.kr/upload_file/lawyer/임도연.png",
+    "고소연": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/11/20250711_081252272.png",
+    "양윤지": "https://www.yklawfirm.co.kr/upload_file/lawyer/양윤지.png",
+    "이지운": "https://www.yklawfirm.co.kr/upload_file/lawyer/이지운.png",
+    "유건우": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/14/20250714_023858180.png",
+    "김채민": "https://www.yklawfirm.co.kr/upload_file/lawyer/김채민.png",
+    "김문기": "https://www.yklawfirm.co.kr/upload_file/lawyer/2025/07/11/20250711_070716025.png"
   },
   "advisors": [
     {
@@ -537,5 +700,809 @@
   ],
   "photoZoom": {
     "양동학": 2.0
-  }
+  },
+  "policeLawyers": [
+    {
+      "n": "이준혁",
+      "pos": "파트너변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "김경태",
+      "pos": "파트너변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "곽노주",
+      "pos": "파트너변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "김형원",
+      "pos": "파트너변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "윤여헌",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "배상윤",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "박정원",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "한수진",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "김종민",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "조규원",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "신우식",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "강상훈",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "제학근",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "이채영",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "홍준표",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    },
+    {
+      "n": "이영한",
+      "pos": "변호사",
+      "title": "경찰 경력"
+    }
+  ],
+  "branches": [
+    {
+      "office": "강릉 분사무소",
+      "people": [
+        {
+          "n": "김승모",
+          "pos": "변호사",
+          "title": "강릉 분사무소"
+        },
+        {
+          "n": "유건우",
+          "pos": "변호사",
+          "title": "강릉 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "고양 분사무소",
+      "people": [
+        {
+          "n": "은지민",
+          "pos": "변호사",
+          "title": "고양 분사무소"
+        },
+        {
+          "n": "장원석",
+          "pos": "변호사",
+          "title": "고양 분사무소"
+        },
+        {
+          "n": "조희재",
+          "pos": "변호사",
+          "title": "고양 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "광주 분사무소",
+      "people": [
+        {
+          "n": "양동학",
+          "pos": "고문변호사",
+          "title": "광주 분사무소"
+        },
+        {
+          "n": "박준환",
+          "pos": "변호사",
+          "title": "광주 분사무소"
+        },
+        {
+          "n": "양동건",
+          "pos": "변호사",
+          "title": "광주 분사무소"
+        },
+        {
+          "n": "김승만",
+          "pos": "변호사",
+          "title": "광주 분사무소"
+        },
+        {
+          "n": "백승일",
+          "pos": "변호사",
+          "title": "광주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "구미 분사무소",
+      "people": [
+        {
+          "n": "김광호",
+          "pos": "변호사",
+          "title": "구미 분사무소"
+        },
+        {
+          "n": "김세현",
+          "pos": "변호사",
+          "title": "구미 분사무소"
+        },
+        {
+          "n": "권은진",
+          "pos": "변호사",
+          "title": "구미 분사무소"
+        },
+        {
+          "n": "배종윤",
+          "pos": "변호사",
+          "title": "구미 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "군산 분사무소",
+      "people": [
+        {
+          "n": "이선우",
+          "pos": "변호사",
+          "title": "군산 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "남양주 분사무소",
+      "people": [
+        {
+          "n": "문정균",
+          "pos": "변호사",
+          "title": "남양주 분사무소"
+        },
+        {
+          "n": "김신아",
+          "pos": "변호사",
+          "title": "남양주 분사무소"
+        },
+        {
+          "n": "김윤희",
+          "pos": "변호사",
+          "title": "남양주 분사무소"
+        },
+        {
+          "n": "신윤찬",
+          "pos": "변호사",
+          "title": "남양주 분사무소"
+        },
+        {
+          "n": "이민주",
+          "pos": "변호사",
+          "title": "남양주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "대구 분사무소",
+      "people": [
+        {
+          "n": "곽태영",
+          "pos": "파트너변호사",
+          "title": "대구 분사무소"
+        },
+        {
+          "n": "박상은",
+          "pos": "변호사",
+          "title": "대구 분사무소"
+        },
+        {
+          "n": "손석진",
+          "pos": "변호사",
+          "title": "대구 분사무소"
+        },
+        {
+          "n": "서진우",
+          "pos": "변호사",
+          "title": "대구 분사무소"
+        },
+        {
+          "n": "박지연",
+          "pos": "변호사",
+          "title": "대구 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "대전 분사무소",
+      "people": [
+        {
+          "n": "강형윤",
+          "pos": "변호사",
+          "title": "대전 분사무소"
+        },
+        {
+          "n": "성낙근",
+          "pos": "변호사",
+          "title": "대전 분사무소"
+        },
+        {
+          "n": "이지운",
+          "pos": "변호사",
+          "title": "대전 분사무소"
+        },
+        {
+          "n": "양윤지",
+          "pos": "변호사",
+          "title": "대전 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "동탄 분사무소",
+      "people": [
+        {
+          "n": "최고다",
+          "pos": "파트너변호사",
+          "title": "동탄 분사무소"
+        },
+        {
+          "n": "손현태",
+          "pos": "변호사",
+          "title": "동탄 분사무소"
+        },
+        {
+          "n": "김은정",
+          "pos": "변호사",
+          "title": "동탄 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "목포 분사무소",
+      "people": [
+        {
+          "n": "박준환",
+          "pos": "변호사",
+          "title": "목포 분사무소"
+        },
+        {
+          "n": "김문기",
+          "pos": "변호사",
+          "title": "목포 분사무소"
+        },
+        {
+          "n": "구태환",
+          "pos": "변호사",
+          "title": "목포 분사무소"
+        },
+        {
+          "n": "이정민",
+          "pos": "변호사",
+          "title": "목포 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "부산 분사무소",
+      "people": [
+        {
+          "n": "변광호",
+          "pos": "고문변호사",
+          "title": "부산 분사무소"
+        },
+        {
+          "n": "강봉철",
+          "pos": "파트너변호사",
+          "title": "부산 분사무소"
+        },
+        {
+          "n": "박해동",
+          "pos": "변호사",
+          "title": "부산 분사무소"
+        },
+        {
+          "n": "김태연",
+          "pos": "변호사",
+          "title": "부산 분사무소"
+        },
+        {
+          "n": "안태민",
+          "pos": "변호사",
+          "title": "부산 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "부천 분사무소",
+      "people": [
+        {
+          "n": "이동훈",
+          "pos": "파트너변호사",
+          "title": "부천 분사무소"
+        },
+        {
+          "n": "최현욱",
+          "pos": "변호사",
+          "title": "부천 분사무소"
+        },
+        {
+          "n": "임도연",
+          "pos": "변호사",
+          "title": "부천 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "분당 분사무소",
+      "people": [
+        {
+          "n": "최고다",
+          "pos": "파트너변호사",
+          "title": "분당 분사무소"
+        },
+        {
+          "n": "이희래",
+          "pos": "변호사",
+          "title": "분당 분사무소"
+        },
+        {
+          "n": "박지석",
+          "pos": "변호사",
+          "title": "분당 분사무소"
+        },
+        {
+          "n": "고소연",
+          "pos": "변호사",
+          "title": "분당 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "수원 분사무소",
+      "people": [
+        {
+          "n": "최고다",
+          "pos": "파트너변호사",
+          "title": "수원 분사무소"
+        },
+        {
+          "n": "김민순",
+          "pos": "변호사",
+          "title": "수원 분사무소"
+        },
+        {
+          "n": "조정현",
+          "pos": "변호사",
+          "title": "수원 분사무소"
+        },
+        {
+          "n": "정영준",
+          "pos": "변호사",
+          "title": "수원 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "순천 분사무소",
+      "people": [
+        {
+          "n": "최학수",
+          "pos": "변호사",
+          "title": "순천 분사무소"
+        },
+        {
+          "n": "서승범",
+          "pos": "변호사",
+          "title": "순천 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "안산 분사무소",
+      "people": [
+        {
+          "n": "김수희",
+          "pos": "변호사",
+          "title": "안산 분사무소"
+        },
+        {
+          "n": "송세훈",
+          "pos": "변호사",
+          "title": "안산 분사무소"
+        },
+        {
+          "n": "윤한진",
+          "pos": "변호사",
+          "title": "안산 분사무소"
+        },
+        {
+          "n": "김선홍",
+          "pos": "변호사",
+          "title": "안산 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "안양 분사무소",
+      "people": [
+        {
+          "n": "유병두",
+          "pos": "대표변호사",
+          "title": "안양 분사무소"
+        },
+        {
+          "n": "임수진",
+          "pos": "변호사",
+          "title": "안양 분사무소"
+        },
+        {
+          "n": "이솔",
+          "pos": "변호사",
+          "title": "안양 분사무소"
+        },
+        {
+          "n": "정대희",
+          "pos": "변호사",
+          "title": "안양 분사무소"
+        },
+        {
+          "n": "이솔",
+          "pos": "변호사",
+          "title": "안양 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "울산 분사무소",
+      "people": [
+        {
+          "n": "박춘기",
+          "pos": "대표변호사",
+          "title": "울산 분사무소"
+        },
+        {
+          "n": "이경호",
+          "pos": "변호사",
+          "title": "울산 분사무소"
+        },
+        {
+          "n": "박정원",
+          "pos": "변호사",
+          "title": "울산 분사무소"
+        },
+        {
+          "n": "최수환",
+          "pos": "변호사",
+          "title": "울산 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "원주 분사무소",
+      "people": [
+        {
+          "n": "박훈석",
+          "pos": "변호사",
+          "title": "원주 분사무소"
+        },
+        {
+          "n": "유소희",
+          "pos": "변호사",
+          "title": "원주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "의정부 분사무소",
+      "people": [
+        {
+          "n": "이승엽",
+          "pos": "파트너변호사",
+          "title": "의정부 분사무소"
+        },
+        {
+          "n": "이주혁",
+          "pos": "변호사",
+          "title": "의정부 분사무소"
+        },
+        {
+          "n": "홍정모",
+          "pos": "변호사",
+          "title": "의정부 분사무소"
+        },
+        {
+          "n": "하이빈",
+          "pos": "변호사",
+          "title": "의정부 분사무소"
+        },
+        {
+          "n": "최승준",
+          "pos": "변호사",
+          "title": "의정부 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "인천 분사무소",
+      "people": [
+        {
+          "n": "최영운",
+          "pos": "대표변호사",
+          "title": "인천 분사무소"
+        },
+        {
+          "n": "신재은",
+          "pos": "파트너변호사",
+          "title": "인천 분사무소"
+        },
+        {
+          "n": "이동훈",
+          "pos": "파트너변호사",
+          "title": "인천 분사무소"
+        },
+        {
+          "n": "한태원",
+          "pos": "변호사",
+          "title": "인천 분사무소"
+        },
+        {
+          "n": "김채민",
+          "pos": "변호사",
+          "title": "인천 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "전주 분사무소",
+      "people": [
+        {
+          "n": "김경태",
+          "pos": "파트너변호사",
+          "title": "전주 분사무소"
+        },
+        {
+          "n": "신유리",
+          "pos": "변호사",
+          "title": "전주 분사무소"
+        },
+        {
+          "n": "홍의진",
+          "pos": "변호사",
+          "title": "전주 분사무소"
+        },
+        {
+          "n": "정우형",
+          "pos": "변호사",
+          "title": "전주 분사무소"
+        },
+        {
+          "n": "김성범",
+          "pos": "변호사",
+          "title": "전주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "제주 분사무소",
+      "people": [
+        {
+          "n": "고병수",
+          "pos": "변호사",
+          "title": "제주 분사무소"
+        },
+        {
+          "n": "조혜정",
+          "pos": "변호사",
+          "title": "제주 분사무소"
+        },
+        {
+          "n": "김다경",
+          "pos": "변호사",
+          "title": "제주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "진주 분사무소",
+      "people": [
+        {
+          "n": "남화진",
+          "pos": "변호사",
+          "title": "진주 분사무소"
+        },
+        {
+          "n": "김민건",
+          "pos": "변호사",
+          "title": "진주 분사무소"
+        },
+        {
+          "n": "김선종",
+          "pos": "변호사",
+          "title": "진주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "창원 분사무소",
+      "people": [
+        {
+          "n": "남화진",
+          "pos": "변호사",
+          "title": "창원 분사무소"
+        },
+        {
+          "n": "장철원",
+          "pos": "변호사",
+          "title": "창원 분사무소"
+        },
+        {
+          "n": "노영실",
+          "pos": "변호사",
+          "title": "창원 분사무소"
+        },
+        {
+          "n": "신정윤",
+          "pos": "변호사",
+          "title": "창원 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "천안 분사무소",
+      "people": [
+        {
+          "n": "나찬기",
+          "pos": "대표변호사",
+          "title": "천안 분사무소"
+        },
+        {
+          "n": "안형록",
+          "pos": "변호사",
+          "title": "천안 분사무소"
+        },
+        {
+          "n": "조아라",
+          "pos": "변호사",
+          "title": "천안 분사무소"
+        },
+        {
+          "n": "조아라",
+          "pos": "변호사",
+          "title": "천안 분사무소"
+        },
+        {
+          "n": "양서인",
+          "pos": "변호사",
+          "title": "천안 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "청주 분사무소",
+      "people": [
+        {
+          "n": "한상진",
+          "pos": "대표변호사",
+          "title": "청주 분사무소"
+        },
+        {
+          "n": "신덕범",
+          "pos": "파트너변호사",
+          "title": "청주 분사무소"
+        },
+        {
+          "n": "김용운",
+          "pos": "변호사",
+          "title": "청주 분사무소"
+        },
+        {
+          "n": "조재일",
+          "pos": "변호사",
+          "title": "청주 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "춘천 분사무소",
+      "people": [
+        {
+          "n": "박훈석",
+          "pos": "변호사",
+          "title": "춘천 분사무소"
+        },
+        {
+          "n": "김수경",
+          "pos": "변호사",
+          "title": "춘천 분사무소"
+        },
+        {
+          "n": "서정화",
+          "pos": "변호사",
+          "title": "춘천 분사무소"
+        },
+        {
+          "n": "조윤기",
+          "pos": "변호사",
+          "title": "춘천 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "평택 분사무소",
+      "people": [
+        {
+          "n": "박근열",
+          "pos": "변호사",
+          "title": "평택 분사무소"
+        },
+        {
+          "n": "이동호",
+          "pos": "변호사",
+          "title": "평택 분사무소"
+        },
+        {
+          "n": "박종선",
+          "pos": "변호사",
+          "title": "평택 분사무소"
+        },
+        {
+          "n": "신승민",
+          "pos": "변호사",
+          "title": "평택 분사무소"
+        }
+      ]
+    },
+    {
+      "office": "포항 분사무소",
+      "people": [
+        {
+          "n": "이정협",
+          "pos": "변호사",
+          "title": "포항 분사무소"
+        },
+        {
+          "n": "허세정",
+          "pos": "변호사",
+          "title": "포항 분사무소"
+        },
+        {
+          "n": "임채원",
+          "pos": "변호사",
+          "title": "포항 분사무소"
+        }
+      ]
+    }
+  ]
 }

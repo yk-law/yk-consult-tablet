@@ -6,33 +6,52 @@ import Tablet from "../Tablet.jsx";
 import firmIntro from "../../public/data/firm_intro.json";
 import { tabletData } from "./fixtures.js";
 
-// 시연 피드백 5·6번(2026-11-13): 법무법인 YK 소개를 탭 4개로 나누고, 전문 센터는 어느 탭이든 맨 아래에 둔다.
-const firm = { ...firmIntro, bench: [{ n: "가판사", pos: "변호사", title: "부장판사" }], prosecution: [{ n: "나검사", pos: "변호사", title: "부장검사" }] };
+// 2차 내부 시연(2026-11-17): YK 소개 탭은 법원·검찰·경찰 경력 변호사와 지사 소속 변호사, 전문 센터는 늘 맨 아래.
+// 업무사례는 「전문 인력」 자리의 업무사례 화면으로 옮겼다.
+const firm = {
+  ...firmIntro,
+  bench: [{ n: "가판사", pos: "변호사", title: "부장판사 역임" }],
+  prosecution: [{ n: "나검사", pos: "변호사", title: "부장검사 역임" }],
+  policeLawyers: [{ n: "다경찰", pos: "변호사", title: "경찰 경력" }],
+  branches: [{ office: "수원 분사무소", people: [{ n: "라지사", pos: "변호사", title: "수원 분사무소" }] }],
+};
 const helper = { summary: [], topics: [], flow: [], ask: [], bring: [], cases: [] };
-// 업무사례 탭은 홈페이지 업무사례 모양(tools/firm_cases_refresh.py). 5건씩 보이고 「더 보기」로 늘린다.
+// 업무사례는 홈페이지 업무사례 모양(tools/firm_cases_refresh.py). 5건씩 보이고 「더 보기」로 늘린다.
 const firmCases = Array.from({ length: 7 }, (_, i) => ({
   id: String(i), key: "civil", cat: "민사 / 상간", role: "피고", title: i ? `사례 ${i}` : "상간소송 방어", sub: "부제",
   date: "2026.11.02", lawyers: ["임효진"], result: "전부승소", body: ["본문"],
 }));
 
 describe("법무법인 YK 소개 탭", () => {
-  it("탭 4개가 있고 고르면 내용이 바뀌며 전문 센터는 늘 맨 아래에 있다", () => {
-    render(<Tablet data={{ ...tabletData("한지우"), firm, helper, firmCases }} screen="firm" onScreen={() => {}} />);
-    const tabs = within(screen.getByRole("tablist", { name: "법무법인 YK 구성원과 업무사례" })).getAllByRole("tab");
-    expect(tabs.map((t) => t.textContent)).toEqual(["법원 경력 변호사", "검찰 경력 변호사", "고문 및 전문위원", "업무사례"]);
+  it("법원·검찰·경찰·고문 및 전문위원 탭이 있고 고르면 내용이 바뀌며 전문 센터는 늘 맨 아래에 있다", () => {
+    render(<Tablet data={{ ...tabletData("한지우"), firm, helper }} screen="firm" onScreen={() => {}} />);
+    const tabs = within(screen.getByRole("tablist", { name: "법무법인 YK 구성원" })).getAllByRole("tab");
+    expect(tabs.map((t) => t.textContent)).toEqual(["법원 경력 변호사", "검찰 경력 변호사", "경찰 경력 변호사", "고문 및 전문위원"]);
     expect(screen.getByRole("tabpanel").textContent).toContain("가판사");
-
     fireEvent.click(tabs[2]);
-    const panel = screen.getByRole("tabpanel");
-    expect(panel.querySelectorAll(".firm-person img").length).toBeGreaterThan(0);
-
+    expect(screen.getByRole("tabpanel").textContent).toContain("다경찰");
     fireEvent.click(tabs[3]);
-    const casesPanel = screen.getByRole("tabpanel");
-    expect(casesPanel.textContent).toContain("상간소송 방어");
-    expect(casesPanel.querySelectorAll(".firm-case")).toHaveLength(5);
-    fireEvent.click(within(casesPanel).getByRole("button", { name: /업무사례 더 보기/ }));
-    expect(casesPanel.querySelectorAll(".firm-case")).toHaveLength(7);
+    expect(screen.getByRole("tabpanel").querySelectorAll(".firm-person img").length).toBeGreaterThan(0);
     expect(screen.getByRole("tabpanel").nextElementSibling.querySelector("#firm-centers")).toBeTruthy();
+  });
+
+  it("방문한 곳이 분사무소면 그 분사무소 변호사 탭이 하나 더 생긴다", () => {
+    const data = tabletData("한지우");
+    render(<Tablet data={{ ...data, booking: { ...data.booking, branch: "수원 분사무소 1번 상담실" }, firm, helper }} screen="firm" onScreen={() => {}} />);
+    const tabs = within(screen.getByRole("tablist", { name: "법무법인 YK 구성원" })).getAllByRole("tab");
+    expect(tabs.at(-1).textContent).toBe("수원 분사무소 변호사");
+    fireEvent.click(tabs.at(-1));
+    expect(screen.getByRole("tabpanel").textContent).toContain("라지사");
+  });
+});
+
+describe("업무사례 화면", () => {
+  it("이 사건 분야 사례만 5건씩, 더 보기로 늘린다", () => {
+    render(<Tablet data={{ ...tabletData("한지우"), firm, helper, firmCases }} screen="cases" onScreen={() => {}} />);
+    const pane = document.querySelector(".casespane");
+    expect(pane.querySelectorAll(".firm-case")).toHaveLength(5);
+    fireEvent.click(within(pane).getByRole("button", { name: /업무사례 더 보기/ }));
+    expect(pane.querySelectorAll(".firm-case")).toHaveLength(7);
   });
 });
 

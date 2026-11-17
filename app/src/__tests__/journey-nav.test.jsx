@@ -8,7 +8,7 @@ const JOURNEY = [
   ["firm", "법무법인 YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
-  ["seniors", "전문 인력"],
+  ["cases", "업무사례"],
   ["youtube", "YK 변호사 이야기"],
 ];
 

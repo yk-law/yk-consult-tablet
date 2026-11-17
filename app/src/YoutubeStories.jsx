@@ -15,7 +15,7 @@ const YOUTUBE_VIDEOS = [
 ];
 const YOUTUBE_PARAMS = new URLSearchParams({ autoplay: '1', mute: '0', playsinline: '1', rel: '0', modestbranding: '1' }).toString();
 
-export default function YoutubeStories({ onPrevious }) {
+export default function YoutubeStories({ onPrevious, previousLabel = "전문 인력으로" }) {
   const [video, setVideo] = useState(null);
   const trigger = useRef(null);
   const closeButton = useRef(null);
@@ -64,7 +64,7 @@ export default function YoutubeStories({ onPrevious }) {
           {/* 마지막 탭이라 이전 버튼만 둔다. 자리는 다른 탭과 같다(시연 피드백 3번). */}
           {onPrevious && (
             <div className="counsel-page-links">
-              <ReportNext onClick={onPrevious} label="전문 인력으로" previous />
+              <ReportNext onClick={onPrevious} label={previousLabel} previous />
             </div>
           )}
         </div>

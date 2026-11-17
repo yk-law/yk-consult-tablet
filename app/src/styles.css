@@ -3216,7 +3216,7 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .os .vteam-box .vcounsel-list{top:calc(100% + 4px);}
 .os .vacts-r{flex:none; flex-wrap:nowrap; margin-left:auto;}
 
-/* 법무법인 YK 소개 탭(시연 피드백 5·6번, 11-13): 법원 경력 변호사 / 검찰 경력 변호사 / 고문 및 전문위원 / 업무사례 */
+/* 법무법인 YK 소개 탭(11-17 2차 내부 시연): 법원·검찰·경찰 경력 변호사 / 방문한 분사무소 변호사 */
 .firm-tabs{display:flex; gap:8px; flex-wrap:wrap; margin:40px 0 0; padding:0; border-bottom:1px solid var(--bt-line);}
 .firm-tabs button{min-height:48px; padding:0 16px; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; background:transparent;
   font:inherit; font-size:16px; font-weight:500; line-height:24px; color:var(--bt-muted); cursor:pointer; word-break:keep-all;}
@@ -3291,3 +3291,15 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 .case-modal-facts dt{font-size:14px; font-weight:600; line-height:24px; color:var(--bt-muted);}
 .case-modal-facts dd{margin:0; font-size:16px; line-height:24px; color:var(--bt-text); word-break:keep-all; overflow-wrap:anywhere;}
 .case-modal-text{margin:0; font-size:17px; line-height:28px; color:var(--bt-text); word-break:keep-all; overflow-wrap:anywhere;}
+
+/* YK 소개 탭은 내려도 화면 위에 붙어 있다(고재완 11-17). 붙었을 때 아래 내용이 비치지 않게 바탕을 깐다. */
+/* 스크롤 영역(.reportpane .ykhelper) 위 여백만큼 올려 붙여야 그 틈으로 아래 내용이 비치지 않는다. */
+.firmpane .ykhelper{--firm-sticky-gap:32px;}
+.firmpane .firm-tabs{position:sticky; top:calc(-1 * var(--firm-sticky-gap)); z-index:3; margin-top:24px; padding-top:16px; background:var(--yk-background);}
+
+/* 업무사례 화면(「전문 인력」 자리, 11-17): 이 사건 분야 사례 줄 목록만. */
+.casespane .cases-body{max-width:800px; word-break:keep-all; overflow-wrap:anywhere;}
+.casespane .counsel-page-links{margin-top:40px;}
+@container tablet (max-height:600px) {
+  .firmpane .ykhelper{--firm-sticky-gap:20px;}
+}

@@ -24,7 +24,7 @@ const JOURNEY = [
   ["firm", "법무법인 YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
-  ["seniors", "전문 인력"],
+  ["cases", "업무사례"],
   ["youtube", "YK 변호사 이야기"],
 ];
 
@@ -88,7 +88,7 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
           />
         )}
         {screen === "firm" && (
-          <FirmIntro firm={data.firm} firmCases={data.firmCases} portraits={data.portraits} helper={data.helper} FIELD={FIELD} NEAR={NEAR} b={b} onNext={() => onScreen("report")} />
+          <FirmIntro firm={data.firm} portraits={data.portraits} helper={data.helper} FIELD={FIELD} NEAR={NEAR} b={b} onNext={() => onScreen("report")} />
         )}
         {screen === "report" && hasSummary && (
           <Summary helper={data.helper} answers={answers} onAnswer={onAnswer} onNext={() => onScreen("topics")} onPrevious={() => onScreen("firm")} />
@@ -116,11 +116,19 @@ export default function Tablet({ data, screen, onScreen, answers = {}, onAnswer 
             FIELD={FIELD}
             NEAR={NEAR}
             b={b}
-            onNext={() => onScreen("seniors")}
+            onNext={() => onScreen("cases")}
             onPrevious={() => onScreen(hasSummary ? "topics" : "report")}
           />
         )}
-        {screen === "youtube" && <YoutubeStories onPrevious={() => onScreen("seniors")} />}
+        {screen === "youtube" && <YoutubeStories onPrevious={() => onScreen("cases")} previousLabel="업무사례로" />}
+        {screen === "cases" && (
+          <CaseStudies
+            related={data.firmCases}
+            label={(FIELD?.[b?.field]?.[0] || "").replace("·", "")}
+            onPrevious={() => onScreen("counsel")}
+            onNext={() => onScreen("youtube")}
+          />
+        )}
         {screen === "seniors" && (
           <Seniors
             list={data.seniors}
@@ -392,11 +400,14 @@ function CounselVideo({ l, onDone }) {
 /** YK 소개 — 센터 구성과 구성원 면면. 고객이 이 로펌의 규모와 경력을 한 화면에서 본다(2026-10-28).
  *  수치는 홈페이지 기준만 쓰고, 법원·검찰 근무는 「역임」 사실로만 적는다. */
 /** 법무법인 YK 소개 인물 탭(시연 피드백 5·6번, 고재완 11-13). 분야별 전문 센터는 어느 탭이든 맨 아래 공통. */
+/** 고재완 11-17(2차 내부 시연): 법원·검찰·경찰 경력 변호사, 고문 및 전문위원, 그리고 고객이 방문한 분사무소의 변호사.
+ *  분사무소 탭은 방문한 곳이 분사무소일 때만 「OO 분사무소 변호사」로 생긴다(주사무소는 홈페이지에 구성원 목록이 없다).
+ *  순서는 홈페이지 구성원 순서(tools/firm_people_refresh.py). 업무사례는 「전문 인력」 자리의 업무사례 화면으로 옮겼다. */
 const FIRM_TABS = [
   ["bench", "법원 경력 변호사"],
   ["prosecution", "검찰 경력 변호사"],
+  ["policeLawyers", "경찰 경력 변호사"],
   ["advisors", "고문 및 전문위원"],
-  ["cases", "업무사례"],
 ];
 /** 사건 분야(fields.json FIELD 첫 이름) → 분야별 전문 센터 묶음(firm_intro.json centerGroups.t). */
 const CENTER_GROUP_OF = {
@@ -477,14 +488,33 @@ function FirmCases({ rows, label, onOpen }) {
   );
 }
 
-function FirmIntro({ firm, firmCases, portraits, helper, FIELD, NEAR, b, onNext }) {
-  const [tab, setTab] = useState("bench");
+/** 업무사례(「전문 인력」 자리, 2차 내부 시연 11-17). 이 사건과 같은 분야의 홈페이지 업무사례만 둔다
+ *  (고재완 11-17 「유관 사례만」). 실제는 YK-OS가 사건 태그로 불러온다(강주용).
+ *  related: null(불러오는 중) | [](없음) | 사례 배열. 줄 목록·상세 창은 FirmCases·CaseModal. */
+function CaseStudies({ related, label, onPrevious, onNext }) {
   const [caseItem, setCaseItem] = useState(null);
+  return (
+    <section className="pane on reportpane casespane">
+      <div className="ykhelper">
+        <div className="yh-body cases-body">
+          <h2 className="h1">{label ? `${label} 사건에서 YK가 함께한 사례입니다.` : "YK가 함께한 비슷한 사례입니다."}</h2>
+          <FirmCases rows={related} label="" onOpen={setCaseItem} />
+          <div className="counsel-page-links">
+            <ReportNext onClick={onPrevious} label="상담 변호사로" previous />
+            <ReportNext onClick={onNext} label="YK 변호사 이야기 보기" />
+          </div>
+        </div>
+      </div>
+      <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
+    </section>
+  );
+}
+
+function FirmIntro({ firm, portraits, helper, FIELD, NEAR, b, onNext }) {
+  const [tab, setTab] = useState("bench");
   const [person, setPerson] = useState(null);
   const tabsId = useId();
   if (!firm) return null;
-  // 업무사례 탭: 이 사건 분야의 홈페이지 업무사례. 실제는 YK-OS가 사건 태그로 불러온다(강주용). 받지 못했으면 null.
-  const cases = firmCases;
   // 이 사건의 분야가 속한 센터 묶음과 이름이 겹치는 센터를 짚어 준다(분야별 전문 센터 가독성, 11-13).
   const caseLabel = (FIELD?.[b?.field]?.[0] || "").replace("·", "");
   const caseGroup = CENTER_GROUP_OF[FIELD?.[b?.field]?.[0]] || "";
@@ -517,6 +547,8 @@ function FirmIntro({ firm, firmCases, portraits, helper, FIELD, NEAR, b, onNext 
     ["고문", (firm.advisors || []).map((a) => ({ n: a.n, pos: "고문", c: a.c }))],
     ["경찰 경력 전문위원", (firm.police || []).map((a) => ({ n: a.n, pos: "전문위원" }))],
   ];
+  const branch = (firm.branches || []).find((g) => (b?.branch || "").startsWith(g.office));
+  const tabs = branch ? [...FIRM_TABS, ["branch", `${branch.office} 변호사`]] : FIRM_TABS;
   const [year, month] = (firm.asOf || "").split("-");
   return (
     <section className="pane on reportpane firmpane">
@@ -536,8 +568,8 @@ function FirmIntro({ firm, firmCases, portraits, helper, FIELD, NEAR, b, onNext 
             {year && month && <p className="firm-note">({year}년 {Number(month)}월 기준)</p>}
           </header>
 
-          <div className="firm-tabs" role="tablist" aria-label="법무법인 YK 구성원과 업무사례">
-            {FIRM_TABS.map(([key, label]) => (
+          <div className="firm-tabs" role="tablist" aria-label="법무법인 YK 구성원">
+            {tabs.map(([key, label]) => (
               <button
                 key={key}
                 type="button"
@@ -553,15 +585,13 @@ function FirmIntro({ firm, firmCases, portraits, helper, FIELD, NEAR, b, onNext 
             ))}
           </div>
           <section className="firm-sec firm-tabpanel" role="tabpanel" id={`${tabsId}-${tab}-panel`} aria-labelledby={`${tabsId}-${tab}`}>
-            {tab === "bench" && <FirmPeople key="bench" rows={firm.bench} firm={firm} portraits={portraits} onPerson={openPerson} />}
-            {tab === "prosecution" && <FirmPeople key="prosecution" rows={firm.prosecution} firm={firm} portraits={portraits} onPerson={openPerson} />}
+            {tab !== "advisors" && <FirmPeople key={tab} rows={tab === "branch" ? branch.people.map(({ title, ...l }) => l) : firm[tab]} firm={firm} portraits={portraits} onPerson={openPerson} />}
             {tab === "advisors" && advisors.map(([title, rows]) => rows.length > 0 && (
               <div className="firm-subgroup" key={title}>
                 <h5>{title}</h5>
                 <FirmPeople rows={rows} firm={firm} portraits={portraits} onPerson={openPerson} />
               </div>
             ))}
-            {tab === "cases" && <FirmCases rows={cases} label={caseLabel} onOpen={setCaseItem} />}
           </section>
 
           <section className="firm-sec" aria-labelledby="firm-centers">
@@ -592,7 +622,6 @@ function FirmIntro({ firm, firmCases, portraits, helper, FIELD, NEAR, b, onNext 
           <ReportNext onClick={onNext} label="사건 요약 보기" />
         </div>
       </div>
-      <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
     </section>
   );
 }
@@ -849,7 +878,11 @@ function FitTitle({ text, maxPx = 15.5, minPx = 11.5 }) {
   return <span ref={ref}>{text}</span>;
 }
 
-function TitleBlock({ titles, soft }) {
+/** 이름 위 대표 경력에서 기관이 드러나지 않는 일반 근무 경력은 뺀다(고재완 11-17 「내세울 만한 경력 아니면 굳이」).
+ *  역임·법원·검찰·경찰·국세청처럼 기관이 드러나는 경력만 남는다. */
+const PLAIN_TITLES = new Set(["기업 근무 경력", "기업 법무팀 경력", "공공기관 경력", "준정부기관 경력", "정부기관 경력"]);
+function TitleBlock({ titles: all, soft }) {
+  const titles = all?.filter((t) => !PLAIN_TITLES.has(t));
   if (!titles?.length) return null;
   return (
     <div className="xtitles">
@@ -894,6 +927,8 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
     </section>
   ) : null;
   const hasCases = (l.kind === "lawyer" || l.kind === "advisor") && l.cases?.length;
+  // 학력은 이름 아래가 아니라 이력 사항 맨 아래에 둔다(고재완 11-17, 2차 내부 시연).
+  const edu = [...(l.edu ? l.edu.split(" · ") : []), l.exam, l.tr].filter(Boolean);
   const relatedWorks = relatedCaseWorks(l.works, b?.field);
   const hasWorks = l.kind === "lawyer" && relatedWorks.length;
   return <>
@@ -922,12 +957,13 @@ function CounselDetailGroups({ l, portraits, FIELD, NEAR, b, hasFields, speciali
         </section> : null}
       </div>
     </section> : null}
-    {(l.career?.length || l.awards?.length || l.papers?.length) ? <section className="xsec detail-group counsel-history">
+    {(l.career?.length || l.awards?.length || l.papers?.length || edu.length) ? <section className="xsec detail-group counsel-history">
       <h3>이력 사항</h3>
       <div className="detail-group-body">
         <CareerSection key={l.n} items={l.career} />
         {listSection("수상 내역", l.awards)}
         {listSection("논문·저서", l.papers)}
+        {listSection("학력", edu)}
       </div>
     </section> : null}
     <CaseModal item={caseItem} onClose={() => setCaseItem(null)} />
@@ -1009,13 +1045,12 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
           {counselHero ? (
             <>
               {heroInfo.greeting ? <p className="xquote">{heroInfo.greeting}</p> : null}
-              {heroInfo.greeting && (heroInfo.titles?.length || l.n || l.pos || edu) ? <div className="hero-message-divider" aria-hidden="true" /> : null}
+              {heroInfo.greeting && (heroInfo.titles?.length || l.n || l.pos) ? <div className="hero-message-divider" aria-hidden="true" /> : null}
               <TitleBlock titles={heroInfo.titles} />
               <div className="xwho">
                 <strong>{l.n}</strong>
                 {l.pos ? <em>{l.pos}</em> : null}
               </div>
-              {edu ? <p className="xedu">{edu}</p> : null}
             </>
           ) : (
             <>
@@ -1111,7 +1146,7 @@ function ProfileBody({ l, portraits, FIELD, NEAR, b, counselHero = false, specia
           {onPrevious && <ReportNext onClick={onPrevious} label="사건 요약으로" previous />}
           {/* 전문 인력 상세: 목록으로 돌아가는 버튼은 하단 왼쪽 플로팅 하나다(YK-OS 바인더#3 1차 내부 피드백 1). */}
           {!onPrevious && onBack && <ReportNext onClick={onBack} label={backLabel} previous />}
-          {onNext && <ReportNext onClick={onNext} label="전문 인력 살펴보기" />}
+          {onNext && <ReportNext onClick={onNext} label="업무사례 보기" />}
         </div>
       ) : null}
       </div>

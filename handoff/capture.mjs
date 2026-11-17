@@ -42,7 +42,7 @@ const SCREENS = [
   { id: "report", qs: `c=${encodeURIComponent(BOOKING)}&s=report&v=tab&theme=light`, ready: ".yh-check", settle: settleIdle },
   { id: "topics", qs: `c=${encodeURIComponent(BOOKING)}&s=topics&v=tab&theme=light`, ready: ".yh-steps", settle: settleIdle },
   { id: "counsel", qs: `c=${encodeURIComponent(BOOKING)}&s=counsel&v=tab&theme=light`, ready: ".counselpane .profile", settle: settleIdle },
-  { id: "seniors", qs: `c=${encodeURIComponent(BOOKING)}&s=seniors&v=tab&theme=light`, ready: ".seniorpane", settle: settleSeniors },
+  { id: "cases", qs: `c=${encodeURIComponent(BOOKING)}&s=cases&v=tab&theme=light`, ready: ".casespane .firm-cases", settle: settleIdle },
   { id: "youtube", qs: `c=${encodeURIComponent(BOOKING)}&s=youtube&v=tab&theme=light`, ready: ".youtube-stories", settle: settleIdle },
 ];
 
@@ -172,16 +172,6 @@ async function settleFirm(page) {
   }, { timeout: 30000 });
   await waitImages(page);
   await page.waitForTimeout(400);
-}
-
-async function settleSeniors(page) {
-  // 좁은 뷰포트에서는 컨트롤이 숨겨질 수 있어 DOM 클릭으로 자동 넘김만 멈춘다.
-  await page.evaluate(() => {
-    const btn = document.querySelector(".senior-auto-toggle");
-    if (btn && (btn.getAttribute("aria-label") || "").includes("일시정지")) btn.click();
-  });
-  await waitImages(page);
-  await page.waitForTimeout(600);
 }
 
 async function freezePage(page) {

@@ -11,7 +11,7 @@ const SCREENS = [
   ["firm", "법무법인 YK 소개"],
   ["report", "사건 요약"],
   ["counsel", "상담 변호사"],
-  ["seniors", "전문 인력"],
+  ["cases", "업무사례"],
   ["youtube", "YK 변호사 이야기"],
 ];
 /** 장면 딥링크용. 상단 세그에는 안 넣고 URL·흐름에서만 쓴다. */
@@ -279,7 +279,7 @@ export default function App() {
             ))}
           </div>
         )}
-        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "topics", "counsel", "seniors", "youtube"].includes(screen))) && (
+        {(fullscreen || (view !== "os" && ["wait", "prep", "film", "firm", "report", "topics", "counsel", "seniors", "cases", "youtube"].includes(screen))) && (
           fullscreen ? <div className="theme-controls drawer-theme-row">
             <h3 className="drawer-section-label">화면 테마</h3>
             <div className="drawer-theme-setting">
