@@ -3303,3 +3303,13 @@ html:fullscreen .shell {height:100dvh;min-height:100dvh;}
 @container tablet (max-height:600px) {
   .firmpane .ykhelper{--firm-sticky-gap:20px;}
 }
+
+/* 구성원 목록 쪽 나눔(24명씩, 11-17). 숫자는 가운데, 지금 쪽은 진한 바탕. 태블릿에서 누르기 쉽게 44px. */
+.firm-people{scroll-margin-top:88px;}
+.firm-pager{display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin-top:32px;}
+.firm-pager button{min-width:44px; height:44px; padding:0 8px; border:0; border-radius:8px; background:transparent;
+  font:inherit; font-size:16px; font-weight:500; line-height:24px; color:var(--bt-muted); cursor:pointer; font-variant-numeric:tabular-nums;}
+.firm-pager button.on{background:var(--yk-primary); color:var(--yk-primary-foreground); font-weight:600;}
+.firm-pager button:disabled{opacity:.35; cursor:default;}
+.firm-pager button:focus-visible{outline:2px solid var(--yk-ring); outline-offset:2px;}
+.firm-pager .firm-pager-step{display:inline-flex; align-items:center; justify-content:center; color:var(--bt-text);}

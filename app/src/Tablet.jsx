@@ -418,13 +418,27 @@ const CENTER_GROUP_OF = {
   "노동·산재": "노동 · 산업", 중대재해: "노동 · 산업", 의료: "노동 · 산업",
 };
 
+/** 구성원이 많은 탭(서울 강남 주사무소 160명 등)은 한 쪽에 FIRM_PAGE명씩 나눠 보인다(고재완 11-17). 그보다 적으면 전부. */
+const FIRM_PAGE = 24;
 function FirmPeople({ rows, firm, portraits, onPerson }) {
+  const [page, setPage] = useState(0);
+  const listRef = useRef(null);
+  const moved = useRef(false);
+  // 쪽을 넘기면 새 목록이 그려진 뒤 첫 줄이 고정된 탭 바로 아래 오도록 올린다(.firm-people scroll-margin-top).
+  useEffect(() => {
+    if (moved.current) listRef.current?.scrollIntoView?.({ block: "start" });
+  }, [page]);
   if (!rows?.length) return null;
-  // 탭 안에서는 전부 보인다(고재완 11-13 「접기 빼라」).
+  const pages = Math.ceil(rows.length / FIRM_PAGE);
+  const shown = pages > 1 ? rows.slice(page * FIRM_PAGE, (page + 1) * FIRM_PAGE) : rows;
+  const go = (n) => {
+    moved.current = true;
+    setPage(n);
+  };
   return (
     <>
-      <ul className="firm-people">
-        {rows.map((l) => {
+      <ul className="firm-people" ref={listRef}>
+        {shown.map((l) => {
           const photo = firm.photos?.[l.n] || portraits?.[l.n];
           return (
             <li key={l.n}>
@@ -440,6 +454,21 @@ function FirmPeople({ rows, firm, portraits, onPerson }) {
           );
         })}
       </ul>
+      {pages > 1 && (
+        <nav className="firm-pager" aria-label="구성원 목록 쪽">
+          <button type="button" className="firm-pager-step" disabled={page === 0} onClick={() => go(page - 1)} aria-label="이전 쪽">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          {Array.from({ length: pages }, (_, i) => (
+            <button key={i} type="button" className={i === page ? "on" : ""} aria-current={i === page ? "page" : undefined} onClick={() => go(i)}>
+              {i + 1}
+            </button>
+          ))}
+          <button type="button" className="firm-pager-step" disabled={page === pages - 1} onClick={() => go(page + 1)} aria-label="다음 쪽">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </nav>
+      )}
     </>
   );
 }

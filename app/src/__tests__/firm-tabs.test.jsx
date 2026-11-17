@@ -45,6 +45,21 @@ describe("법무법인 YK 소개 탭", () => {
   });
 });
 
+describe("구성원이 많은 탭", () => {
+  it("24명씩 쪽을 나누고 쪽 번호로 넘긴다", () => {
+    const many = { ...firm, branches: [{ office: "서울 강남 주사무소", people: Array.from({ length: 30 }, (_, i) => ({ n: `강남${i + 1}`, pos: "변호사", title: "서울 강남 주사무소" })) }] };
+    render(<Tablet data={{ ...tabletData("한지우"), firm: many, helper }} screen="firm" onScreen={() => {}} />);
+    fireEvent.click(within(screen.getByRole("tablist", { name: "법무법인 YK 구성원" })).getByRole("tab", { name: "서울 강남 주사무소 변호사" }));
+    const panel = screen.getByRole("tabpanel");
+    expect(panel.querySelectorAll(".firm-person")).toHaveLength(24);
+    const pager = within(panel).getByRole("navigation", { name: "구성원 목록 쪽" });
+    fireEvent.click(within(pager).getByRole("button", { name: "2" }));
+    expect(panel.querySelectorAll(".firm-person")).toHaveLength(6);
+    expect(panel.textContent).toContain("강남30");
+    expect(within(pager).getByRole("button", { name: "다음 쪽" }).disabled).toBe(true);
+  });
+});
+
 describe("업무사례 화면", () => {
   it("이 사건 분야 사례만 5건씩, 더 보기로 늘린다", () => {
     render(<Tablet data={{ ...tabletData("한지우"), firm, helper, firmCases }} screen="cases" onScreen={() => {}} />);
