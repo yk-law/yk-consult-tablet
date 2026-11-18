@@ -380,9 +380,14 @@ function CounselProfile({
               {specialist || member || !lawyer
                 ? `${data.name} ${data.position}`
                 : `${data.name} 변호사`}
-              의 주요 업무 분야와 이력을 정리했습니다.
+              {/* 고문처럼 업무 분야·실적·사례가 없는 분은 있는 것만 말한다(고재완 11-18 테스트) */}
+              {data.fields.length
+                ? '의 주요 업무 분야와 이력을 정리했습니다.'
+                : '의 이력을 정리했습니다.'}
               <br />
-              고객님의 상황과 관련된 경험과 사례를 살펴보세요.
+              {data.performance.length || visibleWorks.length
+                ? '고객님의 상황과 관련된 경험과 사례를 살펴보세요.'
+                : '고객님의 상황과 관련된 경험을 살펴보세요.'}
             </p>
           </header>
           <DetailGroup title="업무 분야 및 사례">
