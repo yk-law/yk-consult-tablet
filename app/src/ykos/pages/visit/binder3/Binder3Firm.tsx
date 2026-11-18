@@ -97,7 +97,7 @@ function PersonGrid({ rows, onOpen }: { rows: PersonCard[]; onOpen: (seq: number
 type FirmTab = 'bench' | 'prosecution' | 'police' | 'advisors' | 'office';
 
 /**
- * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 및 전문위원 → 방문 사무소 변호사, 고재완 11-18),
+ * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 및 전문위원 → 방문 지사 소속 변호사, 고재완 11-18),
  * 분야별 전문 센터는 어느 탭이든 맨 아래에 둔다. 한 사람은 탭 하나에만 나온다(서버가 나눈다).
  * 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
  */
@@ -122,7 +122,8 @@ function FirmDynamic({
       ['prosecution', '검찰 경력 변호사', data.prosecution.length > 0],
       ['police', '경찰 경력 변호사', (data.policeLawyers ?? []).length > 0],
       ['advisors', '고문 및 전문위원', data.advisors.length > 0 || data.police.length > 0],
-      ['office', `${office} 변호사`, officeRows.length > 0],
+      // 탭 이름은 사무소와 상관없이 같게 두고 목록만 방문 사무소에 맞춘다(고재완 11-18, 이름이 길면 어색해서)
+      ['office', '방문 지사 소속 변호사', officeRows.length > 0],
     ] as const
   ).filter(([, , has]) => has);
   const [picked, setPicked] = useState<FirmTab>('bench');
