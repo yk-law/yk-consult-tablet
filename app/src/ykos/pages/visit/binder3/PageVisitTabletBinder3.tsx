@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useSearchParams } from 'react-router-dom';
 import {
   getVisitBinderConfirm,
+  putVisitBinderConfirmAnswers,
   getVisitBinderCounsel,
   getVisitBinderFirm,
   getVisitBinderRelatedCases,
@@ -81,8 +82,6 @@ type JourneyViewContext = {
   firmCaseBodies: Record<number, VisitBinderCaseBody>;
   /** 업무사례 본문을 아직 받는 중 */
   firmCasesLoading: boolean;
-  /** 고객이 방문한 사무소(YK 소개 지사 탭) */
-  office: string;
   counselScrollTop: number;
   onCounselScroll: (scrollTop: number) => void;
   /** 상담 변호사의 「사건 요약으로」: 2뎁스로 돌아간다 */
@@ -95,8 +94,8 @@ type JourneyViewContext = {
  * 화면을 만들 때 이 표에 하나씩 더한다.
  */
 const JOURNEY_VIEWS: Partial<Record<Binder3JourneyId, (ctx: JourneyViewContext) => ReactNode>> = {
-  firm: ({ firm, caseField, office, go }) => (
-    <Binder3Firm state={firm} caseField={caseField} office={office} onNext={() => go('report')} />
+  firm: ({ firm, caseField, go }) => (
+    <Binder3Firm state={firm} caseField={caseField} onNext={() => go('report')} />
   ),
   report: ({
     caseCheck,
@@ -241,13 +240,13 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
   const [firm, setFirm] = useState<Binder3FirmState>({ status: 'loading' });
   useEffect(() => {
     let alive = true;
-    getVisitBinderFirm()
+    getVisitBinderFirm(office || null)
       .then((data) => alive && setFirm({ status: 'ready', data }))
       .catch(() => alive && setFirm({ status: 'error' }));
     return () => {
       alive = false;
     };
-  }, []);
+  }, [office]);
 
   // YK 소개 업무사례 탭. 시작할 때(확인·영상 단계) 받아 두어 서버가 Gemma 로 상담과 비슷한 사례를 앞에 두는 동안
   // 고객이 기다리지 않게 한다. 사건 분야가 없거나 못 받으면 빈 목록(탭 없음). 시작을 막지 않는다.
@@ -328,6 +327,9 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
   }, [engId]);
 
   const [answers, setAnswers] = useState<Binder3Answers>(() => loadBinder3Answers(address));
+  // 기본 정보에 적어 둔 답을 지워도 되는 때: 새 바인더(저장한 답 없이 열림)와 문항 재생성 뒤뿐이다.
+  // 같은 바인더를 다시 읽었는데 젬마가 다른 문항을 주면 저장한 답이 안 맞아 비어 보이지만, 그때는 지우지 않는다.
+  const clearAllowedRef = useRef(Object.keys(answers).length === 0);
 
   // 실장이 리롤을 누르면 문항을 다시 받는다. 못 받으면 고객 화면은 그대로 두고, 실장 화면이 기다림을 풀도록 같은 문항을 다시 보낸다.
   useEffect(() => {
@@ -336,7 +338,10 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
     const apply = (next: string[]) => {
       if (!alive) return;
       // 새 문항을 받으면 글자가 같아도 답을 지운다. 못 받으면 고른 답을 그대로 둔다.
-      if (next.length) setAnswers({});
+      if (next.length) {
+        clearAllowedRef.current = true;
+        setAnswers({});
+      }
       setCaseCheck((prev) => {
         const current = prev.status === 'ready' ? prev.questions : [];
         return { status: 'ready', questions: next.length ? next : [...current] };
@@ -366,6 +371,21 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
   useEffect(() => {
     if (engId == null || !questions) return;
     postBinder3Confirm(engId, buildConfirmItems(questions, answers));
+  }, [answers, engId, questions]);
+
+  // 고를 때마다 방문 상담 정보 「기본 정보」에도 적는다(2차 내부 시연 ⑥). 답이 하나도 없으면 빈 목록을 보내 지운다 —
+  // 바인더를 새로 열면(주소의 t 가 바뀌어 저장한 답이 없다) 또는 문항을 다시 만들면 답이 비므로 그때만 지워진다.
+  // 같은 내용은 다시 보내지 않고, 실패해도 고객 화면은 그대로 둔다.
+  const savedAnswersRef = useRef('');
+  useEffect(() => {
+    if (engId == null || !questions) return;
+    const items = questions.map((question) => ({ question, answer: answers[question] ?? null }));
+    const next = items.some((item) => item.answer) ? items : [];
+    if (!next.length && !clearAllowedRef.current) return;
+    const key = JSON.stringify(next);
+    if (key === savedAnswersRef.current) return;
+    savedAnswersRef.current = key;
+    putVisitBinderConfirmAnswers(engId, next).catch(() => {});
   }, [answers, engId, questions]);
 
   // 사건 요약 안내 데이터.
@@ -462,7 +482,6 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
                   firmCases: visibleFirmCases,
                   firmCaseBodies: firmBodies.bodies,
                   firmCasesLoading: !firmBodies.done,
-                  office,
                   caseCheck,
                   stepRewrites,
                   answers,

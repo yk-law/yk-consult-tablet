@@ -24,8 +24,13 @@ export type VisitBinderFirm = {
   /** 탭 순서 법원 → 검찰 → 경찰 → 고문 → 전문위원 → 자문위원 → 방문 지사. 한 사람은 먼저 걸린 탭 하나에만 온다 */
   bench: VisitBinderFirmPerson[];
   prosecution: VisitBinderFirmPerson[];
-  /** 경찰 경력 변호사 */
-  policeLawyers: VisitBinderFirmPerson[];
+  /** 경찰 경력 변호사(2차 내부 시연 ⑤). 법원·검찰 탭에 나온 사람은 빠진다. 예전 응답에는 없다 */
+  policeLawyers?: VisitBinderFirmPerson[];
+  /**
+   * 방문 사무소 탭(2차 내부 시연 ④): 요청한 사무소 소속 변호사 중 법원·검찰·경찰 탭에 없는 사람. 사무소가 없거나
+   * 보일 사람이 없으면 null. label 은 「방문 지사 변호사」(고재완 11-18), title 은 카드 줄(대표 경력, 없으면 「조세법 전문」처럼 변협 전문분야)
+   */
+  office?: { label: string; people: VisitBinderFirmPerson[] } | null;
   /** 고문. seq·photo 로 사진 카드를 그리고 누르면 소개 페이지를 연다 */
   advisors: { seq: number; name: string; label: string; photo: string | null }[];
   /** 전문위원 전원(전 직급 순). label 은 홈페이지 경력 구분(예: 경찰 경력), 없으면 빈 글 */
@@ -33,11 +38,6 @@ export type VisitBinderFirm = {
   /** 자문위원(홈페이지 /member/consultant, 홈페이지 순서) */
   consultants: { seq: number; name: string; label: string; photo: string | null }[];
   expertCount: number;
-  /**
-   * 사무소마다 소속 변호사(앞 탭에 나온 사람 제외). 화면은 고객이 방문한 사무소 하나만 탭으로 보인다.
-   * title 은 카드 줄: 대표 경력, 없으면 대한변협 등록 전문분야
-   */
-  offices: { office: string; people: VisitBinderFirmPerson[] }[];
   /** 구성원 전체 줄 순서(seq). 상담 변호사 칩도 이 순서로 세운다 */
   order?: number[];
 };
@@ -45,9 +45,10 @@ export type VisitBinderFirm = {
 /** 요청이 멈추면 고객 화면이 빈 채로 남지 않게 실패 안내로 넘긴다. */
 export const VISIT_BINDER_FIRM_TIMEOUT_MS = 15000;
 
-/** 바인더#3 YK 소개 — 고객과 무관한 공통 데이터 */
-export const getVisitBinderFirm = async (): Promise<VisitBinderFirm> => {
+/** 바인더#3 YK 소개 — 고객과 무관한 공통 데이터 + 방문 사무소(office) 탭 */
+export const getVisitBinderFirm = async (office?: string | null): Promise<VisitBinderFirm> => {
   const res = await client.get<VisitBinderFirm>('/v1/visit/binder/firm', {
+    params: office ? { office } : undefined,
     timeout: VISIT_BINDER_FIRM_TIMEOUT_MS,
   });
   return res.data;
@@ -60,6 +61,11 @@ export type VisitBinderCounsel = {
   name: string;
   /** 구성원 구분 (없으면 「변호사」) */
   position: string;
+  /**
+   * 홈페이지 /member/lawyer 순서에서의 자리(서버가 매긴 순위, 작을수록 앞). 정렬 키에 생년월일이 들어 있어
+   * 키 대신 순위만 온다. 상담 변호사가 여럿이면 이 순서로 줄 세운다. 순위를 못 매기면 null.
+   */
+  homepageOrder?: number[] | null;
   /** lawyer.images_url 원본 경로 */
   photo: string | null;
   greeting: string;
@@ -123,6 +129,17 @@ export const getVisitBinderSeniors = async ({
 export const VISIT_BINDER_CONFIRM_TIMEOUT_MS = 35000;
 
 /** 바인더#3 사건 요약 1뎁스 — 예약 때 말한 내용으로 만든 네/아니오 확인 문항. 없으면 빈 배열 */
+/**
+ * 사건 요약 1뎁스 답을 방문 상담 정보 「기본 정보」 맨 앞에 적는다(2차 내부 시연 ⑥). 고를 때마다 문항 전체를 보내고,
+ * 답이 하나도 없으면 빈 목록을 보내 적어 둔 것을 지운다(바인더를 새로 열었거나 문항을 다시 만든 때).
+ */
+export const putVisitBinderConfirmAnswers = async (
+  engId: number,
+  items: { question: string; answer: 'yes' | 'no' | null }[]
+): Promise<void> => {
+  await client.put(`/v1/visit/binder/confirm/${engId}/answers`, { items });
+};
+
 export const getVisitBinderConfirm = async (
   engId: number,
   { reroll = false }: { reroll?: boolean } = {}

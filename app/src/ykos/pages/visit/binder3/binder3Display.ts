@@ -98,7 +98,7 @@ export function parseBinder3Query(params: URLSearchParams) {
   return {
     engId: positiveInt(params.get('engId')),
     customerName: clean(params.get('customerName')),
-    /** 방문 사무소(예: 서울 강남 주사무소). YK 소개 지사 탭이 이 사무소 변호사를 보인다 */
+    /** 방문 사무소 이름(예: 인천 분사무소). YK 소개의 방문 지사 변호사 탭을 고른다 */
     office,
     room,
     placeLabel: [office, room].filter(Boolean).join(' '),

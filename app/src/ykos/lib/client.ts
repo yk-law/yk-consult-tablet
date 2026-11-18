@@ -19,6 +19,8 @@ async function load<T>(url: string): Promise<{ data: T }> {
 const client = {
   get: <T>(url: string, _config?: unknown) => load<T>(url),
   post: <T>(url: string, _body?: unknown, _config?: unknown) => load<T>(url),
+  // 저장만 하는 호출(체크리스트 답을 기본 정보에 적기 등). POC 에는 적을 곳이 없어 성공으로만 돌려준다.
+  put: async <T>(_url: string, _body?: unknown, _config?: unknown) => ({ data: { ok: true } as T }),
 };
 
 export default client;

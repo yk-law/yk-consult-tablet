@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { getVisitBinderLawyer, type VisitBinderFirm } from 'lib/api/api-visit-binder';
 import { lawyerImageUrl } from '../utils/visitConsultDisplay';
 import { Binder3ArrowIcon, Binder3NoPhoto } from './binder3Common';
@@ -112,17 +112,15 @@ function FirmDynamic({
   data,
   onOpen,
   caseField,
-  office,
 }: {
   data: VisitBinderFirm;
   onOpen: (seq: number) => void;
   /** 상담 사건의 홈페이지 분류(예: 성범죄). 그 분야가 든 센터 묶음을 강조한다 */
   caseField: string;
-  /** 고객이 방문한 사무소(예: 수원 분사무소). 그 사무소 변호사 탭을 더한다 */
-  office: string;
 }) {
   const tabsId = useId();
-  const officeRows = (data.offices ?? []).find((o) => o.office === office)?.people ?? [];
+  // 방문 사무소 명단은 서버가 바인더 주소의 office 로 골라 보낸다(2차 내부 시연 ④).
+  const officeRows = data.office?.people ?? [];
   const groups = (
     [
       // 법원·검찰·경찰 경력 변호사는 묶지 않고 위 줄 탭으로 둔다(고재완 11-18).
@@ -159,12 +157,38 @@ function FirmDynamic({
     ? picked
     : group?.lists[0]?.[0];
 
+  // 탭을 누르면 새 목록 첫 줄이 위에 붙은 탭 바로 아래로 오게 한다(2차 내부 시연 ①). 긴 목록을 내려 본 뒤
+  // 다른 탭을 누르면 그 목록 중간부터 보이기 때문이다. 목록 첫 줄이 이미 보이면 움직이지 않는다.
+  const headRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const tabClicked = useRef(false);
+  const pick = (key: FirmTab) => {
+    tabClicked.current = key !== tab;
+    setPicked(key);
+  };
+  useLayoutEffect(() => {
+    if (!tabClicked.current) return;
+    tabClicked.current = false;
+    const head = headRef.current;
+    const scroller = head?.closest<HTMLElement>('.b3-firm');
+    const panel = panelRef.current;
+    if (!head || !scroller || !panel) return;
+    const headRect = head.getBoundingClientRect();
+    const gap = panel.getBoundingClientRect().top - (headRect.top + headRect.height);
+    if (gap >= 0) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    scroller.scrollTo({
+      top: Math.max(0, scroller.scrollTop + gap),
+      behavior: reduce ? 'auto' : 'smooth',
+    });
+  }, [tab]);
+
   return (
     <>
       {/* 탭 고정은 이 묶음 안에서만 걸린다. 아래 센터 섹션까지 탭이 따라 내려오지 않게 한다. */}
       {group && tab ? (
         <div className="b3-firm-tabbed">
-          <div className="b3-firm-tabhead">
+          <div className="b3-firm-tabhead" ref={headRef}>
             <div className="b3-firm-tabs" role="tablist" aria-label="구성원 구분">
               {groups.map((g, i) => (
                 <button
@@ -174,7 +198,7 @@ function FirmDynamic({
                   id={`${tabsId}-g${i}`}
                   aria-selected={g === group}
                   className={g === group ? 'on' : undefined}
-                  onClick={() => setPicked(g.lists[0][0])}
+                  onClick={() => pick(g.lists[0][0])}
                 >
                   {g.label}
                 </button>
@@ -192,7 +216,7 @@ function FirmDynamic({
                     aria-selected={tab === key}
                     aria-controls={`${tabsId}-${key}-panel`}
                     className={tab === key ? 'on' : undefined}
-                    onClick={() => setPicked(key)}
+                    onClick={() => pick(key)}
                   >
                     {label}
                   </button>
@@ -201,6 +225,7 @@ function FirmDynamic({
             ) : null}
           </div>
           <section
+            ref={panelRef}
             className="b3-firm-tabpanel"
             role="tabpanel"
             key={tab}
@@ -311,14 +336,11 @@ export default function Binder3Firm({
   state,
   onNext,
   caseField = '',
-  office = '',
 }: {
   state: Binder3FirmState;
   onNext: () => void;
   /** 상담 사건의 홈페이지 분류. 구성원 소개 페이지에서 같은 분야를 표시한다 */
   caseField?: string;
-  /** 고객이 방문한 사무소. 그 사무소 변호사 탭을 더한다 */
-  office?: string;
 }) {
   const data = state.status === 'ready' ? state.data : null;
   // 카드에서 연 구성원. 여는 동안 소개 목록은 숨기기만 해 보던 위치를 지킨다.
@@ -381,9 +403,7 @@ export default function Binder3Firm({
             ) : null}
           </header>
 
-          {data ? (
-            <FirmDynamic data={data} onOpen={openMember} caseField={field} office={office.trim()} />
-          ) : null}
+          {data ? <FirmDynamic data={data} onOpen={openMember} caseField={field} /> : null}
 
           <div className="b3-firm-next">
             <button type="button" onClick={onNext}>

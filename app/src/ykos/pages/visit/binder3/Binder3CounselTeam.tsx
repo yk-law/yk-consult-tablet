@@ -21,6 +21,19 @@ function counselRank(member: Binder3CounselMember) {
   return rank < 0 ? COUNSEL_RANKS.length : rank;
 }
 
+/** 앞 칸부터 비교. 키가 없으면(받지 못한 사람·예전 응답) 뒤로. */
+function compareHomepageOrder(a: number[] | null | undefined, b: number[] | null | undefined) {
+  if (!a || !b) return (a ? 0 : 1) - (b ? 0 : 1);
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    const diff = (a[i] ?? 0) - (b[i] ?? 0);
+    if (diff) return diff;
+  }
+  return 0;
+}
+
+const homepageOrderOf = (member: Binder3CounselMember) =>
+  member.state.status === 'ready' ? member.state.data.homepageOrder : undefined;
+
 /** 변호사가 아닌 직급. 상담 칩에서는 변호사 뒤에 둔다. */
 const NON_LAWYER_CLASSES = ['고문', '전문위원', '자문위원'];
 
@@ -28,9 +41,9 @@ const isNonLawyer = (member: Binder3CounselMember) =>
   member.state.status === 'ready' && NON_LAWYER_CLASSES.includes(member.state.data.position);
 
 /**
- * 변호사 먼저, 그다음 고문·전문위원(고재완 11-18 「변호사 먼저」). 각 묶음 안은 YK 소개와 같은 순서:
- * firmOrder(구성원 전체 줄 순서, seq)가 있으면 그 자리, 없거나 목록에 없는 사람은 직급 순서.
- * 같으면 YKOS 에서 고른 순서. 못 불러온 사람은 맨 뒤.
+ * 변호사 먼저, 그다음 고문·전문위원·자문위원(고재완 11-18 「변호사 먼저」). 각 묶음 안은 YK 소개와 같은 순서:
+ * firmOrder(구성원 전체 줄 순서, seq)의 자리, YK 소개를 못 받았으면 홈페이지 /member/lawyer 순서(homepageOrder),
+ * 그것도 없으면 직급 순서. 같으면 YKOS 에서 고른 순서. 못 불러온 사람은 맨 뒤.
  */
 export function sortCounselTeam(
   team: Binder3CounselMember[],
@@ -48,6 +61,7 @@ export function sortCounselTeam(
         (a.member.state.status === 'ready' ? 0 : 1) - (b.member.state.status === 'ready' ? 0 : 1) ||
         Number(isNonLawyer(a.member)) - Number(isNonLawyer(b.member)) ||
         firmPlace(a.member) - firmPlace(b.member) ||
+        compareHomepageOrder(homepageOrderOf(a.member), homepageOrderOf(b.member)) ||
         counselRank(a.member) - counselRank(b.member) ||
         a.i - b.i
     )

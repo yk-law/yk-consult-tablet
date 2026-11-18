@@ -94,6 +94,24 @@ export function Binder3FieldKeywords({
   );
 }
 
+/**
+ * 학력 줄 + 자격(사법연수원 N기 / 변호사시험 N회), 빈 줄은 뺀다. 홈페이지 학력 줄에 시험·연수원이 이미 있으면 한 번만(시연 앱 93a26e6).
+ * 홈페이지는 「사법연수원 제42기」「제10회 변호사시험 합격」처럼 적혀 있어 시험 이름과 기수가 함께 있으면 같은 줄로 본다.
+ */
+export function educationLines(education: string[], qualification: string | null): string[] {
+  const lines = education.map((line) => line.trim()).filter(Boolean);
+  const exam = (qualification ?? '').trim();
+  if (!exam) return lines;
+  const [, name = '', round = ''] = exam.match(/^(\S+)\s*(\d+[기회])$/) ?? [];
+  const same = (line: string) => {
+    const text = line.replace(/\s+/g, '').replace(/제(?=\d)/g, '');
+    return name
+      ? text.includes(name) && new RegExp(`(^|\\D)${round}`).test(text)
+      : text.includes(exam.replace(/\s+/g, ''));
+  };
+  return lines.some(same) ? lines : [...lines, exam];
+}
+
 function ListSection({
   title,
   items,
@@ -266,20 +284,7 @@ function CounselProfile({
   };
 
   // 학력·자격은 이름 아래가 아니라 이력 사항 맨 아래(고재완 11-18, 2차 내부 시연 피드백).
-  // 홈페이지 학력 줄에 시험·연수원이 이미 있으면 한 번만 보인다(시연 앱 93a26e6).
-  // 홈페이지는 「사법연수원 제42기」「제10회 변호사시험 합격」처럼 적혀 있어 시험 이름과 기수가 함께 있으면 같은 줄로 본다.
-  const qualification = data.qualification?.trim() ?? '';
-  const [, exam = '', round = ''] = qualification.match(/^(\S+)\s*(\d+[기회])$/) ?? [];
-  const sameQualification = (line: string) => {
-    const text = line.replace(/\s+/g, '').replace(/제(?=\d)/g, '');
-    return exam
-      ? text.includes(exam) && new RegExp(`(^|\\D)${round}`).test(text)
-      : text.includes(qualification.replace(/\s+/g, ''));
-  };
-  const education = [
-    ...data.education,
-    ...(qualification && !data.education.some(sameQualification) ? [qualification] : []),
-  ];
+  const education = educationLines(data.education, data.qualification);
   const visibleWorks = data.works
     .filter((work) => isCaseVisible(caseBodies, work))
     .slice(0, MAX_SHOWN_WORKS);
