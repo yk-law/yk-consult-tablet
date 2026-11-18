@@ -302,10 +302,6 @@
 
 .yk-binder3 .b3-firm-sec {padding:32px 0;border-bottom:1px solid var(--b3-line);}
 .yk-binder3 .b3-firm-sec h4 {margin:0;font-size:24px;font-weight:700;line-height:32px;letter-spacing:-.01em;color:var(--yk-foreground);}
-.yk-binder3 .b3-firm-subgroup {margin-top:24px;}
-.yk-binder3 .b3-firm-subgroup + .b3-firm-subgroup {margin-top:32px;}
-.yk-binder3 .b3-firm-subgroup h5 {margin:0;font-size:18px;font-weight:600;line-height:26px;color:var(--yk-foreground);}
-.yk-binder3 .b3-firm-sec-lead {margin:16px 0 0;font-size:16px;font-weight:400;line-height:26px;color:var(--yk-muted-foreground);}
 
 /* 업무사례 탭: 홈페이지 업무사례 줄 목록(시연 앱 .firm-cases 와 같은 모양, 2차 내부 피드백 7).
    한 줄 = 결과 · 분류/의뢰인 지위 · 제목 · 부제 · 담당 변호사 · 날짜. 누르면 업무 사례 창 */
@@ -378,7 +374,6 @@
 .yk-binder3 .b3-firm-tabs button.on {border-bottom-color:var(--yk-primary);color:var(--yk-foreground);font-weight:600;}
 .yk-binder3 .b3-firm-tabs button:focus-visible {outline:2px solid var(--yk-ring);outline-offset:-2px;}
 .yk-binder3 .b3-firm-tabpanel > .b3-firm-people:first-child {margin-top:24px;}
-.yk-binder3 .b3-firm-tabpanel > .b3-firm-sec-lead {margin-top:24px;}
 /* 쪽을 넘기면 첫 줄이 고정된 탭 바로 아래 오게 한다 */
 .yk-binder3 .b3-firm-tabpanel .b3-firm-people {scroll-margin-top:88px;}
 /* 구성원 목록 쪽 나눔(24명씩, 시연 앱 09c4f88). 숫자는 가운데, 지금 쪽은 진한 바탕. 태블릿에서 누르기 쉽게 44px. */

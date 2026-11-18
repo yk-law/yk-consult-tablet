@@ -172,41 +172,27 @@ function FirmDynamic({
               />
             ) : null}
             {tab === 'advisors' ? (
-              <>
-                <p className="b3-firm-sec-lead">
-                  정부기관·경찰·입법 분야의 실무 경험을 바탕으로, 사안 검토에 필요한 전문적 관점을
-                  더합니다.
-                </p>
-                {data.advisors.length > 0 ? (
-                  <div className="b3-firm-subgroup">
-                    <h5>고문</h5>
-                    <PersonGrid
-                      rows={data.advisors.map((a) => ({
-                        seq: a.seq,
-                        name: a.name,
-                        photo: a.photo,
-                        position: '고문',
-                        line: a.label,
-                      }))}
-                      onOpen={onOpen}
-                    />
-                  </div>
-                ) : null}
-                {data.police.length > 0 ? (
-                  <div className="b3-firm-subgroup">
-                    <h5>경찰 경력 전문위원</h5>
-                    <PersonGrid
-                      rows={data.police.map((a) => ({
-                        seq: a.seq,
-                        name: a.name,
-                        photo: a.photo,
-                        position: '전문위원',
-                      }))}
-                      onOpen={onOpen}
-                    />
-                  </div>
-                ) : null}
-              </>
+              // 고문과 경찰 경력 전문위원을 한 목록으로(고재완 11-18, 두 묶음으로 나눈 것이 어색했다).
+              // 다른 탭처럼 카드에 직함과 경력 줄을 두고, 고문 → 전문위원, 각각 홈페이지 순서.
+              <PersonGrid
+                rows={[
+                  ...data.advisors.map((a) => ({
+                    seq: a.seq,
+                    name: a.name,
+                    photo: a.photo,
+                    position: '고문',
+                    line: a.label,
+                  })),
+                  ...data.police.map((a) => ({
+                    seq: a.seq,
+                    name: a.name,
+                    photo: a.photo,
+                    position: '전문위원',
+                    line: '경찰 경력',
+                  })),
+                ]}
+                onOpen={onOpen}
+              />
             ) : null}
             {tab === 'office' ? (
               <PersonGrid rows={officeRows.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
