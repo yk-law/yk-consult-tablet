@@ -104,8 +104,8 @@ type FirmTab =
   | 'office';
 
 /**
- * 구성원을 세 묶음(주요 경력 변호사 · 고문·위원 · 방문 지사 변호사)으로 나누고, 묶음 안은 작은 탭으로 고른다
- * (고재완 11-18 「탭이 늘어지니 변호사 / 고문·전문·자문 / 방문 지사 변호사로 따로」). 맨 아래에 분야별 전문 센터를 둔다.
+ * 구성원 탭: 위 줄은 법원·검찰·경찰 경력 변호사 · 고문 및 위원 · 방문 지사 변호사, 「고문 및 위원」만 아래 줄 칩으로
+ * 고문·전문위원·자문위원을 고른다(고재완 11-18). 맨 아래에 분야별 전문 센터를 둔다.
  * 한 사람은 한 곳에만 나온다(서버가 나눈다). 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
  */
 function FirmDynamic({
@@ -125,17 +125,19 @@ function FirmDynamic({
   const officeRows = (data.offices ?? []).find((o) => o.office === office)?.people ?? [];
   const groups = (
     [
+      // 법원·검찰·경찰 경력 변호사는 묶지 않고 위 줄 탭으로 둔다(고재완 11-18).
+      { label: '법원 경력 변호사', lists: [['bench', '법원 경력 변호사', data.bench.length > 0]] },
       {
-        label: '주요 경력 변호사',
-        lists: [
-          ['bench', '법원 경력', data.bench.length > 0],
-          ['prosecution', '검찰 경력', data.prosecution.length > 0],
-          ['police', '경찰 경력', (data.policeLawyers ?? []).length > 0],
-        ],
+        label: '검찰 경력 변호사',
+        lists: [['prosecution', '검찰 경력 변호사', data.prosecution.length > 0]],
+      },
+      {
+        label: '경찰 경력 변호사',
+        lists: [['police', '경찰 경력 변호사', (data.policeLawyers ?? []).length > 0]],
       },
       {
         // 고문·전문위원은 전 직급 순(서버 visit_binder_former_rank), 자문위원은 홈페이지 구분 그대로 따로.
-        label: '고문·위원',
+        label: '고문 및 위원',
         lists: [
           ['advisors', '고문', data.advisors.length > 0],
           ['experts', '전문위원', (data.experts ?? []).length > 0],

@@ -361,7 +361,7 @@
 .yk-binder3 .b3-firm-center-group li.hit {background:var(--yk-primary);color:var(--yk-primary-foreground);}
 .yk-binder3 .b3-firm-group-t {margin:0 0 8px;font-size:14px;font-weight:500;line-height:20px;color:var(--b3-accent);}
 
-/* 구성원 탭(2차 내부 피드백 7). 위 줄은 묶음(주요 경력 변호사 · 고문·위원 · 방문 지사 변호사), 아래 줄은 묶음 안 목록(고재완 11-18).
+/* 구성원 탭(2차 내부 피드백 7). 위 줄은 법원·검찰·경찰 경력 변호사 · 고문 및 위원 · 방문 지사 변호사, 아래 줄은 「고문 및 위원」 안 목록(고재완 11-18).
    둘 다 스크롤해도 위에 고정하고 아래 목록만 움직인다. .b3-firm 위 여백(32px)만큼 올려 붙여 탭 위로 목록이 비치지 않게 한다. */
 .yk-binder3 .b3-firm-tabhead {position:sticky;top:-32px;z-index:3;margin:40px 0 0;padding-top:16px;background:var(--yk-background);}
 .yk-binder3 .b3-firm-tabs {display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border-bottom:1px solid var(--b3-line);}
