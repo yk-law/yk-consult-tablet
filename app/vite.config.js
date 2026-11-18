@@ -23,9 +23,11 @@ const base = process.env.VITE_BASE || "/";
 function ykosAssetBase() {
   return {
     name: "ykos-asset-base",
+    // TS 변환 뒤에는 따옴표가 바뀌어 찾지 못한다. 원본 그대로일 때 바꾼다.
+    enforce: "pre",
     transform(code, id) {
       if (!id.includes("/src/ykos/") || base === "/") return null;
-      return code.replaceAll("'/assets/visit-binder3'", JSON.stringify(`${base}assets/visit-binder3`));
+      return code.replace(/(['"])\/assets\/visit-binder3\1/g, JSON.stringify(`${base}assets/visit-binder3`));
     },
   };
 }
