@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -15,15 +16,43 @@ function buildId() {
   }
 }
 
+const base = process.env.VITE_BASE || "/";
+
+/* src/ykos 는 YK-OS 바인더#3 원본을 그대로 복사한 것이다. 원본이 쓰는 절대 경로
+   /assets/visit-binder3 를 Pages 하위 경로(base)에서도 열리게 빌드 때만 바꾼다. */
+function ykosAssetBase() {
+  return {
+    name: "ykos-asset-base",
+    transform(code, id) {
+      if (!id.includes("/src/ykos/") || base === "/") return null;
+      return code.replaceAll("'/assets/visit-binder3'", JSON.stringify(`${base}assets/visit-binder3`));
+    },
+  };
+}
+
 export default defineConfig({
-  base: process.env.VITE_BASE || "/",
-  plugins: [react()],
+  base,
+  plugins: [react(), ykosAssetBase()],
+  resolve: {
+    // YK-OS 의 'lib/...' 가져오기를 그대로 쓴다. lib/client 만 POC 용(받아 둔 응답)이다.
+    alias: { lib: fileURLToPath(new URL("./src/ykos/lib", import.meta.url)) },
+  },
   define: { __BUILD__: JSON.stringify(buildId()) },
   server: {
     port: 5173,
     proxy: { "/api": "http://127.0.0.1:8000" },
   },
-  build: { outDir: "dist", emptyOutDir: true },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    // 첫 화면은 YK-OS 바인더#3, 이전 POC 는 old.html 에 둔다.
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL("./index.html", import.meta.url)),
+        old: fileURLToPath(new URL("./old.html", import.meta.url)),
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     setupFiles: ["./src/__tests__/setup.js"],
