@@ -94,11 +94,11 @@ function PersonGrid({ rows, onOpen }: { rows: PersonCard[]; onOpen: (seq: number
   );
 }
 
-type FirmTab = 'bench' | 'prosecution' | 'police' | 'advisors' | 'office';
+type FirmTab = 'bench' | 'prosecution' | 'police' | 'advisors' | 'experts';
 
 /**
- * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 및 전문위원 → 방문 지사 소속 변호사, 고재완 11-18),
- * 분야별 전문 센터는 어느 탭이든 맨 아래에 둔다. 한 사람은 탭 하나에만 나온다(서버가 나눈다).
+ * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 → 전문위원, 고재완 11-18),
+ * 탭 아래에 방문 지사 소속 변호사, 맨 아래에 분야별 전문 센터를 둔다. 한 사람은 한 곳에만 나온다(서버가 나눈다).
  * 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
  */
 function FirmDynamic({
@@ -121,9 +121,9 @@ function FirmDynamic({
       ['bench', '법원 경력 변호사', data.bench.length > 0],
       ['prosecution', '검찰 경력 변호사', data.prosecution.length > 0],
       ['police', '경찰 경력 변호사', (data.policeLawyers ?? []).length > 0],
-      ['advisors', '고문 및 전문위원', data.advisors.length > 0 || data.police.length > 0],
-      // 탭 이름은 사무소와 상관없이 같게 두고 목록만 방문 사무소에 맞춘다(고재완 11-18, 이름이 길면 어색해서)
-      ['office', '방문 지사 소속 변호사', officeRows.length > 0],
+      // 고문과 전문위원은 탭을 나눈다(고재완 11-18). 둘 다 전 직급 순(서버 visit_binder_former_rank).
+      ['advisors', '고문', data.advisors.length > 0],
+      ['experts', '전문위원', data.police.length > 0],
     ] as const
   ).filter(([, , has]) => has);
   const [picked, setPicked] = useState<FirmTab>('bench');
@@ -131,8 +131,9 @@ function FirmDynamic({
 
   return (
     <>
+      {/* 탭 고정은 이 묶음 안에서만 걸린다. 아래 방문 지사·센터 섹션까지 탭이 따라 내려오지 않게 한다. */}
       {tab ? (
-        <>
+        <div className="b3-firm-tabbed">
           <div className="b3-firm-tabs" role="tablist" aria-label="법무법인 YK 구성원">
             {tabs.map(([key, label]) => (
               <button
@@ -172,33 +173,41 @@ function FirmDynamic({
               />
             ) : null}
             {tab === 'advisors' ? (
-              // 고문과 경찰 경력 전문위원을 한 목록으로(고재완 11-18, 두 묶음으로 나눈 것이 어색했다).
-              // 다른 탭처럼 카드에 직함과 경력 줄을 두고, 고문 → 전문위원, 각각 홈페이지 순서.
               <PersonGrid
-                rows={[
-                  ...data.advisors.map((a) => ({
-                    seq: a.seq,
-                    name: a.name,
-                    photo: a.photo,
-                    position: '고문',
-                    line: a.label,
-                  })),
-                  ...data.police.map((a) => ({
-                    seq: a.seq,
-                    name: a.name,
-                    photo: a.photo,
-                    position: '전문위원',
-                    line: '경찰 경력',
-                  })),
-                ]}
+                rows={data.advisors.map((a) => ({
+                  seq: a.seq,
+                  name: a.name,
+                  photo: a.photo,
+                  position: '고문',
+                  line: a.label,
+                }))}
                 onOpen={onOpen}
               />
             ) : null}
-            {tab === 'office' ? (
-              <PersonGrid rows={officeRows.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
+            {tab === 'experts' ? (
+              <PersonGrid
+                rows={data.police.map((a) => ({
+                  seq: a.seq,
+                  name: a.name,
+                  photo: a.photo,
+                  position: '전문위원',
+                  line: '경찰 경력',
+                }))}
+                onOpen={onOpen}
+              />
             ) : null}
           </section>
-        </>
+        </div>
+      ) : null}
+
+      {/* 방문 지사 소속 변호사는 탭이 아니라 탭 아래 섹션(고재완 11-18, 고문·전문위원 탭을 나누며 옮김).
+          제목은 사무소와 상관없이 같고 목록만 방문 사무소에 맞춘다. */}
+      {officeRows.length > 0 ? (
+        <section className="b3-firm-sec b3-firm-office" aria-labelledby="b3-firm-office">
+          <h4 id="b3-firm-office">방문 지사 소속 변호사</h4>
+          <p className="b3-firm-office-name">{office}</p>
+          <PersonGrid rows={officeRows.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
+        </section>
       ) : null}
 
       {data.centerGroups.length > 0 && (
