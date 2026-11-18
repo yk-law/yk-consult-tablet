@@ -310,12 +310,9 @@ function CounselProfile({
           <div className="b3-counsel-ident">
             {hero.greeting ? <p className="b3-counsel-quote">{hero.greeting}</p> : null}
             {hero.greeting ? <div className="b3-counsel-divider" aria-hidden="true" /> : null}
+            {/* 대표 경력은 이름 위 한 줄 머리말(Label 14). 여럿이면 「·」로 잇는다(고재완 11-18). 전체 경력은 아래 이력 사항에 있다. */}
             {hero.titles.length ? (
-              <div className="b3-counsel-titles">
-                {hero.titles.map((title, i) => (
-                  <span key={`${i}-${title}`}>{title}</span>
-                ))}
-              </div>
+              <p className="b3-counsel-titles">{hero.titles.join(' · ')}</p>
             ) : null}
             <div className="b3-counsel-who">
               <strong>{data.name}</strong>

@@ -593,8 +593,7 @@
 .yk-binder3 .b3-counsel-divider {
   height:1px;margin:24px 0;background:color-mix(in srgb,var(--b3-line) 40%,transparent);
 }
-.yk-binder3 .b3-counsel-titles {display:flex;flex-direction:column;gap:4px;}
-.yk-binder3 .b3-counsel-titles span {font-size:16px;font-weight:700;line-height:24px;color:var(--yk-foreground);}
+.yk-binder3 .b3-counsel-titles {margin:0;font-size:14px;font-weight:500;line-height:20px;color:var(--b3-accent);word-break:keep-all;overflow-wrap:anywhere;}
 .yk-binder3 .b3-counsel-who {display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-top:8px;}
 .yk-binder3 .b3-counsel-divider + .b3-counsel-who {margin-top:0;}
 .yk-binder3 .b3-counsel-who strong {font-size:24px;font-weight:600;line-height:32px;}
