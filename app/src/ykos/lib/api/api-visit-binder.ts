@@ -36,6 +36,8 @@ export type VisitBinderFirm = {
    * title 은 카드 줄: 대표 경력, 없으면 대한변협 등록 전문분야
    */
   offices: { office: string; people: VisitBinderFirmPerson[] }[];
+  /** 구성원 전체 줄 순서(seq). 상담 변호사 칩도 이 순서로 세운다 */
+  order?: number[];
 };
 
 /** 요청이 멈추면 고객 화면이 빈 채로 남지 않게 실패 안내로 넘긴다. */
@@ -51,6 +53,8 @@ export const getVisitBinderFirm = async (): Promise<VisitBinderFirm> => {
 
 // 응답 모양은 backend/services/visit_binder_counsel_service.py 의 build_counsel_view 를 따른다.
 export type VisitBinderCounsel = {
+  /** 홈페이지 구성원 행 번호(VisitBinderFirm.order 와 맞춘다) */
+  seq?: number;
   name: string;
   /** 구성원 구분 (없으면 「변호사」) */
   position: string;

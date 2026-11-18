@@ -287,11 +287,15 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
   }, [counselKey]);
   const counselStates = useMemo(() => counselTeam.map((m) => m.state), [counselTeam]);
   const counselLoading = counselStates.some((state) => state.status === 'loading');
-  // 화면에는 전문 인력처럼 대표 → 파트너 → 변호사 → 고문·전문위원 순서로 보인다. 다 받은 뒤에 한 번 정해
-  // 탭 순서(counselIndex)가 받는 도중에 바뀌지 않게 한다.
+  // 화면에는 YK 소개와 같은 순서(법원 → 검찰 → 경찰 → 고문 → 전문위원, 그 밖은 직함 → 기수)로 보인다(고재완 11-18).
+  // 상담 변호사와 YK 소개를 다 받은 뒤에 한 번 정해 탭 순서(counselIndex)가 받는 도중에 바뀌지 않게 한다.
+  const firmOrder = firm.status === 'ready' ? firm.data?.order : undefined;
   const orderedCounselTeam = useMemo(
-    () => (counselLoading ? counselTeam : sortCounselTeam(counselTeam)),
-    [counselLoading, counselTeam]
+    () =>
+      counselLoading || firm.status === 'loading'
+        ? counselTeam
+        : sortCounselTeam(counselTeam, firmOrder),
+    [counselLoading, counselTeam, firm.status, firmOrder]
   );
   // 탭으로 고른 사람. 바꾸면 그 사람 소개를 맨 위부터 보인다.
   const [counselIndex, setCounselIndex] = useState(0);
