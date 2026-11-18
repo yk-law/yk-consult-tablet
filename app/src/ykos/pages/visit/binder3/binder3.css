@@ -302,8 +302,8 @@
 
 .yk-binder3 .b3-firm-sec {padding:32px 0;border-bottom:1px solid var(--b3-line);}
 .yk-binder3 .b3-firm-sec h4 {margin:0;font-size:24px;font-weight:700;line-height:32px;letter-spacing:-.01em;color:var(--yk-foreground);}
-/* 방문 지사 소속 변호사(탭 아래 섹션). 탭 목록과 선으로 나눈다. */
-.yk-binder3 .b3-firm-office {margin-top:40px;border-top:1px solid var(--b3-line);}
+/* 방문 지사 변호사(탭 위 섹션). 위 수치와 아래 탭 사이에 선으로 나눈다. */
+.yk-binder3 .b3-firm-office {padding-top:40px;}
 .yk-binder3 .b3-firm-office-name {margin:4px 0 0;font-size:16px;line-height:24px;color:var(--yk-muted-foreground);}
 
 /* 업무사례 탭: 홈페이지 업무사례 줄 목록(시연 앱 .firm-cases 와 같은 모양, 2차 내부 피드백 7).

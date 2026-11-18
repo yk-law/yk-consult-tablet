@@ -98,7 +98,7 @@ type FirmTab = 'bench' | 'prosecution' | 'police' | 'advisors' | 'experts';
 
 /**
  * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 → 전문위원, 고재완 11-18),
- * 탭 아래에 방문 지사 소속 변호사, 맨 아래에 분야별 전문 센터를 둔다. 한 사람은 한 곳에만 나온다(서버가 나눈다).
+ * 탭 위에 방문 지사 변호사, 맨 아래에 분야별 전문 센터를 둔다. 한 사람은 한 곳에만 나온다(서버가 나눈다).
  * 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
  */
 function FirmDynamic({
@@ -131,6 +131,16 @@ function FirmDynamic({
 
   return (
     <>
+      {/* 방문 지사 변호사는 탭이 아니라 탭 위 섹션(고재완 11-18, 고문·전문위원 탭을 나누며 옮김).
+          제목은 사무소와 상관없이 같고 목록만 방문 사무소에 맞춘다. */}
+      {officeRows.length > 0 ? (
+        <section className="b3-firm-sec b3-firm-office" aria-labelledby="b3-firm-office">
+          <h4 id="b3-firm-office">방문 지사 변호사</h4>
+          <p className="b3-firm-office-name">{office}</p>
+          <PersonGrid rows={officeRows.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
+        </section>
+      ) : null}
+
       {/* 탭 고정은 이 묶음 안에서만 걸린다. 아래 방문 지사·센터 섹션까지 탭이 따라 내려오지 않게 한다. */}
       {tab ? (
         <div className="b3-firm-tabbed">
@@ -198,16 +208,6 @@ function FirmDynamic({
             ) : null}
           </section>
         </div>
-      ) : null}
-
-      {/* 방문 지사 소속 변호사는 탭이 아니라 탭 아래 섹션(고재완 11-18, 고문·전문위원 탭을 나누며 옮김).
-          제목은 사무소와 상관없이 같고 목록만 방문 사무소에 맞춘다. */}
-      {officeRows.length > 0 ? (
-        <section className="b3-firm-sec b3-firm-office" aria-labelledby="b3-firm-office">
-          <h4 id="b3-firm-office">방문 지사 소속 변호사</h4>
-          <p className="b3-firm-office-name">{office}</p>
-          <PersonGrid rows={officeRows.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
-        </section>
       ) : null}
 
       {data.centerGroups.length > 0 && (
