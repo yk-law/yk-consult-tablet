@@ -1,10 +1,21 @@
 import { useEffect, useState } from 'react';
-import { BINDER3_YOUTUBE_PLAYLIST, BINDER3_YOUTUBE_VIDEOS, type Binder3YoutubeVideo } from './binder3YoutubeVideos';
+import {
+  BINDER3_YOUTUBE_PLAYLIST,
+  BINDER3_YOUTUBE_VIDEOS,
+  type Binder3YoutubeVideo,
+} from './binder3YoutubeVideos';
 import { Binder3NavLinks } from './binder3Common';
 
 function PlayIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
       <path d="M8 5.5v13l10.5-6.5L8 5.5Z" />
     </svg>
   );
@@ -37,7 +48,13 @@ function CloseIcon() {
  */
 export default function Binder3YoutubeTab({ onPrevious }: { onPrevious?: () => void } = {}) {
   const [current, setCurrent] = useState<Binder3YoutubeVideo | null>(null);
-  const params = new URLSearchParams({ autoplay: '1', mute: '0', playsinline: '1', rel: '0', modestbranding: '1' });
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: '0',
+    playsinline: '1',
+    rel: '0',
+    modestbranding: '1',
+  });
 
   useEffect(() => {
     if (!current) return undefined;
@@ -80,7 +97,11 @@ export default function Binder3YoutubeTab({ onPrevious }: { onPrevious?: () => v
                     onClick={() => setCurrent(video)}
                   >
                     <span className="b3-youtube-thumb">
-                      <img src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`} alt="" loading="lazy" />
+                      <img
+                        src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`}
+                        alt=""
+                        loading="lazy"
+                      />
                       <span className="b3-youtube-badge">
                         <PlayIcon />
                         보기
@@ -96,7 +117,9 @@ export default function Binder3YoutubeTab({ onPrevious }: { onPrevious?: () => v
         </div>
       </div>
       {/* 마지막 탭이라 다음은 없다(2차 내부 피드백 6) */}
-      <Binder3NavLinks previous={onPrevious ? { label: '전문 인력으로', onClick: onPrevious } : undefined} />
+      <Binder3NavLinks
+        previous={onPrevious ? { label: '업무사례로', onClick: onPrevious } : undefined}
+      />
 
       {current ? (
         <div
@@ -106,7 +129,12 @@ export default function Binder3YoutubeTab({ onPrevious }: { onPrevious?: () => v
           aria-label={`${current.lawyer} 영상`}
           onClick={() => setCurrent(null)}
         >
-          <button type="button" className="b3-youtube-close" aria-label="영상 닫기" onClick={() => setCurrent(null)}>
+          <button
+            type="button"
+            className="b3-youtube-close"
+            aria-label="영상 닫기"
+            onClick={() => setCurrent(null)}
+          >
             <CloseIcon />
           </button>
           <div className="b3-youtube-stage" onClick={(event) => event.stopPropagation()}>

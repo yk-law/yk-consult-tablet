@@ -21,13 +21,21 @@ export type VisitBinderFirm = {
    * centerFields: 센터마다 업무 분야(centers 와 같은 순서). 사건 분야와 같은 센터 칩만 칠한다.
    */
   centerGroups: { title: string; centers: string[]; centerFields?: string[]; fields?: string[] }[];
+  /** 탭 순서 법원 → 검찰 → 경찰 → 고문 및 전문위원 → 지사. 한 사람은 먼저 걸린 탭 하나에만 온다 */
   bench: VisitBinderFirmPerson[];
   prosecution: VisitBinderFirmPerson[];
+  /** 경찰 경력 변호사 */
+  policeLawyers: VisitBinderFirmPerson[];
   /** 고문. seq·photo 로 사진 카드를 그리고 누르면 소개 페이지를 연다 */
   advisors: { seq: number; name: string; label: string; photo: string | null }[];
   /** 경찰 경력 전문위원 */
   police: { seq: number; name: string; photo: string | null }[];
   expertCount: number;
+  /**
+   * 사무소마다 소속 변호사(앞 탭에 나온 사람 제외). 화면은 고객이 방문한 사무소 하나만 탭으로 보인다.
+   * title 은 카드 줄: 대표 경력, 없으면 대한변협 등록 전문분야
+   */
+  offices: { office: string; people: VisitBinderFirmPerson[] }[];
 };
 
 /** 요청이 멈추면 고객 화면이 빈 채로 남지 않게 실패 안내로 넘긴다. */

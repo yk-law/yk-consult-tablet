@@ -1,13 +1,7 @@
-import { useCallback, useEffect, useId, useState } from 'react';
-import {
-  getVisitBinderLawyer,
-  type VisitBinderCaseBody,
-  type VisitBinderFirm,
-  type VisitBinderRelatedCase,
-} from 'lib/api/api-visit-binder';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { getVisitBinderLawyer, type VisitBinderFirm } from 'lib/api/api-visit-binder';
 import { lawyerImageUrl } from '../utils/visitConsultDisplay';
 import { Binder3ArrowIcon, Binder3NoPhoto } from './binder3Common';
-import Binder3CaseModal from './Binder3CaseModal';
 import Binder3Counsel, { type Binder3CounselState } from './Binder3Counsel';
 
 export type Binder3FirmState =
@@ -30,110 +24,105 @@ type PersonCard = {
   line?: string;
 };
 
+/** 구성원이 많은 탭(서울 강남 주사무소 100명 넘게 등)은 한 쪽에 이만큼씩 나눠 보인다(시연 앱 09c4f88). 그보다 적으면 전부. */
+export const FIRM_PAGE_SIZE = 24;
+
 function PersonGrid({ rows, onOpen }: { rows: PersonCard[]; onOpen: (seq: number) => void }) {
-  return (
-    <ul className="b3-firm-people">
-      {rows.map((p) => (
-        <li key={`${p.seq}-${p.name}`}>
-          <button type="button" className="b3-firm-person" onClick={() => onOpen(p.seq)}>
-            <span className="b3-firm-ph">
-              {p.photo ? <img src={lawyerImageUrl(p.photo)} alt="" /> : <Binder3NoPhoto />}
-            </span>
-            <strong>{p.name}</strong>
-            {p.position ? <span className="b3-firm-people-pos">{p.position}</span> : null}
-            {p.line ? <span className="b3-firm-people-t">{p.line}</span> : null}
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-type FirmTab = 'bench' | 'prosecution' | 'advisors' | 'cases';
-
-const FIRM_CASES_STEP = 5;
-
-/**
- * 업무사례 탭: 상담 사건 분야의 홈페이지 업무사례 줄 목록(시연 앱 FirmCases). 5건씩 「더 보기」로 늘리고,
- * 줄을 누르면 관련 업무 사례와 같은 업무 사례 창을 연다(2차 내부 피드백 7).
- */
-function FirmCases({
-  rows,
-  label,
-  onOpen,
-}: {
-  rows: VisitBinderRelatedCase[];
-  label: string;
-  onOpen: (row: VisitBinderRelatedCase) => void;
-}) {
-  const [shown, setShown] = useState(FIRM_CASES_STEP);
-  const left = rows.length - shown;
+  const [page, setPage] = useState(0);
+  const listRef = useRef<HTMLUListElement>(null);
+  const moved = useRef(false);
+  // 쪽을 넘기면 새 목록의 첫 줄이 고정된 탭 바로 아래 오도록 올린다(.b3-firm-people scroll-margin-top).
+  useEffect(() => {
+    if (moved.current) listRef.current?.scrollIntoView?.({ block: 'start' });
+  }, [page]);
+  const pages = Math.ceil(rows.length / FIRM_PAGE_SIZE);
+  const shown = pages > 1 ? rows.slice(page * FIRM_PAGE_SIZE, (page + 1) * FIRM_PAGE_SIZE) : rows;
+  const go = (n: number) => {
+    moved.current = true;
+    setPage(n);
+  };
   return (
     <>
-      <p className="b3-firm-cases-count">
-        {label} 업무사례 <b>{rows.length}건</b>
-      </p>
-      <ul className="b3-firm-cases">
-        {rows.slice(0, shown).map((c) => (
-          <li key={c.id}>
-            <button type="button" className="b3-firm-case" onClick={() => onOpen(c)}>
-              {c.result ? <span className="b3-firm-case-result">{c.result}</span> : <span />}
-              <span className="b3-firm-case-main">
-                <span className="b3-firm-case-meta">
-                  {[c.category, c.role].filter(Boolean).join(' · ')}
-                </span>
-                <strong>{c.title}</strong>
-                {c.sub ? <span className="b3-firm-case-sub">{c.sub}</span> : null}
+      <ul className="b3-firm-people" ref={listRef}>
+        {shown.map((p) => (
+          <li key={`${p.seq}-${p.name}`}>
+            <button type="button" className="b3-firm-person" onClick={() => onOpen(p.seq)}>
+              <span className="b3-firm-ph">
+                {p.photo ? <img src={lawyerImageUrl(p.photo)} alt="" /> : <Binder3NoPhoto />}
               </span>
-              <span className="b3-firm-case-side">
-                {c.lawyers.length ? <span>{c.lawyers.join(' · ')} 변호사</span> : null}
-                {c.date ? <span className="b3-firm-case-date">{c.date}</span> : null}
-              </span>
-              <Binder3ArrowIcon direction="right" />
+              <strong>{p.name}</strong>
+              {p.position ? <span className="b3-firm-people-pos">{p.position}</span> : null}
+              {p.line ? <span className="b3-firm-people-t">{p.line}</span> : null}
             </button>
           </li>
         ))}
       </ul>
-      {left > 0 ? (
-        <button
-          type="button"
-          className="b3-firm-cases-more"
-          onClick={() => setShown((n) => n + FIRM_CASES_STEP)}
-        >
-          업무사례 더 보기 <span>{left}건</span>
-        </button>
+      {pages > 1 ? (
+        <nav className="b3-firm-pager" aria-label="구성원 목록 쪽">
+          <button
+            type="button"
+            className="b3-firm-pager-step"
+            disabled={page === 0}
+            onClick={() => go(page - 1)}
+            aria-label="이전 쪽"
+          >
+            <Binder3ArrowIcon direction="left" />
+          </button>
+          {Array.from({ length: pages }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              className={i === page ? 'on' : undefined}
+              aria-current={i === page ? 'page' : undefined}
+              onClick={() => go(i)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="b3-firm-pager-step"
+            disabled={page === pages - 1}
+            onClick={() => go(page + 1)}
+            aria-label="다음 쪽"
+          >
+            <Binder3ArrowIcon direction="right" />
+          </button>
+        </nav>
       ) : null}
     </>
   );
 }
 
+type FirmTab = 'bench' | 'prosecution' | 'police' | 'advisors' | 'office';
+
 /**
- * 구성원을 탭 3개(법원 경력 변호사 / 검찰 경력 변호사 / 고문 및 전문위원)로 나눠 보이고,
- * 분야별 전문 센터는 어느 탭이든 맨 아래에 둔다(yk-consult-tablet 시연 앱 ea4ddbe, 2차 내부 피드백 7).
- * 업무사례 탭은 서버 작업이 필요해 다음 단계로 미뤘다.
+ * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 및 전문위원 → 방문 사무소 변호사, 고재완 11-18),
+ * 분야별 전문 센터는 어느 탭이든 맨 아래에 둔다. 한 사람은 탭 하나에만 나온다(서버가 나눈다).
+ * 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
  */
 function FirmDynamic({
   data,
   onOpen,
   caseField,
-  cases,
-  onOpenCase,
+  office,
 }: {
   data: VisitBinderFirm;
   onOpen: (seq: number) => void;
-  /** 업무사례 탭 목록. 비어 있으면 탭을 두지 않는다 */
-  cases: VisitBinderRelatedCase[];
-  onOpenCase: (row: VisitBinderRelatedCase) => void;
   /** 상담 사건의 홈페이지 분류(예: 성범죄). 그 분야가 든 센터 묶음을 강조한다 */
   caseField: string;
+  /** 고객이 방문한 사무소(예: 수원 분사무소). 그 사무소 변호사 탭을 더한다 */
+  office: string;
 }) {
   const tabsId = useId();
+  const officeRows = (data.offices ?? []).find((o) => o.office === office)?.people ?? [];
   const tabs = (
     [
       ['bench', '법원 경력 변호사', data.bench.length > 0],
       ['prosecution', '검찰 경력 변호사', data.prosecution.length > 0],
+      ['police', '경찰 경력 변호사', (data.policeLawyers ?? []).length > 0],
       ['advisors', '고문 및 전문위원', data.advisors.length > 0 || data.police.length > 0],
-      ['cases', '업무사례', cases.length > 0],
+      ['office', `${office} 변호사`, officeRows.length > 0],
     ] as const
   ).filter(([, , has]) => has);
   const [picked, setPicked] = useState<FirmTab>('bench');
@@ -162,6 +151,7 @@ function FirmDynamic({
           <section
             className="b3-firm-tabpanel"
             role="tabpanel"
+            key={tab}
             id={`${tabsId}-${tab}-panel`}
             aria-labelledby={`${tabsId}-${tab}`}
           >
@@ -171,6 +161,12 @@ function FirmDynamic({
             {tab === 'prosecution' ? (
               <PersonGrid
                 rows={data.prosecution.map((p) => ({ ...p, line: p.title }))}
+                onOpen={onOpen}
+              />
+            ) : null}
+            {tab === 'police' ? (
+              <PersonGrid
+                rows={(data.policeLawyers ?? []).map((p) => ({ ...p, line: p.title }))}
                 onOpen={onOpen}
               />
             ) : null}
@@ -211,8 +207,8 @@ function FirmDynamic({
                 ) : null}
               </>
             ) : null}
-            {tab === 'cases' ? (
-              <FirmCases rows={cases} label={caseField} onOpen={onOpenCase} />
+            {tab === 'office' ? (
+              <PersonGrid rows={officeRows.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
             ) : null}
           </section>
         </>
@@ -262,20 +258,14 @@ export default function Binder3Firm({
   state,
   onNext,
   caseField = '',
-  cases = [],
-  caseBodies,
+  office = '',
 }: {
   state: Binder3FirmState;
   onNext: () => void;
   /** 상담 사건의 홈페이지 분류. 구성원 소개 페이지에서 같은 분야를 표시한다 */
   caseField?: string;
-  /**
-   * 업무사례 탭 목록(바인더를 열 때 미리 받아 둔다, Gemma 가 상담과 비슷한 사례를 앞에 둔다).
-   * 비어 있으면 탭을 두지 않는다.
-   */
-  cases?: VisitBinderRelatedCase[];
-  /** 미리 받아 둔 사례 본문. 없는 사례는 창이 연 뒤에 받는다 */
-  caseBodies?: Record<number, VisitBinderCaseBody>;
+  /** 고객이 방문한 사무소. 그 사무소 변호사 탭을 더한다 */
+  office?: string;
 }) {
   const data = state.status === 'ready' ? state.data : null;
   // 카드에서 연 구성원. 여는 동안 소개 목록은 숨기기만 해 보던 위치를 지킨다.
@@ -297,9 +287,6 @@ export default function Binder3Firm({
     };
   }, [openSeq]);
   const field = caseField.trim();
-  // 업무사례 탭에서 연 사례(업무 사례 창)
-  const [openCase, setOpenCase] = useState<VisitBinderRelatedCase | null>(null);
-  const closeCase = useCallback(() => setOpenCase(null), []);
   const stats = data
     ? [
         { label: '구성원 변호사·고문·위원', n: data.stats.members, unit: '명' },
@@ -342,13 +329,7 @@ export default function Binder3Firm({
           </header>
 
           {data ? (
-            <FirmDynamic
-              data={data}
-              onOpen={openMember}
-              caseField={field}
-              cases={cases}
-              onOpenCase={setOpenCase}
-            />
+            <FirmDynamic data={data} onOpen={openMember} caseField={field} office={office.trim()} />
           ) : null}
 
           <div className="b3-firm-next">
@@ -367,14 +348,6 @@ export default function Binder3Firm({
           variant="member"
           onBack={closeMember}
           backLabel="법무법인 YK 소개"
-        />
-      ) : null}
-      {openCase ? (
-        <Binder3CaseModal
-          caseId={openCase.id}
-          title={openCase.title}
-          body={caseBodies?.[openCase.id]}
-          onClose={closeCase}
         />
       ) : null}
     </>

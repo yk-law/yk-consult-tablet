@@ -5,7 +5,6 @@ import {
   getVisitBinderCounsel,
   getVisitBinderFirm,
   getVisitBinderRelatedCases,
-  getVisitBinderSeniors,
   type VisitBinderCaseBody,
   type VisitBinderRelatedCase,
   type VisitBinderRewriteResult,
@@ -31,7 +30,8 @@ import Binder3CounselTeam, {
   sortCounselTeam,
   type Binder3CounselMember,
 } from './Binder3CounselTeam';
-import Binder3Seniors, { type Binder3SeniorsState } from './Binder3Seniors';
+import Binder3Cases from './Binder3Cases';
+import { teamGreetings } from './binder3Greeting';
 import { BINDER3_JOURNEY, isBinder3JourneyId, type Binder3JourneyId } from './binder3JourneyMenu';
 import {
   binder3RerollEvent,
@@ -75,11 +75,14 @@ type JourneyViewContext = {
   counselTeam: Binder3CounselMember[];
   counselIndex: number;
   onCounselIndex: (index: number) => void;
-  seniors: Binder3SeniorsState;
   caseField: string;
-  /** YK 소개 업무사례 탭 목록(시작할 때 받아 둔다). 본문을 받은 사례만 */
+  /** 업무사례 화면 목록(시작할 때 받아 둔다). 본문을 받은 사례만 */
   firmCases: VisitBinderRelatedCase[];
   firmCaseBodies: Record<number, VisitBinderCaseBody>;
+  /** 업무사례 본문을 아직 받는 중 */
+  firmCasesLoading: boolean;
+  /** 고객이 방문한 사무소(YK 소개 지사 탭) */
+  office: string;
   counselScrollTop: number;
   onCounselScroll: (scrollTop: number) => void;
   /** 상담 변호사의 「사건 요약으로」: 2뎁스로 돌아간다 */
@@ -92,14 +95,8 @@ type JourneyViewContext = {
  * 화면을 만들 때 이 표에 하나씩 더한다.
  */
 const JOURNEY_VIEWS: Partial<Record<Binder3JourneyId, (ctx: JourneyViewContext) => ReactNode>> = {
-  firm: ({ firm, firmCases, firmCaseBodies, caseField, go }) => (
-    <Binder3Firm
-      state={firm}
-      caseField={caseField}
-      cases={firmCases}
-      caseBodies={firmCaseBodies}
-      onNext={() => go('report')}
-    />
+  firm: ({ firm, caseField, office, go }) => (
+    <Binder3Firm state={firm} caseField={caseField} office={office} onNext={() => go('report')} />
   ),
   report: ({
     caseCheck,
@@ -154,30 +151,40 @@ const JOURNEY_VIEWS: Partial<Record<Binder3JourneyId, (ctx: JourneyViewContext) 
     go,
   }) => {
     const member = counselTeam[counselIndex] ?? counselTeam[0];
+    // 인사말이 비어 후보 문구를 쓸 때 함께하는 분끼리 겹치지 않게 한다(고재완 11-17).
+    const greetings = teamGreetings(
+      counselTeam.flatMap((m) => (m.state.status === 'ready' ? [m.state.data] : []))
+    );
+    const ready = counselTeam.filter((m) => m.state.status === 'ready');
+    const greeting = member ? greetings[ready.indexOf(member)] : undefined;
     return (
       <>
         <Binder3CounselTeam team={counselTeam} index={counselIndex} onIndex={onCounselIndex} />
         <Binder3Counsel
           key={member?.empId ?? 'none'}
           state={member?.state ?? { status: 'none' }}
+          greeting={greeting}
           caseField={caseField}
           initialScrollTop={counselScrollTop}
           onScrollChange={onCounselScroll}
           onPrevious={onToTopics}
-          onNext={() => go('seniors')}
+          onNext={() => go('cases')}
         />
       </>
     );
   },
-  seniors: ({ seniors, caseField, go }) => (
-    <Binder3Seniors
-      state={seniors}
+  // 「전문 인력」 자리. YK 소개의 업무사례 탭을 옮겼다(고재완 11-18).
+  cases: ({ firmCases, firmCaseBodies, firmCasesLoading, caseField, go }) => (
+    <Binder3Cases
+      cases={firmCases}
+      caseBodies={firmCaseBodies}
       caseField={caseField}
+      loading={firmCasesLoading}
       onPrevious={() => go('counsel')}
       onNext={() => go('youtube')}
     />
   ),
-  youtube: ({ go }) => <Binder3YoutubeTab onPrevious={() => go('seniors')} />,
+  youtube: ({ go }) => <Binder3YoutubeTab onPrevious={() => go('cases')} />,
 };
 
 const EMPTY_QUESTIONS: string[] = [];
@@ -187,13 +194,13 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
   const {
     engId,
     customerName,
+    office,
     placeLabel,
     visitLabel,
     counselEmpIds,
     caseField,
     caseSmall,
     caseMiddle,
-    seed,
   } = useMemo(() => parseBinder3Query(searchParams), [searchParams]);
   // 페이지가 새로 읽혀도 같은 주소면 보던 메뉴 화면·위치로 되돌린다.
   const address = searchParams.toString();
@@ -301,22 +308,6 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
     [address]
   );
 
-  // 전문 인력도 시작할 때 한 번. 같은 태블릿 주소(seed)면 같은 사람·순서가 온다.
-  const [seniors, setSeniors] = useState<Binder3SeniorsState>({ status: 'loading' });
-  useEffect(() => {
-    let alive = true;
-    getVisitBinderSeniors({
-      field: caseField,
-      exclude: counselKey ? counselKey.split(',').map(Number) : [],
-      seed,
-    })
-      .then((data) => alive && setSeniors({ status: 'ready', data }))
-      .catch(() => alive && setSeniors({ status: 'error' }));
-    return () => {
-      alive = false;
-    };
-  }, [caseField, counselKey, seed]);
-
   // 사건 요약 문항은 젬마가 만든다(수 초).
   const [caseCheck, setCaseCheck] = useState<Binder3CaseCheckState>(() =>
     engId == null ? { status: 'ready', questions: [] } : { status: 'loading' }
@@ -406,13 +397,13 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
     [address]
   );
 
-  // 사례 본문은 상담 변호사·전문 인력이 온 뒤에 그 사람들 것만 받는다.
-  const peopleReady = !counselLoading && seniors.status !== 'loading';
-  const caseIds = useMemo(() => collectCaseIds(counselStates, seniors), [counselStates, seniors]);
+  // 사례 본문은 상담 변호사가 온 뒤에 그 사람들 것만 받는다.
+  const peopleReady = !counselLoading;
+  const caseIds = useMemo(() => collectCaseIds(counselStates), [counselStates]);
   const { bodies, retryable, done: caseBodiesDone } = useBinder3CaseBodies(peopleReady, caseIds);
   const caseBodies = useMemo(() => ({ bodies, retryable }), [bodies, retryable]);
 
-  // 업무사례 탭 사례도 본문을 받아 두고, 받은 것만 보인다. DIP 목록에는 그날 새벽에 들어오지만
+  // 업무사례 화면 사례도 본문을 받아 두고, 받은 것만 보인다. DIP 목록에는 그날 새벽에 들어오지만
   // 홈페이지에는 아직 올라오지 않은 사례(404)가 있어 눌러도 열리지 않기 때문이다. 시작을 막지는 않는다.
   const firmCaseIds = useMemo(() => firmCases.map((c) => c.id), [firmCases]);
   const firmBodies = useBinder3CaseBodies(firmCaseIds.length > 0, firmCaseIds);
@@ -431,7 +422,7 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
     !stepRewritesSettled ||
     !film.done ||
     counselLoading ||
-    [firm, seniors, caseCheck, topics].some((state) => state.status === 'loading');
+    [firm, caseCheck, topics].some((state) => state.status === 'loading');
   const filmOn = !loading && step === 'film';
   const welcomeOn = loading || step === 'confirm' || step === 'prep';
   const journeyStep = !loading && isBinder3JourneyId(step) ? step : null;
@@ -466,6 +457,8 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
                   firm,
                   firmCases: visibleFirmCases,
                   firmCaseBodies: firmBodies.bodies,
+                  firmCasesLoading: !firmBodies.done,
+                  office,
                   caseCheck,
                   stepRewrites,
                   answers,
@@ -480,7 +473,6 @@ function Binder3Flow({ searchParams }: { searchParams: URLSearchParams }) {
                   counselTeam: orderedCounselTeam,
                   counselIndex,
                   onCounselIndex,
-                  seniors,
                   caseField,
                   counselScrollTop: counselScrollRef.current,
                   onCounselScroll,
