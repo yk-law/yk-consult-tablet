@@ -267,12 +267,18 @@ function CounselProfile({
 
   // 학력·자격은 이름 아래가 아니라 이력 사항 맨 아래(고재완 11-18, 2차 내부 시연 피드백).
   // 홈페이지 학력 줄에 시험·연수원이 이미 있으면 한 번만 보인다(시연 앱 93a26e6).
+  // 홈페이지는 「사법연수원 제42기」「제10회 변호사시험 합격」처럼 적혀 있어 시험 이름과 기수가 함께 있으면 같은 줄로 본다.
   const qualification = data.qualification?.trim() ?? '';
+  const [, exam = '', round = ''] = qualification.match(/^(\S+)\s*(\d+[기회])$/) ?? [];
+  const sameQualification = (line: string) => {
+    const text = line.replace(/\s+/g, '').replace(/제(?=\d)/g, '');
+    return exam
+      ? text.includes(exam) && new RegExp(`(^|\\D)${round}`).test(text)
+      : text.includes(qualification.replace(/\s+/g, ''));
+  };
   const education = [
     ...data.education,
-    ...(qualification && !data.education.some((line) => line.includes(qualification))
-      ? [qualification]
-      : []),
+    ...(qualification && !data.education.some(sameQualification) ? [qualification] : []),
   ];
   const visibleWorks = data.works
     .filter((work) => isCaseVisible(caseBodies, work))
