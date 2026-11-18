@@ -94,12 +94,19 @@ function PersonGrid({ rows, onOpen }: { rows: PersonCard[]; onOpen: (seq: number
   );
 }
 
-type FirmTab = 'bench' | 'prosecution' | 'police' | 'advisors' | 'experts' | 'office';
+type FirmTab =
+  | 'bench'
+  | 'prosecution'
+  | 'police'
+  | 'advisors'
+  | 'experts'
+  | 'consultants'
+  | 'office';
 
 /**
- * 구성원을 탭으로 나눠 보이고(법원 → 검찰 → 경찰 경력 변호사 → 고문 → 전문위원 → 방문 지사 변호사, 고재완 11-18),
- * 맨 아래에 분야별 전문 센터를 둔다. 한 사람은 한 곳에만 나온다(서버가 나눈다).
- * 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
+ * 구성원을 세 묶음(주요 경력 변호사 · 고문·위원 · 방문 지사 변호사)으로 나누고, 묶음 안은 작은 탭으로 고른다
+ * (고재완 11-18 「탭이 늘어지니 변호사 / 고문·전문·자문 / 방문 지사 변호사로 따로」). 맨 아래에 분야별 전문 센터를 둔다.
+ * 한 사람은 한 곳에만 나온다(서버가 나눈다). 업무사례는 탭에서 빠져 사이드바 「업무사례」 화면이 됐다.
  */
 function FirmDynamic({
   data,
@@ -116,48 +123,89 @@ function FirmDynamic({
 }) {
   const tabsId = useId();
   const officeRows = (data.offices ?? []).find((o) => o.office === office)?.people ?? [];
-  const tabs = (
+  const groups = (
     [
-      ['bench', '법원 경력 변호사', data.bench.length > 0],
-      ['prosecution', '검찰 경력 변호사', data.prosecution.length > 0],
-      ['police', '경찰 경력 변호사', (data.policeLawyers ?? []).length > 0],
-      // 고문과 전문위원은 탭을 나눈다(고재완 11-18). 둘 다 전 직급 순(서버 visit_binder_former_rank).
-      ['advisors', '고문', data.advisors.length > 0],
-      ['experts', '전문위원', data.police.length > 0],
-      // 방문 지사 변호사는 전문위원 다음 탭(고재완 11-18). 탭 이름은 같고 목록만 방문 사무소에 맞춘다.
-      ['office', '방문 지사 변호사', officeRows.length > 0],
-    ] as const
-  ).filter(([, , has]) => has);
+      {
+        label: '주요 경력 변호사',
+        lists: [
+          ['bench', '법원 경력', data.bench.length > 0],
+          ['prosecution', '검찰 경력', data.prosecution.length > 0],
+          ['police', '경찰 경력', (data.policeLawyers ?? []).length > 0],
+        ],
+      },
+      {
+        // 고문·전문위원은 전 직급 순(서버 visit_binder_former_rank), 자문위원은 홈페이지 구분 그대로 따로.
+        label: '고문·위원',
+        lists: [
+          ['advisors', '고문', data.advisors.length > 0],
+          ['experts', '전문위원', (data.experts ?? []).length > 0],
+          ['consultants', '자문위원', (data.consultants ?? []).length > 0],
+        ],
+      },
+      {
+        // 이름은 같고 목록만 방문 사무소에 맞춘다.
+        label: '방문 지사 변호사',
+        lists: [['office', '방문 지사 변호사', officeRows.length > 0]],
+      },
+    ] as { label: string; lists: [FirmTab, string, boolean][] }[]
+  )
+    .map((g) => ({ label: g.label, lists: g.lists.filter(([, , has]) => has) }))
+    .filter((g) => g.lists.length > 0);
   const [picked, setPicked] = useState<FirmTab>('bench');
-  const tab: FirmTab | undefined = tabs.some(([key]) => key === picked) ? picked : tabs[0]?.[0];
+  const group = groups.find((g) => g.lists.some(([key]) => key === picked)) ?? groups[0];
+  const tab: FirmTab | undefined = group?.lists.some(([key]) => key === picked)
+    ? picked
+    : group?.lists[0]?.[0];
 
   return (
     <>
-      {/* 탭 고정은 이 묶음 안에서만 걸린다. 아래 방문 지사·센터 섹션까지 탭이 따라 내려오지 않게 한다. */}
-      {tab ? (
+      {/* 탭 고정은 이 묶음 안에서만 걸린다. 아래 센터 섹션까지 탭이 따라 내려오지 않게 한다. */}
+      {group && tab ? (
         <div className="b3-firm-tabbed">
-          <div className="b3-firm-tabs" role="tablist" aria-label="법무법인 YK 구성원">
-            {tabs.map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                id={`${tabsId}-${key}`}
-                aria-selected={tab === key}
-                aria-controls={`${tabsId}-${key}-panel`}
-                className={tab === key ? 'on' : undefined}
-                onClick={() => setPicked(key)}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="b3-firm-tabhead">
+            <div className="b3-firm-tabs" role="tablist" aria-label="구성원 구분">
+              {groups.map((g, i) => (
+                <button
+                  key={g.label}
+                  type="button"
+                  role="tab"
+                  id={`${tabsId}-g${i}`}
+                  aria-selected={g === group}
+                  className={g === group ? 'on' : undefined}
+                  onClick={() => setPicked(g.lists[0][0])}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+            {/* 묶음 안 목록이 하나면(방문 지사 변호사) 작은 탭을 두지 않는다 */}
+            {group.lists.length > 1 ? (
+              <div className="b3-firm-subtabs" role="tablist" aria-label="법무법인 YK 구성원">
+                {group.lists.map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    id={`${tabsId}-${key}`}
+                    aria-selected={tab === key}
+                    aria-controls={`${tabsId}-${key}-panel`}
+                    className={tab === key ? 'on' : undefined}
+                    onClick={() => setPicked(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
           <section
             className="b3-firm-tabpanel"
             role="tabpanel"
             key={tab}
             id={`${tabsId}-${tab}-panel`}
-            aria-labelledby={`${tabsId}-${tab}`}
+            aria-labelledby={
+              group.lists.length > 1 ? `${tabsId}-${tab}` : `${tabsId}-g${groups.indexOf(group)}`
+            }
           >
             {tab === 'bench' ? (
               <PersonGrid rows={data.bench.map((p) => ({ ...p, line: p.title }))} onOpen={onOpen} />
@@ -188,12 +236,24 @@ function FirmDynamic({
             ) : null}
             {tab === 'experts' ? (
               <PersonGrid
-                rows={data.police.map((a) => ({
+                rows={(data.experts ?? []).map((a) => ({
                   seq: a.seq,
                   name: a.name,
                   photo: a.photo,
                   position: '전문위원',
-                  line: '경찰 경력',
+                  line: a.label,
+                }))}
+                onOpen={onOpen}
+              />
+            ) : null}
+            {tab === 'consultants' ? (
+              <PersonGrid
+                rows={(data.consultants ?? []).map((a) => ({
+                  seq: a.seq,
+                  name: a.name,
+                  photo: a.photo,
+                  position: '자문위원',
+                  line: a.label,
                 }))}
                 onOpen={onOpen}
               />
